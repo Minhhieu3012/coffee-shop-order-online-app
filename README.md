@@ -4,3 +4,76 @@
 
 
 
+# ☕ Mô-đun: Admin Web – BrosCafe
+
+## 1. Tổng quan
+
+Mục tiêu:  
+Xây dựng giao diện web quản trị cho ứng dụng BrosCafe, giúp Admin có thể quản lý toàn bộ hệ thống gồm sản phẩm, đơn hàng, nhân viên và thống kê doanh thu.
+
+---
+
+## 2. Vai trò & Chức năng
+
+### 🔧 Vai trò chính
+Admin chịu trách nhiệm quản lý toàn bộ hoạt động của hệ thống qua giao diện web:
+
+- Quản lý sản phẩm
+  - Thêm, sửa, xóa sản phẩm (CRUD)
+  - Cập nhật giá, hình ảnh, trạng thái hàng tồn
+  - Phân loại theo danh mục: cà phê, trà, bánh ngọt,...
+  - Tìm kiếm, lọc theo từ khóa hoặc danh mục
+
+- Quản lý đơn hàng
+  - Xem danh sách và chi tiết từng đơn hàng
+  - Cập nhật trạng thái đơn: `Pending → Processing → Completed`
+  - Theo dõi lịch sử và doanh thu
+
+- Dashboard & Thống kê
+  - Hiển thị doanh thu theo ngày / tháng / năm
+  - Thống kê top sản phẩm bán chạy
+  - Biểu đồ trực quan bằng Chart.js
+
+- Kết nối Firebase
+  - Ghi / đọc dữ liệu từ Firestore
+  - Upload ảnh lên Firebase Storage
+  - Cập nhật realtime khi dữ liệu thay đổi
+
+- Giao diện người dùng (UI/UX)
+  - Giao diện thân thiện, dễ thao tác
+  - Responsive trên các kích thước màn hình
+  - Đảm bảo trải nghiệm mượt và trực quan
+
+---
+
+## 3. Công nghệ sử dụng
+
+- HTML5, CSS3 (Bootstrap 5)
+- JavaScript (ES6)
+- Firebase SDK (Auth, Firestore, Storage)
+- Chart.js – trực quan hóa dữ liệu
+- Firebase Hosting – triển khai ứng dụng
+
+---
+
+## 4. Cấu trúc thư mục
+
+```bash
+broscafe-admin/
+│
+├── index.html          # Trang Dashboard
+├── products.html       # Quản lý sản phẩm
+├── orders.html         # Quản lý đơn hàng
+│
+├── js/
+│   ├── firebase.js     # Kết nối Firebase
+│   ├── products.js     # CRUD sản phẩm
+│   ├── orders.js       # Quản lý đơn hàng
+│   └── charts.js       # Biểu đồ thống kê
+│
+├── css/
+│   └── style.css
+│
+└── assets/
+    ├── images/
+    └── icons/
