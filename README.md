@@ -12,7 +12,7 @@
 - Cung cấp trải nghiệm người dùng thân thiện, trực quan trên nền tảng di động.
 - Quản lý tập trung sản phẩm, đơn hàng và doanh thu qua giao diện web dành cho admin.
 
-## Công nghệ sử dụng
+## 🖥️ Công nghệ sử dụng
 
 | Thành phần | Công nghệ |
 |-------------|------------|
@@ -26,8 +26,6 @@
 ---
 
 ## 🧱 Kiến trúc hệ thống
-
-Hệ thống gồm hai phần chính:
 
 ### 1. Admin (Web)
 Giao diện quản trị cho phép:
@@ -67,4 +65,4 @@ BrosCoffeeShop/
 ## 📜 Giấy phép
 Dự án được phát triển phục vụ mục đích học tập và nội bộ.
 
-Copyright © 2025 Bros Coffee ☕
+© 2025 Bros Coffee ☕
