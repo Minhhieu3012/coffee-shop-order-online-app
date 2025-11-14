@@ -1,6 +1,7 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { setGlobalOptions } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 // Khởi tạo Firebase Admin SDK
 admin.initializeApp();
@@ -74,7 +75,7 @@ export const onordercreated = onDocumentCreated(
           body: payload.body,
           orderId: orderId,
           isRead: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
         });
       }
     }
