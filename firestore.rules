@@ -20,7 +20,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAdmin() || (isLoggedIn() && isOwner(userId));
       allow update: if isAdmin() || (isLoggedIn) && isOwner(userId);
-      allow create: is isLoggedIn() && isOwner(userId);
+      allow create: if isLoggedIn() && isOwner(userId);
+      // allow create: if true; // Test 
       allow delete: if false;
     }
 
@@ -40,7 +41,8 @@ service cloud.firestore {
     match /orders/{orderId} {
       allow read: if isAdmin() || (isLoggedIn() && isOwner(get(/databases/$(database)/documents/orders/$(orderId)).data.userId));
       allow create: if isLoggedIn() && isOwner(request.resource.data.userId);
-      allow update: is isAdmin() || (isLoggedIn() && isOwner(request.resource.data.userId));
+      // allow create: if true; // Test
+      allow update: if isAdmin() || (isLoggedIn() && isOwner(request.resource.data.userId));
       allow delete: if false;
     }
 
