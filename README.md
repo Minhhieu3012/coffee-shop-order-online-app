@@ -1,15 +1,17 @@
-# Vai trò:
-
-- Cấu hình & khởi tạo Firebase Project
-- Thiết lập Authentication System (Email/Password, Google Sign-In,…)
-- Thiết kế & xây dựng Database Structure (Cloud Firestore)
-- Tạo Shared Components dùng chung (API endpoints, constants, helpers)
-- Viết Security Rules cho Firestore & Storage
-- Tích hợp Firebase Cloud Messaging (FCM) để gửi thông báo đơn hàng
+# Task:
+ 
+ - Cấu hình & khởi tạo Firebase Project
+ 
+ - Thiết lập Authentication System (Email/Password, Google Sign-In,…)
+ 
+ - Thiết kế & xây dựng Database Structure (Cloud Firestore)
+ 
+ - Viết Security Rules cho Firestore & Storage
+ 
+ - Viết Cloud Functions (Logic Backend): tích hợp Firebase Cloud Messaging (FCM) để tự động gửi thông báo khi có đơn hàng mới.
 
 # Deliverables:
 
-- firebase.json, firestore.rules, storage.rules
-- Auth API hoàn chỉnh (đăng ký, đăng nhập, reset mật khẩu)
-- Cấu trúc collection Firestore: products, orders, users, notifications, …
-- Tài liệu hướng dẫn kết nối (README.md)
+- Các file cấu hình: firebase.json, firestore.rules, storage.rules
+
+- Mã nguồn (Source Code) của Cloud Functions: Toàn bộ thư mục functions/ (đặc biệt là functions/src/index.ts). 
