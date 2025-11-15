@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile
 
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,7 +20,6 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import android.util.Log
-import com.google.firebase.auth.ktx.BuildConfig
 
 
 class MainActivity : ComponentActivity() {
@@ -28,11 +28,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // --- BẮT ĐẦU CODE KẾT NỐI EMULATOR ---
-        // (Code này chỉ chạy khi bạn đang "Debug" app)
-        if (BuildConfig.DEBUG) {
+        // Kiểm tra xem app có đang chạy ở chế độ debug không
+        val isDebugMode = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+        if (isDebugMode) {
             try {
-                // "10.0.2.2" là địa chỉ IP đặc biệt để máy ảo Android
-                // trỏ về "localhost" (127.0.0.1) của máy tính của bạn
                 val host = "10.0.2.2"
 
                 // Trỏ Firebase Auth về Emulator cổng 9099
@@ -44,11 +44,9 @@ class MainActivity : ComponentActivity() {
                 // Trỏ Storage về Emulator cổng 9199
                 Firebase.storage.useEmulator(host, 9199)
 
-                // Ghi log (nhật ký) để chúng ta biết là đã thành công
                 Log.i("EmulatorConfig", "Đã kết nối thành công với Firebase Emulator!")
 
             } catch (e: Exception) {
-                // Ghi log nếu có lỗi
                 Log.e("EmulatorConfig", "LỖI: Không thể kết nối với Emulator.", e)
             }
         }
