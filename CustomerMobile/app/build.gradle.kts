@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -57,4 +59,14 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // 1. THÊM FIREBASE BOM (Bill of Materials)
+    // Cái này sẽ quản lý phiên bản của tất cả các thư viện Firebase
+    implementation(platform(libs.firebase.bom))
+
+    // 2. THÊM CÁC DỊCH VỤ BẠN CẦN (mà không cần chỉ định phiên bản)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging) // FCM
 }
