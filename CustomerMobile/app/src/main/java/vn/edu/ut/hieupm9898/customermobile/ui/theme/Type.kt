@@ -32,3 +32,51 @@ val Typography = Typography(
     )
     */
 )
+
+// ======================= BrosCoffee Typography =======================
+val BrosCoffeeTypography = Typography (
+    // Large Heading
+    h1 = TextStyle (
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 32.sp,
+        letterSpacing = 0.5.sp
+    ),
+
+    // Medium Heading
+    h2 = TextStyle (
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.5.sp
+    ),
+
+    // Small Heading
+    h3 = TextStyle (
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+
+    // Content
+    body = TextStyle (
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.sp
+    ),
+
+    // Button
+    button = TextStyle (
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.5.sp
+    )
+)

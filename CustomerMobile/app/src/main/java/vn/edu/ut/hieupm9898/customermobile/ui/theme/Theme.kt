@@ -18,9 +18,12 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    background = BrosBackground,
+    surface = BrosHeader,
+    primary = BrosTitle,
+    secondary = BrosButton,
+    tertiary = BrosSubTitle
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -52,7 +55,7 @@ fun CustomerMobileTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = BrosCoffeeTypography,
         content = content
     )
 }
