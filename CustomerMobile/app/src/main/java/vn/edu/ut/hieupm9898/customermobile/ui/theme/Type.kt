@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Set of Material typography styles to start with
+// ================= Default Typography =================
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -15,28 +15,12 @@ val Typography = Typography(
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
 )
 
-// ======================= BrosCoffee Typography =======================
-val BrosCoffeeTypography = Typography (
-    // Large Heading
-    h1 = TextStyle (
+// ================= BrosCoffee Typography (Material 3) ================
+val BrosCoffeeTypography = Typography(
+    // Replacement for h1 (Material 2)
+    displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
@@ -44,8 +28,8 @@ val BrosCoffeeTypography = Typography (
         letterSpacing = 0.5.sp
     ),
 
-    // Medium Heading
-    h2 = TextStyle (
+    // Replacement for h2
+    headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
@@ -53,8 +37,8 @@ val BrosCoffeeTypography = Typography (
         letterSpacing = 0.5.sp
     ),
 
-    // Small Heading
-    h3 = TextStyle (
+    // Replacement for h3
+    headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
@@ -62,8 +46,8 @@ val BrosCoffeeTypography = Typography (
         letterSpacing = 0.5.sp
     ),
 
-    // Content
-    body = TextStyle (
+    // Replacement for body
+    bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp,
@@ -71,8 +55,8 @@ val BrosCoffeeTypography = Typography (
         letterSpacing = 0.sp
     ),
 
-    // Button
-    button = TextStyle (
+    // Replacement for button
+    labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp,
