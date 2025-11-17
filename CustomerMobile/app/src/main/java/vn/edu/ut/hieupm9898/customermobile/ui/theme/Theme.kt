@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -17,11 +18,20 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    background = BrosBackground,
-    surface = BrosHeader,
-    primary = BrosTitle,
-    secondary = BrosButton,
-    tertiary = BrosSubTitle
+    background = BrosBackground, // Nền App
+    surface = BrosHeader, // Header
+
+    // Button màu nâu
+    primary = BrosButton,
+    onPrimary = Color.White, // Chữ trên button
+
+    // Text Colors
+    onBackground = BrosTitle, // Text trên background
+    onSurface = BrosTitle, // Text trên surface
+
+    // Secondary elements
+    secondary = BrosSubTitle, // Màu phụ
+    tertiary = BrosHeader // Màu tertiary
 
 
     /* Other default colors to override
@@ -39,7 +49,7 @@ private val LightColorScheme = lightColorScheme(
 fun CustomerMobileTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
