@@ -1,10 +1,12 @@
 package vn.edu.ut.hieupm9898.customermobile.navigation
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composable // Cần thiết cho @Composable
+import androidx.navigation.NavController // Cần thiết nếu bạn dùng NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.compose.NavHost // Cần thiết cho NavHost
+import androidx.navigation.compose.composable // Cần thiết cho composable function
+import androidx.navigation.compose.rememberNavController // Cần thiết nếu bạn dùng rememberNavController
+import androidx.navigation.NavType // Cần thiết cho NavType
 import androidx.navigation.navArgument
 
 
