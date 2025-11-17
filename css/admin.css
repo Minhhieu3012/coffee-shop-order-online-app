@@ -1,0 +1,135 @@
+/* Layout tổng admin */
+.admin-layout {
+  min-height: 100vh;
+  display: flex;
+  background: var(--color-bg); /* #F5EEDB từ base.css */
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: var(--color-primary); /* #6A4616 */
+  color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1rem;
+}
+
+/* Header sidebar (logo + title) */
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-logo img {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+}
+
+.sidebar-title {
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Menu */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+/* Item menu */
+.menu-item {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.05s ease;
+}
+
+.menu-item i {
+  width: 18px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.menu-item span {
+  flex: 1;
+}
+
+/* Hover & active */
+.menu-item:hover {
+  background: rgba(245, 238, 219, 0.2); /* nhạt từ màu nền */
+  color: #ffffff;
+}
+
+.menu-item.active {
+  background: #f5eedb;
+  color: #3f2a0c;
+  font-weight: 500;
+}
+
+/* Logout */
+.menu-item-danger {
+  margin-top: auto; /* đẩy xuống cuối sidebar */
+  color: #fecaca;
+}
+
+.menu-item-danger:hover {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fee2e2;
+}
+
+/* MAIN */
+.admin-main {
+  flex: 1;
+  padding: 1.5rem 2rem;
+}
+
+/* Top bar trong main */
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.page-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* Các "page" bên trong admin (Dashboard, Users, Orders, Products) */
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+/* Responsive basic */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 210px;
+  }
+
+  .page-title {
+    font-size: 1.1rem;
+  }
+}

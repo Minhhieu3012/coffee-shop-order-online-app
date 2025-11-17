@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bros Cafe Admin</title>
+
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="assets/logo/bros-logo.png" alt="Bros Cafe Logo">
+        </div>
+        <div class="sidebar-title">Bros Cafe Admin</div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <button class="menu-item active" data-route="dashboard">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="menu-item" data-route="users">
+          <i class="fa-solid fa-user-group"></i>
+          <span>Quản lý users</span>
+        </button>
+
+        <button class="menu-item" data-route="orders">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Quản lý đơn hàng</span>
+        </button>
+
+        <button class="menu-item" data-route="products">
+          <i class="fa-solid fa-mug-hot"></i>
+          <span>Quản lý sản phẩm</span>
+        </button>
+
+        <button class="menu-item menu-item-danger" id="btnLogout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Đăng xuất</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN (tạm để trống, lát mình build từng page) -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1 class="page-title">Dashboard</h1>
+        <!-- sau này show tên admin, avatar, v.v -->
+      </header>
+
+      <section id="page-dashboard" class="page active">
+        <!-- Dashboard content sau này build -->
+        <p>Dashboard content ở đây (doanh thu, số đơn,...)</p>
+      </section>
+
+      <section id="page-users" class="page">
+        <p>Quản lý users</p>
+      </section>
+
+      <section id="page-orders" class="page">
+        <p>Quản lý đơn hàng</p>
+      </section>
+
+      <section id="page-products" class="page">
+        <p>Quản lý sản phẩm</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Sau này add router + auth guard -->
+  <script type="module" src="js/router.js"></script>
+</body>
+</html>
