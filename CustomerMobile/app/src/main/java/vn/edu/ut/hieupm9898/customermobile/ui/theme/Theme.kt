@@ -25,7 +25,7 @@ private val LightColorScheme = lightColorScheme(
     primary = BrosButton,
     onPrimary = Color.White, // Chữ trên button
 
-    // Text Colors
+    // Màu Text Colors
     onBackground = BrosTitle, // Text trên background
     onSurface = BrosTitle, // Text trên surface
 
