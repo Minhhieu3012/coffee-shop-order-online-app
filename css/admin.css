@@ -15,19 +15,12 @@
   padding: 1.25rem 1rem;
 }
 
-/* Header sidebar (logo + title) */
+/* Header sidebar */
 .sidebar-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
   margin-bottom: 1.5rem;
-}
-
-.sidebar-logo img {
-  height: 56px;
-  width: auto;
-  object-fit: contain;
 }
 
 .sidebar-title {
@@ -41,7 +34,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-top: 0.5rem;
+  flex: 1;              /* <--- quan trọng: cho menu chiếm chiều cao còn lại */
 }
 
 /* Item menu */
@@ -127,6 +120,10 @@
 @media (max-width: 900px) {
   .sidebar {
     width: 210px;
+  }
+
+  .admin-main {
+    padding: 1rem;
   }
 
   .page-title {
