@@ -25,7 +25,8 @@
 }
 
 .login-logo img {
-  height: 72px;
+  width: 140px;
+  height: auto;
   object-fit: contain;
 }
 
