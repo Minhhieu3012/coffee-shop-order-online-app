@@ -20,7 +20,11 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
 
+// THÊM IMPORTS CHO NAVIGATION
+import androidx.navigation.compose.rememberNavController
+import vn.edu.ut.hieupm9898.customermobile.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,17 +57,16 @@ class MainActivity : ComponentActivity() {
         // --- KẾT THÚC CODE KẾT NỐI EMULATOR ---
 
         setContent {
-            CustomerMobileTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            // SỬA: Thay thế CustomerMobileTheme bằng MaterialTheme
+            MaterialTheme {
+                val navController = rememberNavController()
+                AppNavigation(navController = navController)
+
             }
         }
     }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -72,6 +75,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable

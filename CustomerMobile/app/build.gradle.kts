@@ -49,7 +49,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.foundation:foundation-layout")
+    implementation("androidx.compose.foundation:foundation-layout:1.6.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -66,5 +66,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
-    implementation(libs.firebase.messaging) // FCM
+    implementation(libs.firebase.messaging)
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    testImplementation(libs.junit)
 }

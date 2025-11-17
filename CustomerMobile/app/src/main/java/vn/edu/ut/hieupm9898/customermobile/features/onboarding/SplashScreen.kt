@@ -18,10 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
-import vn.edu.ut.hieupm9898.customermobile.R // Đảm bảo bạn đã import đúng R
+import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown // Thay thế bằng màu sắc của bạn
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosCream // Thay thế bằng màu sắc của bạn
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosCream
 
 @Composable
 fun SplashScreen(
@@ -30,10 +30,9 @@ fun SplashScreen(
 ) {
     val isCompleted by viewModel.onboardingCompleted.collectAsState()
 
-    // Sử dụng LaunchedEffect để xử lý logic tự động chuyển trang
+    // Logic LaunchedEffect không có delay, sẽ chạy ngay lập tức
     LaunchedEffect(key1 = true) {
-        delay(2000L)
-
+        // Logica này sẽ chạy NGAY LẬP TỨC khi màn hình được compose
         if (isCompleted) {
             navController.popBackStack()
             navController.navigate(AppRoutes.AUTH_FLOW)
@@ -59,53 +58,64 @@ fun SplashScreen(
 
             // Logo và Tên
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Bros Cafe Logo",
-                    modifier = Modifier.size(120.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+
+                // ⚠️ SỬA: Thay thế Image bị lỗi bằng Text Placeholder để xác nhận UI hoạt động
+                // Thao tác này ngăn ứng dụng bị crash do thiếu R.drawable.logo
                 Text(
-                    text = "BROS CAFE",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    text = "BROS LOGO",
+                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold),
                     color = BrosBrown
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Skip the line\nKeep the chill",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = Color.Gray
+
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(120.dp)
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Order your favorite coffee, anywhere, anytime. Our app delivers fresh coffee to your door.",
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                    color = Color.DarkGray,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-            }
+Text(
+text = "BROS CAFE",
+style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+color = BrosBrown
+)
+Spacer(modifier = Modifier.height(8.dp))
+Text(
+text = "Skip the line\nKeep the chill",
+style = MaterialTheme.typography.bodyLarge,
+textAlign = TextAlign.Center,
+color = Color.Gray
+)
+Spacer(modifier = Modifier.height(16.dp))
+Text(
+text = "Order your favorite coffee, anywhere, anytime. Our app delivers fresh coffee to your door.",
+style = MaterialTheme.typography.bodySmall,
+textAlign = TextAlign.Center,
+color = Color.DarkGray,
+modifier = Modifier.padding(horizontal = 24.dp)
+)
+}
 
-            Spacer(modifier = Modifier.weight(1f))
+Spacer(modifier = Modifier.weight(1f))
 
-            Button(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(AppRoutes.ONBOARDING_1)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(12.dp)), // Bo góc
-                colors = ButtonDefaults.buttonColors(containerColor = BrosBrown)
-            ) {
-                Text(
-                    text = "Get Started",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
-                )
-            }
-        }
-    }
+// Nút này bây giờ chỉ đóng vai trò là "Skip" và chuyển ngay
+Button(
+onClick = {
+    navController.popBackStack()
+    navController.navigate(AppRoutes.ONBOARDING_1)
+},
+modifier = Modifier
+.fillMaxWidth()
+.height(56.dp)
+.clip(RoundedCornerShape(12.dp)),
+colors = ButtonDefaults.buttonColors(containerColor = BrosBrown)
+) {
+    Text(
+        text = "Get Started",
+        style = MaterialTheme.typography.titleMedium,
+        color = Color.White
+    )
+}
+}
+}
 }
