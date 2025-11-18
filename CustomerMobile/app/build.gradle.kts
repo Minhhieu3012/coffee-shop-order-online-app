@@ -69,4 +69,6 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation("io.coil-kt:coil-compose:2.7.0")
     testImplementation(libs.junit)
+
+    implementation("androidx.compose.material:material-icons-extended")
 }
