@@ -2,10 +2,29 @@
 
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
+import androidx.compose.foundation.BorderStroke // Đã thêm
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement // Đã thêm
+import androidx.compose.foundation.layout.Box // Đã thêm
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row // Đã thêm
+import androidx.compose.foundation.layout.Spacer // Đã thêm
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,11 +37,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import vn.edu.ut.hieupm9898.customermobile.R
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.* import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
-
-// Giả định các components của bạn đã được định nghĩa trong ui/components
-// @Composable fun BrosTextField(...)
-// @Composable fun BrosButton(...) 
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosSubTitle
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
+import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -44,7 +63,6 @@ fun LoginScreen(navController: NavController) {
                     .weight(0.3f), // Chiếm khoảng 30% màn hình
                 contentAlignment = Alignment.Center
             ) {
-                // Giả định Logo Cafe được đặt ở đây
                 Image(
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = "Bros Cafe Logo",
@@ -83,7 +101,6 @@ fun LoginScreen(navController: NavController) {
                     }
 
                     // --- INPUTS ---
-                    // Cần thay thế bằng component BrosTextField của bạn
                     OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth())
@@ -103,26 +120,26 @@ fun LoginScreen(navController: NavController) {
 
                     // --- BUTTONS ---
 
-                    // 1. Log In (Nút chính)
+                    // 1. Log In (Nút chính) - Đã sửa lỗi content
                     Button(
                         onClick = { isLoginSuccess = true }, // Giả lập thành công
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = BrosBrown),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Log In", fontSize = 18.sp, color = Color.White)
+                        Text("Log In", fontSize = 18.sp, color = Color.White) // NỘI DUNG
                     }
 
                     Text("Or", modifier = Modifier.padding(vertical = 16.dp), color = BrosSubTitle)
 
-                    // 2. Sign Up (Nút phụ)
+                    // 2. Sign Up (Nút phụ) - Đã sửa lỗi content
                     Button(
                         onClick = { navController.navigate(AppRoutes.REGISTER) },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF986B3E)), // Màu nâu nhạt hơn
+                        colors = ButtonDefaults.buttonColors(containerColor = BrosBrown),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Sign Up", fontSize = 18.sp, color = Color.White)
+                        Text("Sign Up", fontSize = 18.sp, color = Color.White) // NỘI DUNG
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -136,7 +153,7 @@ fun LoginScreen(navController: NavController) {
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.google_icon), // Cần icon Google
+                            painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Google Sign-in",
                             modifier = Modifier.size(20.dp).padding(end = 8.dp)
                         )
