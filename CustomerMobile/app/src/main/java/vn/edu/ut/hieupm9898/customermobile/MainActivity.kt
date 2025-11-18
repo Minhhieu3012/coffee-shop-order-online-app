@@ -21,6 +21,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import android.util.Log
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 
 // THÊM IMPORTS CHO NAVIGATION
 import androidx.navigation.compose.rememberNavController
@@ -57,11 +58,10 @@ class MainActivity : ComponentActivity() {
         // --- KẾT THÚC CODE KẾT NỐI EMULATOR ---
 
         setContent {
-            // SỬA: Thay thế CustomerMobileTheme bằng MaterialTheme
-            MaterialTheme {
-                val navController = rememberNavController()
-                AppNavigation(navController = navController)
-
+            CustomerMobileTheme { // Đảm bảo Theme được áp dụng
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    // NavHost gọi Onboarding2Screen ở đây
+                }
             }
         }
     }

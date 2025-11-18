@@ -1,121 +1,104 @@
+// features/onboarding/SplashScreen.kt
+
 package vn.edu.ut.hieupm9898.customermobile.features.onboarding
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color // Cần thiết cho Color.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import kotlinx.coroutines.delay
+import androidx.compose.ui.unit.sp
 import vn.edu.ut.hieupm9898.customermobile.R
-import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosCream
+// IMPORTS MÀU SẮC ĐÃ SỬA:
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground // Thay thế CreamBackground
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown      // Thay thế PrimaryBrown (cho Text)
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosButton     // Thay thế ButtonBrown (cho Nút)
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle      // Có thể dùng cho tiêu đề nếu cần thiết
 
 @Composable
-fun SplashScreen(
-    navController: NavController,
-    viewModel: OnboardingViewModel = viewModel()
-) {
-    val isCompleted by viewModel.onboardingCompleted.collectAsState()
-
-    // Logic LaunchedEffect không có delay, sẽ chạy ngay lập tức
-    LaunchedEffect(key1 = true) {
-        // Logica này sẽ chạy NGAY LẬP TỨC khi màn hình được compose
-        if (isCompleted) {
-            navController.popBackStack()
-            navController.navigate(AppRoutes.AUTH_FLOW)
-        } else {
-            navController.popBackStack()
-            navController.navigate(AppRoutes.ONBOARDING_1)
-        }
-    }
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = BrosCream
-    ) { paddingValues ->
+fun SplashScreen(onGetStartedClick: () -> Unit) {
+    // SỬA: Dùng BrosBackground cho màu nền
+    Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(horizontal = 40.dp)
+                .padding(bottom = 50.dp),
+            horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Logo và Tên
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                // ⚠️ SỬA: Thay thế Image bị lỗi bằng Text Placeholder để xác nhận UI hoạt động
-                // Thao tác này ngăn ứng dụng bị crash do thiếu R.drawable.logo
-                Text(
-                    text = "BROS LOGO",
-                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold),
-                    color = BrosBrown
-                )
-
+            // ... bên trong Column cha
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                // 1. Logo
                 Image(
                     painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(120.dp)
+                    contentDescription = "Bros coffee Logo",
+                    modifier = Modifier
+                        .size(100.dp)
+                        // SỬA LỖI TẠI ĐÂY: Dùng Alignment.Start
+                        .align(Alignment.Start)
                 )
 
+                Spacer(modifier = Modifier.height(32.dp))
+                // ...
+
+                // 2. Tiêu đề
+                // SỬA: Dùng BrosBrown
+                Text(text = "Skip the line", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = BrosBrown )
+                // SỬA: Dùng BrosBrown
+                Text(text = "Keep the chill", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = BrosBrown )
+
                 Spacer(modifier = Modifier.height(16.dp))
-Text(
-text = "BROS CAFE",
-style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-color = BrosBrown
-)
-Spacer(modifier = Modifier.height(8.dp))
-Text(
-text = "Skip the line\nKeep the chill",
-style = MaterialTheme.typography.bodyLarge,
-textAlign = TextAlign.Center,
-color = Color.Gray
-)
-Spacer(modifier = Modifier.height(16.dp))
-Text(
-text = "Order your favorite coffee, anywhere, anytime. Our app delivers fresh coffee to your door.",
-style = MaterialTheme.typography.bodySmall,
-textAlign = TextAlign.Center,
-color = Color.DarkGray,
-modifier = Modifier.padding(horizontal = 24.dp)
-)
+
+                // 3. Mô tả
+                // SỬA: Dùng BrosBrown
+                Text(
+                    text = "Order your favorite coffee anytime, anywhere. Just a few taps and your drink is ready to go.",
+                    fontSize = 14.sp,
+                    color = BrosBrown,
+                    lineHeight = 20.sp
+                )
+            }
+
+            // 4. Nút "Get Started"
+            Button(
+                onClick = onGetStartedClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                // SỬA: Dùng BrosButton cho màu nền nút
+                colors = ButtonDefaults.buttonColors(containerColor = BrosButton),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                // SỬA: Dùng Color.White
+                Text(text = "Get Started", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            }
+        }
+    }
 }
 
-Spacer(modifier = Modifier.weight(1f))
-
-// Nút này bây giờ chỉ đóng vai trò là "Skip" và chuyển ngay
-Button(
-onClick = {
-    navController.popBackStack()
-    navController.navigate(AppRoutes.ONBOARDING_1)
-},
-modifier = Modifier
-.fillMaxWidth()
-.height(56.dp)
-.clip(RoundedCornerShape(12.dp)),
-colors = ButtonDefaults.buttonColors(containerColor = BrosBrown)
-) {
-    Text(
-        text = "Get Started",
-        style = MaterialTheme.typography.titleMedium,
-        color = Color.White
-    )
-}
-}
-}
+@Preview(showBackground = true)
+@Composable
+private fun SplashScreenPreview() {
+    SplashScreen(onGetStartedClick = {})
 }
