@@ -69,10 +69,10 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation("io.coil-kt:coil-compose:2.7.0")
     testImplementation(libs.junit)
-<<<<<<< Updated upstream
+    Updated upstream
 
     implementation("androidx.compose.material:material-icons-extended")
-=======
+
     testImplementation("androidx.navigation:navigation-testing:2.x.x") // cho TestNavHostController
->>>>>>> Stashed changes
+     Stashed changes
 }
