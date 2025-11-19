@@ -1,13 +1,8 @@
 // js/firebase-config.js
-// Dùng Firebase v10 (modular) qua CDN
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  // connectAuthEmulator, // bật sau nếu dùng Emulator
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// config
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_AUTH_DOMAIN",
@@ -19,10 +14,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);   // để dành khi dùng thật
 
-//  emulator bổ sung:
-// if (location.hostname === "localhost") {
-//   connectAuthEmulator(auth, "http://127.0.0.1:9099");
-// }
-
-export { app, auth };
+export { auth, db };

@@ -12,15 +12,23 @@ const loginError = document.getElementById("loginError");
 const btnLogin = document.getElementById("btnLogin");
 const togglePassword = document.getElementById("togglePassword");
 
-// 1. Nếu đã đăng nhập rồi thì khỏi vào login nữa -> đá qua admin.html
+// =============================================
+// 1. AUTH STATE - Kiểm tra đăng nhập
+// =============================================
+// Nếu đã đăng nhập rồi thì khỏi vào login nữa -> đá qua admin.html
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // Sau này có check role admin thì thêm bước check Firestore ở đây
+  if (user && window.location.pathname.includes("login.html")) {
+    // TODO: Sau này thêm check role admin từ Firestore
+    // const userDoc = await getDoc(doc(db, 'users', user.uid));
+    // if (userDoc.data().role === 'admin') {
     window.location.href = "admin.html";
+    // }
   }
 });
 
-// 2. Show / hide password
+// =============================================
+// 2. TOGGLE PASSWORD VISIBILITY
+// =============================================
 if (togglePassword) {
   togglePassword.addEventListener("click", () => {
     const isHidden = passwordInput.type === "password";
@@ -31,7 +39,9 @@ if (togglePassword) {
   });
 }
 
-// Helper: set trạng thái loading nút login
+// =============================================
+// 3. LOADING STATE
+// =============================================
 function setLoading(isLoading) {
   if (!btnLogin) return;
   if (isLoading) {
@@ -43,11 +53,14 @@ function setLoading(isLoading) {
   }
 }
 
-// 3. Xử lý submit form login
+// =============================================
+// 4. SUBMIT LOGIN FORM
+// =============================================
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     loginError.style.display = "none";
+    
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
@@ -60,18 +73,37 @@ if (loginForm) {
     try {
       setLoading(true);
 
-      // Gọi Firebase Auth
+      // Gọi Firebase Auth để đăng nhập
       const cred = await signInWithEmailAndPassword(auth, email, password);
 
       // TODO: Sau này thêm bước check role = 'admin' trong Firestore
+      // import { getFirestore, doc, getDoc } from "firebase/firestore";
+      // const db = getFirestore();
+      // const userDoc = await getDoc(doc(db, "users", cred.user.uid));
+      // const userData = userDoc.data();
+      // 
+      // if (userData.role !== "admin") {
+      //   await signOut(auth);
+      //   throw new Error("Bạn không có quyền truy cập Admin!");
+      // }
+
       console.log("Login success:", cred.user.uid);
       window.location.href = "admin.html";
+      
     } catch (err) {
-      console.error(err);
-      loginError.textContent =
-        err.code === "auth/invalid-credential"
-          ? "Sai email hoặc mật khẩu."
-          : "Không thể đăng nhập, thử lại sau.";
+      console.error("Login error:", err);
+      
+      // Xử lý lỗi
+      if (err.code === "auth/invalid-credential") {
+        loginError.textContent = "Sai email hoặc mật khẩu.";
+      } else if (err.code === "auth/too-many-requests") {
+        loginError.textContent = "Quá nhiều lần đăng nhập sai. Vui lòng thử lại sau.";
+      } else if (err.message.includes("quyền truy cập")) {
+        loginError.textContent = err.message;
+      } else {
+        loginError.textContent = "Không thể đăng nhập, thử lại sau.";
+      }
+      
       loginError.style.display = "block";
     } finally {
       setLoading(false);
