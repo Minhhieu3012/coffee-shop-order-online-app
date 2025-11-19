@@ -5,9 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -18,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,17 +24,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import vn.edu.ut.hieupm9898.customermobile.R
-import vn.edu.ut.hieupm9898.customermobile.data.model.Product // Đã sử dụng Model Product (giả định có các trường cần thiết)
+import vn.edu.ut.hieupm9898.customermobile.data.model.Product
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
-// --- TÍCH HỢP COMPONENTS ---
-import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosBottomNavBar
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
-// Data mẫu đã được làm giàu (Thêm trường subtitle và isFavorite)
+// Data mẫu
 private val dummyProducts = listOf(
     Product("1", "Caffe Mocha", "Dark Roast, 120 Cal", 4.53, "link_to_img_1", "Coffee", true),
     Product("2", "Flat White", "Creamy, High Caffeine", 3.53, "link_to_img_2", "Coffee", false),
@@ -47,7 +43,6 @@ private val dummyProducts = listOf(
 )
 private val categories = listOf("All", "Coffee", "Tea", "Food", "Dessert")
 
-
 @Composable
 fun HomeScreen(navController: NavController) {
     var searchText by remember { mutableStateOf("") }
@@ -56,24 +51,21 @@ fun HomeScreen(navController: NavController) {
     val filteredProducts = remember(selectedCategory, searchText) {
         dummyProducts.filter { product ->
             (selectedCategory == "All" || product.category == selectedCategory) &&
-                    (product.name.contains(searchText, ignoreCase = true) || product.description.contains(searchText, ignoreCase = true))
+                    (product.name.contains(searchText, ignoreCase = true) ||
+                            product.description.contains(searchText, ignoreCase = true))
         }
     }
 
-    // Sử dụng Scaffold để quản lý Padding dưới
     Scaffold(
-        containerColor = BrosBackground,
-        // (BrosBottomNavBar được đặt trong MainScreen, nên ta chỉ cần tính toán PaddingValues)
+        containerColor = BrosBackground
     ) { paddingValues ->
-
-        // Dùng LazyColumn để cuộn toàn bộ nội dung
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 24.dp)
         ) {
-            // --- 1. HEADER (Lớp trên cùng) ---
+            // --- 1. HEADER ---
             item {
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
@@ -81,44 +73,64 @@ fun HomeScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Avatar và Lời chào
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Avatar",
-                            modifier = Modifier.size(50.dp).clip(CircleShape).background(Color.White)
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Good Morning!", fontSize = 14.sp, color = Color.Gray)
-                            Text("Hieu Pham", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
+                            Text(
+                                "Good Morning!",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                "Hieu Pham",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrosTitle
+                            )
                         }
                     }
-                    // Nút thông báo
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = null, tint = BrosTitle)
+                    IconButton(onClick = { /* TODO: Notifications */ }) {
+                        Icon(
+                            Icons.Default.Notifications,
+                            contentDescription = "Notifications",
+                            tint = BrosTitle
+                        )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // --- 2. SEARCH BAR (Dùng BrosTextField) ---
+            // --- 2. SEARCH BAR ---
             item {
                 BrosTextField(
                     value = searchText,
                     onValueChange = { searchText = it },
                     label = "Search coffee...",
-                    icon = Icons.Default.Search // Icon kính lúp
+                    icon = Icons.Default.Search
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // --- 3. CATEGORIES (Dùng CategoryChip) ---
+            // --- 3. CATEGORIES ---
             item {
-                Text("Categories", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
+                Text(
+                    "Categories",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BrosTitle
+                )
                 Spacer(modifier = Modifier.height(16.dp))
+            }
 
+            item {
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -131,44 +143,56 @@ fun HomeScreen(navController: NavController) {
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // --- 4. PRODUCT GRID (Dùng CoffeeCard) ---
+            // --- 4. PRODUCT TITLE ---
             item {
-                Text("Món Ngon Cho Hôm Nay", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp), color = BrosTitle)
+                Text(
+                    "Món Ngon Cho Hôm Nay",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = BrosTitle,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Do LazyVerticalGrid không thể cuộn lồng dễ dàng trong LazyColumn,
-            // ta dùng LazyVerticalGrid cho phần còn lại (phần sản phẩm)
-            // Tuy nhiên, vì LazyColumn đã bao bọc, ta sẽ mô phỏng Grid bằng cách sắp xếp thủ công (hoặc sử dụng Grid trong Item)
-            // Cách đơn giản nhất: Tạo Item dạng Grid (lấy 2 item/lần)
-            items(filteredProducts.chunked(2)) { pair ->
+            // --- 5. PRODUCT GRID (2 cột) ---
+            items(filteredProducts.chunked(2)) { productPair ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    pair.forEach { product ->
-                        // Component CoffeeCard (ĐÃ TÍCH HỢP CHUẨN THAM SỐ)
+                    productPair.forEach { product ->
                         CoffeeCard(
                             title = product.name,
                             subtitle = product.description,
                             price = product.price,
                             imageUrl = product.imageUrl,
                             isFavorite = product.isFavorite,
-                            onCardClick = { navController.navigate(AppRoutes.createProductDetailRoute(product.id)) },
-                            onAddClick = { /* TODO */ },
-                            onFavoriteClick = { /* TODO */ },
+                            onCardClick = {
+                                navController.navigate(
+                                    AppRoutes.createProductDetailRoute(product.id)
+                                )
+                            },
+                            onAddClick = { /* TODO: Add to cart */ },
+                            onFavoriteClick = { /* TODO: Toggle favorite */ },
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    // Nếu hàng cuối cùng chỉ có 1 món, thêm Spacer để cân bằng
-                    if (pair.size == 1) {
+                    // Thêm Spacer nếu hàng cuối chỉ có 1 sản phẩm
+                    if (productPair.size == 1) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
+            }
+
+            // Padding bottom để tránh bị che bởi BottomNavBar
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
