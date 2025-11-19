@@ -1,3 +1,4 @@
+// File: settings.gradle.kts
 pluginManagement {
     repositories {
         google {
@@ -19,6 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Customer Mobile"
+rootProject.name = "coffee-shop-order-online-app"
 include(":app")
- 

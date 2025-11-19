@@ -1,68 +1,85 @@
 [versions]
-# Gradle Plugins
-agp = "8.13.1"
-kotlin = "2.0.21"
+# --- Gradle Plugins ---
+# Phiên bản ổn định, tương thích với Kotlin 1.9.0
+agp = "8.1.0"
+kotlin = "1.9.0"
+# KSP phải khớp với Kotlin 1.9.0 (1.9.0-1.0.13)
+ksp = "1.9.0-1.0.13"
+googleServices = "4.4.1"
+hilt = "2.48"
 
-# AndroidX Core & Testing
-coreKtx = "1.10.1"
+# --- AndroidX Core & Testing ---
+coreKtx = "1.12.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.9.4"
-activityCompose = "1.8.0"
+lifecycleRuntimeKtx = "2.7.0"
+activityCompose = "1.8.2"
 
-# Compose
-composeBom = "2024.09.00"
-composeVersion = "1.6.0" # Dùng làm phiên bản tham chiếu cho các thư viện Compose không có trong BOM
-foundationLayout = "1.6.0" # Đã sửa thành phiên bản thực tế của Compose
+# --- Compose (Dùng BOM để quản lý) ---
+composeBom = "2024.02.00"
 
-# Firebase
-googleServices = "4.4.4"
-firebaseBom = "33.6.0"
+# --- Firebase ---
+firebaseBom = "32.7.4"
+
+# --- Navigation ---
+navigationCompose = "2.7.7"
+
+# --- Third Party ---
+coil = "2.6.0"
+room = "2.6.1"
 
 [libraries]
-# --------------------
-# 1. AndroidX Core & Testing
-# --------------------
+# --- AndroidX Core ---
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 
-# --------------------
-# 2. Compose
-# --------------------
+# --- Compose (Không cần version vì dùng BOM) ---
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-# Thư viện này đang gây lỗi 'Unresolved reference', đã được định nghĩa đúng:
-androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
-
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+# Material Icons Extended (Cho StarHalf, StarBorder...)
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
-# --------------------
-# 3. Firebase & Third Party
-# --------------------
+# --- Navigation ---
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
+# --- Hilt (Dependency Injection) ---
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
+
+# --- Room Database ---
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+
+# --- Firebase ---
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 
-# --------------------
-# 4. Thư viện đã thêm trong Build.gradle.kts (Cần định nghĩa trong libs.versions.toml)
-# --------------------
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.7.5" }
+# --- Third Party ---
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+
+# --- Testing ---
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# Plugin KSP
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+# Plugin Hilt
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
