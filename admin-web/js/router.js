@@ -1,33 +1,16 @@
 // js/router.js
-// ===============================
-// 1. Import Firebase Auth
-// ===============================
-import { auth } from "./firebase-config.js";
-import {
-  onAuthStateChanged,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// ===============================
-// 2. AUTH GUARD cho admin.html
-//    - Nếu chưa login: đá về login.html
-//    - TODO: Sau này check role 'admin' ở đây
-// ===============================
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    // Chưa đăng nhập → quay lại trang login
-    window.location.href = "login.html";
-  } else {
-    console.log("Admin đang đăng nhập:", user.email);
-    // TODO:
-    //  - Lấy thêm thông tin user từ Firestore (role, displayName, avatar...)
-    //  - Nếu role !== 'admin' thì signOut + redirect về trang khác
-  }
-});
+// --- 1. KIỂM TRA ĐĂNG NHẬP (AUTH GUARD) ---
+// Logic: Nếu không tìm thấy 'isLoggedIn' trong bộ nhớ -> Đá về trang login
+const isLoggedIn = localStorage.getItem("isLoggedIn");
+const currentPath = window.location.pathname;
 
-// ===============================
-// 3. SPA router đơn giản cho admin
-// ===============================
+// Nếu đang ở trang admin.html mà chưa đăng nhập
+if (currentPath.includes("admin.html") && !isLoggedIn) {
+  window.location.href = "login.html";
+}
+
+// --- 2. XỬ LÝ MENU CHUYỂN TAB (GIỮ NGUYÊN CỦA BẠN) ---
 const routeTitleMap = {
   dashboard: "Dashboard",
   users: "Quản lý users",
@@ -40,9 +23,7 @@ const pages = document.querySelectorAll(".page");
 const pageTitleEl = document.querySelector(".page-title");
 const btnLogout = document.getElementById("btnLogout");
 
-// Đổi tab
 function setRoute(route) {
-  // Nếu route không hợp lệ thì về dashboard
   if (!route || !document.getElementById(`page-${route}`)) {
     route = "dashboard";
   }
@@ -52,45 +33,41 @@ function setRoute(route) {
     btn.classList.toggle("active", btn.dataset.route === route);
   });
 
-  // Active page
+  // Active page content
   pages.forEach((page) => {
     page.classList.toggle("active", page.id === `page-${route}`);
   });
 
-  // Đổi title trên topbar
+  // Đổi tên tiêu đề
   if (pageTitleEl) {
     pageTitleEl.textContent = routeTitleMap[route] || "Dashboard";
   }
 
-  // Lưu route vào hash để reload lại vẫn giữ tab
+  // Lưu vào hash (#)
   if (window.location.hash !== `#${route}`) {
     window.location.hash = route;
   }
 }
 
-// Gắn event click cho menu
+// Bắt sự kiện click menu
 sidebarMenuItems.forEach((btn) => {
   btn.addEventListener("click", () => {
-    const route = btn.dataset.route;
-    setRoute(route);
+    setRoute(btn.dataset.route);
   });
 });
 
-// Khi load trang lần đầu → đọc hash
+// Load lại trang vẫn giữ đúng tab
 const initialRoute = window.location.hash.replace("#", "") || "dashboard";
-setRoute(initialRoute);
+if (sidebarMenuItems.length > 0) { // Chỉ chạy logic này nếu đang ở trang admin
+    setRoute(initialRoute);
+}
 
-// ===============================
-// 4. Logout
-// ===============================
+// --- 3. XỬ LÝ ĐĂNG XUẤT ---
 if (btnLogout) {
-  btnLogout.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      // Sau khi signOut, onAuthStateChanged sẽ tự redirect về login.html
-    } catch (err) {
-      console.error("Logout error:", err);
-      alert("Không thể đăng xuất, thử lại sau.");
-    }
+  btnLogout.addEventListener("click", () => {
+    // Xóa trạng thái đăng nhập
+    localStorage.removeItem("isLoggedIn");
+    // Quay về login
+    window.location.href = "login.html";
   });
 }
