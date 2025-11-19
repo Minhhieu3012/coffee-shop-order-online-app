@@ -8,8 +8,16 @@ let productsData = [
   { id: "sp004", name: "Croissant Hạnh Nhân", category: "Bánh ngọt", price: 45000, imageUrl: "https://img.freepik.com/free-photo/croissants-wooden-cutting-board_1150-24898.jpg", isAvailable: true }
 ];
 
-// 2. HÀM RENDER BẢNG (Đã nâng cấp để nhận list data tùy ý)
-// Mặc định data = productsData (nếu không truyền gì vào)
+// HÀM HỖ TRỢ: Xóa dấu Tiếng Việt (đ -> d, ă -> a,...)
+function normalizeStr(str) {
+  if (!str) return "";
+  return str.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+            .toLowerCase().trim();
+}
+
+// 2. HÀM RENDER BẢNG
 function renderTable(data = productsData) {
   const tableBody = document.getElementById("productTableBody");
   if (!tableBody) return;
@@ -47,28 +55,23 @@ function renderTable(data = productsData) {
   });
 }
 
-// 3. LOGIC TÌM KIẾM (MỚI THÊM)
+// 3. TÌM KIẾM TIẾNG VIỆT KHÔNG DẤU
 const searchInput = document.getElementById("searchProduct");
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
-    const keyword = e.target.value.toLowerCase().trim();
+    const keyword = normalizeStr(e.target.value); // Xóa dấu từ khóa nhập vào
     
-    // Lọc dữ liệu
     const filteredData = productsData.filter(product => {
-      return product.name.toLowerCase().includes(keyword) || 
-             product.id.toLowerCase().includes(keyword);
+      // So sánh tên (không dấu) và ID
+      return normalizeStr(product.name).includes(keyword) || 
+             normalizeStr(product.id).includes(keyword);
     });
 
-    // Vẽ lại bảng với dữ liệu đã lọc
     renderTable(filteredData);
   });
 }
 
-// ... (Các phần Modal, Form Submit, Delete giữ nguyên như cũ) ...
-// Để gọn code, bạn giữ nguyên logic xử lý Modal/Form cũ ở dưới này nhé.
-// Nếu lỡ xóa thì copy lại từ file cũ, chỉ cần thay đoạn renderTable ở trên là được.
-
-// --- (Logic cũ bạn dán nối tiếp vào đây) ---
+// 4. CÁC LOGIC MODAL & FORM GIỮ NGUYÊN
 const modal = document.getElementById("productModal");
 const btnAdd = document.getElementById("btnAddProduct");
 const closeElements = document.querySelectorAll(".close-modal, .close-modal-btn");
@@ -120,8 +123,8 @@ if (productForm) {
       const newProduct = { id: "sp" + Date.now(), name, category, price, imageUrl, isAvailable };
       productsData.unshift(newProduct);
     }
-    renderTable(); // Vẽ lại (mặc định vẽ full list)
-    searchInput.value = ""; // Reset ô tìm kiếm
+    renderTable();
+    searchInput.value = "";
     if (modal) modal.classList.remove("show");
   });
 }

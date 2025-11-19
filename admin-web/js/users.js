@@ -1,13 +1,22 @@
 // admin-web/js/users.js
 
-// 1. DỮ LIỆU GIẢ
+// DỮ LIỆU GIẢ
 let usersData = [
   { id: "admin_01", displayName: "Admin (Bạn)", email: "admin@bros.com", photoUrl: "assets/logo.png", role: "admin", phoneNumber: "0909.123.456" },
   { id: "u001", displayName: "Nguyễn Văn A", email: "khach.a@gmail.com", photoUrl: "https://i.pravatar.cc/150?img=3", role: "customer", phoneNumber: "0912.345.678" },
   { id: "u002", displayName: "Trần Thị B", email: "khach.b@gmail.com", photoUrl: "https://i.pravatar.cc/150?img=5", role: "customer", phoneNumber: "0933.444.555" }
 ];
 
-// 2. HÀM RENDER (Nhận tham số data)
+// HÀM HỖ TRỢ: Xóa dấu Tiếng Việt
+function normalizeStr(str) {
+  if (!str) return "";
+  return str.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+            .toLowerCase().trim();
+}
+
+// HÀM RENDER
 function renderUserTable(data = usersData) {
   const tableBody = document.getElementById("userTableBody");
   if (!tableBody) return;
@@ -46,15 +55,15 @@ function renderUserTable(data = usersData) {
   });
 }
 
-// 3. LOGIC TÌM KIẾM USER (MỚI THÊM)
+// TÌM KIẾM THÔNG MINH (KHÔNG DẤU)
 const searchInput = document.getElementById("searchUser");
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
-    const keyword = e.target.value.toLowerCase().trim();
+    const keyword = normalizeStr(e.target.value);
 
     const filteredUsers = usersData.filter(user => {
-      return user.displayName.toLowerCase().includes(keyword) ||
-             user.email.toLowerCase().includes(keyword) ||
+      return normalizeStr(user.displayName).includes(keyword) ||
+             normalizeStr(user.email).includes(keyword) ||
              (user.phoneNumber && user.phoneNumber.includes(keyword));
     });
 
