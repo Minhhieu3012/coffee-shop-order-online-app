@@ -3,7 +3,18 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+
+    // --- BỔ SUNG CHO HILT/KAPT ---
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
+
+// Khối hằng số (constants) để quản lý phiên bản dễ hơn
+val hiltVersion = "2.51.1"
+val coroutinesVersion = "1.7.3"
+val composeVersion = "1.6.0"
+val navVersion = "2.7.5"
+
 
 android {
     namespace = "vn.edu.ut.hieupm9898.customermobile"
@@ -41,6 +52,7 @@ android {
 }
 
 dependencies {
+    // --- ANDROIDX & COMPOSE CƠ BẢN ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -51,24 +63,33 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    // Cập nhật: 'foundation-layout' đã hợp nhất vào 'androidx.compose.foundation'
-    implementation("androidx.compose.foundation:foundation")
+
+    implementation("androidx.compose.foundation:foundation:$composeVersion")
 
     // Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.7.5")
-    implementation("androidx.compose.material:material-icons-extended") // Icons mở rộng
+    implementation("androidx.navigation:navigation-compose:$navVersion")
+    implementation("androidx.compose.material:material-icons-extended")
 
-    // FIREBASE
+    // --- HILT ---
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    kapt("com.google.dagger:hilt-compiler:$hiltVersion") // Dòng này là đúng
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    // --- KOTLIN COROUTINES ---
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+
+    // --- FIREBASE ---
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
 
-    // Thư viện bên thứ ba
+    // --- THƯ VIỆN BÊN THỨ BA ---
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // TEST IMPLEMENTATION
+    // --- TEST IMPLEMENTATION ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -76,7 +97,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-    // Testing Navigation (Cần sửa phiên bản, ví dụ 2.7.5)
-    testImplementation("androidx.navigation:navigation-testing:2.7.5")
+    testImplementation("androidx.navigation:navigation-testing:$navVersion")
 }
+
+// Khối KAPT bị lỗi đã được XÓA hoàn toàn để khắc phục lỗi cú pháp
+// Nếu cần cấu hình, phải sử dụng cú pháp: configure<KaptExtension> { ... }

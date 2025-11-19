@@ -1,64 +1,52 @@
 package vn.edu.ut.hieupm9898.customermobile.ui.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview // <-- Đã thêm import này
 import androidx.compose.ui.unit.dp
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
+import androidx.compose.ui.unit.sp
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
 
-/**
- * Nút bấm chính (primary button) của ứng dụng.
- * Nó tự động sử dụng màu sắc và kiểu chữ từ Theme.
- *
- * @param text Văn bản hiển thị trên nút.
- * @param onClick Hàm (lambda) sẽ được gọi khi nút được nhấn.
- * @param modifier Tùy chỉnh (modifier) từ bên ngoài (ví dụ: padding).
- */
 @Composable
 fun BrosButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true // Cho phép tắt (disable) nút
+    isEnabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(54.dp),
-        shape = RoundedCornerShape(16.dp), // Bo góc
+        modifier = modifier.height(50.dp), // Chiều cao chuẩn
+        enabled = isEnabled,
+        shape = RoundedCornerShape(12.dp), // Bo góc chuẩn
+        // --- SỬA MÀU TÍM THÀNH NÂU ---
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        enabled = enabled
+            containerColor = BrosBrown, // Nền màu nâu
+            contentColor = Color.White, // Chữ màu trắng
+            disabledContainerColor = Color.Gray
+        )
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge // Dùng kiểu chữ cho nút
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
 
-@Preview(showBackground = true, name = "Enabled Button")
+// --- PHẦN PREVIEW ---
+@Preview(showBackground = true)
 @Composable
 fun BrosButtonPreview() {
-    CustomerMobileTheme {
-        BrosButton(text = "Đăng nhập", onClick = {})
-    }
-}
-
-@Preview(showBackground = true, name = "Disabled Button")
-@Composable
-fun BrosButtonDisabledPreview() {
-    CustomerMobileTheme {
-        BrosButton(text = "Đăng nhập", onClick = {}, enabled = false)
-    }
+    BrosButton(
+        text = "Log In",
+        onClick = {}
+    )
 }

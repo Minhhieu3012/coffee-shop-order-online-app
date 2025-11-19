@@ -1,5 +1,3 @@
-// features/onboarding/Onboarding2Screen.kt
-
 package vn.edu.ut.hieupm9898.customermobile.features.onboarding
 
 import androidx.compose.foundation.Image
@@ -21,21 +19,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color // Cần thiết cho Color.White
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import vn.edu.ut.hieupm9898.customermobile.R
-// IMPORTS MÀU SẮC ĐÃ SỬA:
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground // Thay thế CreamBackground
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown      // Thay thế PrimaryBrown (Dùng cho Text và Nút)
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle      // Có thể dùng cho tiêu đề chính
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
+// import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosSubTitle // Có thể dùng nếu muốn màu nhạt hơn
 
 @Composable
 fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
-    // SỬA: Dùng BrosBackground
+    // Sử dụng Surface và màu nền chuẩn
     Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -43,7 +42,7 @@ fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
                 .padding(horizontal = 40.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            // --- 1. Vị trí ảnh ---
+            // --- PHẦN 1: ẢNH (Chiếm 50% màn hình trên) ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -53,39 +52,51 @@ fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
                 verticalArrangement = Arrangement.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.image_18),
-                    contentDescription = "Easy and Secure Payment",
+                    painter = painterResource(id = R.drawable.image_18), // Đã sửa lỗi thiếu dấu ngoặc )
+                    contentDescription = "Fast Delivery",
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth(0.8f) // Kích thước ảnh 80% chiều ngang
                         .aspectRatio(1f)
                 )
             }
 
-            // --- 2. Nội dung Text và Điều hướng ---
+            // --- PHẦN 2: NỘI DUNG & ĐIỀU HƯỚNG (Chiếm 50% màn hình dưới) ---
             Column(
                 modifier = Modifier
                     .weight(0.5f)
                     .padding(vertical = 20.dp),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                val title = "Easy and Secure Payment!"
-                val description = "Choose from multiple payment options that are fast, safe, and convenient."
+                val title = "Giao hàng nhanh chóng"
+                val description = "Nhận đồ uống yêu thích của bạn chỉ trong vài phút với đội ngũ shipper chuyên nghiệp."
 
-                // SỬA: Dùng BrosBrown cho Text
-                Text(text = title, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosBrown)
+                // Tiêu đề
+                Text(
+                    text = title,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BrosTitle
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
-                // SỬA: Dùng BrosBrown cho Text
-                Text(text = description, fontSize = 14.sp, color = BrosBrown, lineHeight = 20.sp)
+
+                // Mô tả
+                Text(
+                    text = description,
+                    fontSize = 14.sp,
+                    color = BrosTitle, // Hoặc dùng BrosSubTitle nếu muốn nhạt hơn
+                    lineHeight = 20.sp
+                )
 
                 Spacer(modifier = Modifier.height(60.dp))
 
-                // --- 3. Điều hướng (Skip/Next) ---
+                // --- Hàng nút bấm Skip / Next ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // SỬA: Dùng BrosBrown cho Text
+                    // Nút Skip
                     Text(
                         text = "Skip",
                         modifier = Modifier.clickable(onClick = onSkip),
@@ -93,14 +104,13 @@ fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
                         fontWeight = FontWeight.SemiBold
                     )
 
+                    // Nút Next
                     Button(
                         onClick = onNext,
                         modifier = Modifier.height(48.dp),
-                        // SỬA: Dùng BrosBrown cho màu nền nút
                         colors = ButtonDefaults.buttonColors(containerColor = BrosBrown),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        // SỬA: Dùng Color.White (vì White không được định nghĩa trong Color.kt mới)
                         Text(text = "Next →", color = Color.White)
                     }
                 }
@@ -111,6 +121,6 @@ fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-private fun Onboarding2ScreenPreview() {
+fun Onboarding2Preview() {
     Onboarding2Screen(onSkip = {}, onNext = {})
 }

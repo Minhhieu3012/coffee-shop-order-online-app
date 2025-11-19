@@ -22,8 +22,43 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
+// --- 1. WRAPPER FULL MÀN HÌNH (LỚP PHỦ) ---
+@Composable
+fun StatusScreen(
+    icon: ImageVector,
+    title: String,
+    statusText: String,
+    subtitle: String,
+    onTimeout: () -> Unit = {},
+    // Các tham số màu sắc (Mặc định là Nâu)
+    iconBackgroundColor: Color = Color(0xFFC4B5A0),
+    iconTint: Color = Color.White,
+    titleColor: Color = Color(0xFFC4B5A0),
+    decorativeDotsColor: Color = Color(0xFFD4C4B0)
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f)), // Nền tối mờ
+        contentAlignment = Alignment.Center
+    ) {
+        StatusDialogContent(
+            icon = icon,
+            title = title,
+            statusText = statusText,
+            subtitle = subtitle,
+            onTimeout = onTimeout,
+            timeoutMillis = 2000,
+            iconBackgroundColor = iconBackgroundColor,
+            iconTint = iconTint,
+            titleColor = titleColor,
+            decorativeDotsColor = decorativeDotsColor
+        )
+    }
+}
+
+// --- 2. NỘI DUNG THẺ (CARD - PHIÊN BẢN CŨ) ---
 @Composable
 fun StatusDialogContent(
     icon: ImageVector,
@@ -31,15 +66,14 @@ fun StatusDialogContent(
     statusText: String,
     subtitle: String,
     modifier: Modifier = Modifier,
-    iconBackgroundColor: Color = Color(0xFFC4B5A0),
-    iconTint: Color = Color.White,
-    titleColor: Color = Color(0xFFC4B5A0),
-    decorativeDotsColor: Color = Color(0xFFD4C4B0),
+    iconBackgroundColor: Color,
+    iconTint: Color,
+    titleColor: Color,
+    decorativeDotsColor: Color,
     cardElevation: Dp = 4.dp,
     onTimeout: (() -> Unit)? = null,
     timeoutMillis: Long = 3000
 ) {
-    // Xử lý timeout
     LaunchedEffect(key1 = Unit) {
         if (onTimeout != null) {
             delay(timeoutMillis)
@@ -47,7 +81,6 @@ fun StatusDialogContent(
         }
     }
 
-    // Surface: Cái "hộp" màu trắng, bo góc
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -59,11 +92,11 @@ fun StatusDialogContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 60.dp),
+                .padding(vertical = 60.dp), // Padding cũ rộng rãi
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp) // Khoảng cách đều nhau
         ) {
-            // Icon với các chấm trang trí xung quanh (giống ảnh)
+            // Icon & Dots
             StatusIcon(
                 icon = icon,
                 iconBackgroundColor = iconBackgroundColor,
@@ -71,7 +104,7 @@ fun StatusDialogContent(
                 decorativeDotsColor = decorativeDotsColor
             )
 
-            // Tiêu đề chính
+            // Tiêu đề
             Text(
                 text = title,
                 fontSize = 26.sp,
@@ -95,10 +128,12 @@ fun StatusDialogContent(
             Text(
                 text = subtitle,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color.Gray,
                 textAlign = TextAlign.Center,
-                lineHeight = 16.sp
+                lineHeight = 20.sp
             )
+
+            // ĐÃ BỎ VÒNG LOADING Ở ĐÂY THEO Ý BẠN
         }
     }
 }
@@ -115,10 +150,7 @@ private fun StatusIcon(
         contentAlignment = Alignment.Center,
         modifier = modifier.size(140.dp)
     ) {
-        // Các chấm tròn trang trí xung quanh (giống ảnh)
         DecorativeDots(color = decorativeDotsColor)
-
-        // Vòng tròn chính chứa icon
         Box(
             modifier = Modifier
                 .size(160.dp)
@@ -138,16 +170,12 @@ private fun StatusIcon(
 
 @Composable
 private fun DecorativeDots(color: Color) {
-    // Vị trí các chấm xung quanh icon (giống ảnh)
+    // Vị trí chấm cũ (xa icon hơn một chút)
     val dotPositions = listOf(
-        Offset(-90f, -30f),  // Trên trái
-        Offset(80f, -30f),   // Trên phải
-        Offset(-80f, 30f),   // Dưới trái
-        Offset(80f, 30f),    // Dưới phải
-        Offset(-100f, 0f),    // Trái giữa
-        Offset(100f, 0f)      // Phải giữa
+        Offset(-90f, -30f), Offset(80f, -30f),
+        Offset(-80f, 30f), Offset(80f, 30f),
+        Offset(-100f, 0f), Offset(100f, 0f)
     )
-
     dotPositions.forEach { offset ->
         Box(
             modifier = Modifier
@@ -159,68 +187,43 @@ private fun DecorativeDots(color: Color) {
     }
 }
 
+// --- 3. PREVIEWS (GIỮ NGUYÊN 3 CÁI ĐỂ BẠN SO SÁNH) ---
 
-@Preview(showBackground = true, name = "Login Successful")
+@Preview(showBackground = true, showSystemUi = true, name = "1. Login Success")
 @Composable
-fun LoginStatusPreview() {
-    CustomerMobileTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Gray.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            StatusDialogContent(
-                icon = Icons.Default.Person,
-                title = "Đăng nhập",
-                statusText = "thành công !",
-                subtitle = "Vui lòng chờ...\n" +
-                        "Bạn sẽ sớm được chuyển hướng đến trang chủ."
-            )
-        }
-    }
+fun PreviewLoginSuccess() {
+    StatusScreen(
+        icon = Icons.Default.Person,
+        title = "Đăng nhập",
+        statusText = "thành công !",
+        subtitle = "Vui lòng chờ...\nBạn sẽ được chuyển hướng đến trang chủ."
+    )
 }
 
-@Preview(showBackground = true, name = "Reset Password Successful")
+@Preview(showBackground = true, showSystemUi = true, name = "2. Reset Password")
 @Composable
-fun ResetPasswordStatusPreview() {
-    CustomerMobileTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Gray.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            StatusDialogContent(
-                icon = Icons.Default.Lock,
-                title = "Đặt lại mật khẩu",
-                statusText = "thành công !",
-                subtitle = "Vui lòng chờ...\n" +
-                        "Bạn sẽ sớm được chuyển hướng đến trang chủ."
-            )
-        }
-    }
+fun PreviewResetPassword() {
+    StatusScreen(
+        icon = Icons.Default.Lock,
+        title = "Đặt lại mật khẩu",
+        statusText = "thành công !",
+        subtitle = "Vui lòng chờ...\nBạn sẽ sớm được chuyển hướng đến trang chủ."
+    )
 }
 
-@Preview(showBackground = true, name = "Custom Color")
+@Preview(showBackground = true, showSystemUi = true, name = "3. Sign Up Success")
 @Composable
-fun CustomColorStatusPreview() {
-    CustomerMobileTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Gray.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            StatusDialogContent(
-                icon = Icons.Default.Person,
-                title = "Đăng ký",
-                statusText = "thành công !",
-                subtitle = "Chào mừng! Tài khoản của bạn đã được tạo.",
-                iconBackgroundColor = Color(0xFF4CAF50),
-                titleColor = Color(0xFF4CAF50),
-                decorativeDotsColor = Color(0xFF81C784),
-            )
-        }
-    }
+fun PreviewSignUpSuccess() {
+    val greenPrimary = Color(0xFF4CAF50)
+    val greenLight = Color(0xFF81C784)
+
+    StatusScreen(
+        icon = Icons.Default.Person,
+        title = "Đăng ký",
+        statusText = "thành công !",
+        subtitle = "Chào mừng! Tài khoản của bạn đã được tạo.",
+        iconBackgroundColor = greenPrimary,
+        titleColor = greenPrimary,
+        decorativeDotsColor = greenLight
+    )
 }

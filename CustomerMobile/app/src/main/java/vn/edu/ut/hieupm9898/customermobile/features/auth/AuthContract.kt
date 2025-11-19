@@ -1,0 +1,46 @@
+// features/auth/AuthContract.kt
+
+package vn.edu.ut.hieupm9898.customermobile.features.auth
+
+import androidx.compose.ui.text.input.KeyboardType
+
+// --- CÁC DATA CLASS CHO DỮ LIỆU FORM ---
+
+data class RegisterData(
+    val username: String = "",
+    val email: String = "",
+    val phoneNumber: String = "",
+    val password: String = "",
+    val referralCode: String = ""
+)
+
+// --- STATE CHO CÁC MÀN HÌNH ---
+
+data class AuthUiState(
+    val email: String = "",
+    val password: String = "",
+    val phoneNumber: String = "",
+    val newPassword: String = "",
+    val confirmPassword: String = "",
+    val otpCode: String = "",
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val isOtpSent: Boolean = false // Trạng thái đã gửi OTP thành công
+)
+
+// --- SỰ KIỆN ĐIỀU HƯỚNG (SharedFlow) ---
+
+sealed class AuthNavEvent {
+    data object NavigateToHome : AuthNavEvent()
+    data object NavigateToRegisterSuccess : AuthNavEvent()
+    data class NavigateToOtp(val targetRoute: String) : AuthNavEvent()
+    data object NavigateToResetSuccess : AuthNavEvent()
+    data object NavigateToLogin : AuthNavEvent()
+}
+
+// --- TARGET CHO OTP ---
+
+object OtpTargets {
+    const val COMPLETE_REGISTRATION = "complete_registration"
+    const val RESET_PASSWORD = "reset_password"
+}
