@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 android {
@@ -79,4 +80,10 @@ dependencies {
 
     // Testing Navigation (Cần sửa phiên bản, ví dụ 2.7.5)
     testImplementation("androidx.navigation:navigation-testing:2.7.5")
+
+    // --- ROOM DATABASE ---
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version") // Hỗ trợ Coroutines/Flow
+    ksp("androidx.room:room-compiler:$room_version")      // Trình biên dịch
 }
