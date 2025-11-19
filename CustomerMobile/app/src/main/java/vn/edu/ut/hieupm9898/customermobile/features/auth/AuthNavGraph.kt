@@ -1,32 +1,32 @@
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
-import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 
-fun NavGraphBuilder.authNavGraph() {
+fun NavGraphBuilder.authNavGraph(navController: NavController) {
     composable(AppRoutes.LOGIN) {
-        LoginScreen(navController = it.navController)
+        LoginScreen(navController = navController)
     }
 
     composable(AppRoutes.REGISTER) {
-        RegisterScreen(navController = it.navController)
+        RegisterScreen(navController = navController)
     }
 
     composable(AppRoutes.FORGOT_PASSWORD) {
-        ForgotPasswordScreen(navController = it.navController)
+        ForgotPasswordScreen(navController = navController)
     }
 
     composable(AppRoutes.OTP_VERIFICATION) {
-        OTPVerificationScreen(navController = it.navController)
+        OTPVerificationScreen(navController = navController)
     }
 
     composable(AppRoutes.RESET_PASSWORD) {
-        ResetPasswordScreen(navController = it.navController)
+        ResetPasswordScreen(navController = navController)
     }
 
     composable(AppRoutes.PROFILE) {
-        CreateProfileScreen(navController = it.navController)
+        CreateProfileScreen(navController = navController)
     }
 }

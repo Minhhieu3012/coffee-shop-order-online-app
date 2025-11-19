@@ -20,7 +20,7 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = AppRoutes.SPLASH
     ) {
-
+        // --- SPLASH SCREEN ---
         composable(AppRoutes.SPLASH) {
             SplashScreen(
                 onGetStartedClick = {
@@ -31,6 +31,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
+        // --- ONBOARDING FLOW ---
         composable(AppRoutes.ONBOARDING_1) {
             Onboarding1Screen(
                 onSkip = { navigateToAuthFlow(navController) },
@@ -52,28 +53,39 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // --- TÍCH HỢP LUỒNG XÁC THỰC (AUTH FLOW) ---
+        // --- AUTH FLOW (Nested Navigation) ---
         navigation(
             startDestination = AppRoutes.LOGIN,
             route = AppRoutes.AUTH_FLOW
         ) {
-            authNavGraph()
+            // ✅ TRUYỀN navController vào authNavGraph
+            authNavGraph(navController = navController)
         }
 
-        // --- TÍCH HỢP MÀN HÌNH CHÍNH (MAIN APP FLOW) ---
+        // --- MAIN APP FLOW ---
         composable(AppRoutes.HOME) {
             MainScreen()
         }
 
+        // --- PRODUCT DETAIL ---
         composable(
             route = AppRoutes.PRODUCT_DETAIL,
             arguments = listOf(
-                navArgument(AppRoutes.PRODUCT_DETAIL_ID) { type = NavType.StringType }
+                navArgument(AppRoutes.PRODUCT_DETAIL_ID) {
+                    type = NavType.StringType
+                }
             )
-        ) { /* ProductDetailScreen implementation */ }
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
+            // TODO: Implement ProductDetailScreen(navController, productId)
+            // ProductDetailScreen(navController = navController, productId = productId ?: "")
+        }
     }
 }
 
+/**
+ * Helper function để navigate tới Auth Flow
+ */
 private fun navigateToAuthFlow(navController: NavHostController) {
     navController.navigate(AppRoutes.AUTH_FLOW) {
         popUpTo(AppRoutes.SPLASH) { inclusive = true }
