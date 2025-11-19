@@ -1,18 +1,25 @@
-/* Layout tổng admin */
+/* admin-web/css/admin.css */
+
+/* =========================================
+   1. LAYOUT TỔNG & SIDEBAR
+   ========================================= */
 .admin-layout {
   min-height: 100vh;
   display: flex;
-  background: var(--color-bg); /* #F5EEDB từ base.css */
+  background: var(--color-bg); /* Lấy từ base.css */
 }
 
-/* SIDEBAR */
+/* Sidebar bên trái */
 .sidebar {
-  width: 240px;
+  width: 260px;
   background: var(--color-primary); /* #6A4616 */
   color: #f9fafb;
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 1rem;
+  padding: 1.5rem 1rem;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 10;
 }
 
 /* Header sidebar */
@@ -20,21 +27,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .sidebar-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   text-align: center;
+  letter-spacing: 0.5px;
 }
 
-/* Menu */
+/* Menu List */
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;              /* <--- quan trọng: cho menu chiếm chiều cao còn lại */
+  gap: 0.4rem;
+  flex: 1;
 }
 
 /* Item menu */
@@ -43,90 +53,395 @@
   border: none;
   outline: none;
   background: transparent;
-  color: #e5e7eb;
+  color: rgba(255,255,255,0.8);
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.75rem;
+  gap: 0.8rem;
+  padding: 0.7rem 1rem;
   border-radius: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
   text-align: left;
-  transition: background 0.18s ease, color 0.18s ease, transform 0.05s ease;
+  transition: all 0.2s ease;
 }
 
 .menu-item i {
-  width: 18px;
+  width: 20px;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .menu-item span {
   flex: 1;
+  font-weight: 400;
 }
 
-/* Hover & active */
+/* Hover & Active state */
 .menu-item:hover {
-  background: rgba(245, 238, 219, 0.2); /* nhạt từ màu nền */
+  background: rgba(255,255,255,0.1);
   color: #ffffff;
+  padding-left: 1.2rem; /* Hiệu ứng trượt nhẹ */
 }
 
 .menu-item.active {
-  background: #f5eedb;
-  color: #3f2a0c;
-  font-weight: 500;
+  background: #f5eedb; /* Màu nền sáng */
+  color: #6a4616;      /* Chữ màu nâu đậm */
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* Logout */
+/* Nút Đăng xuất (Đẩy xuống đáy) */
 .menu-item-danger {
-  margin-top: auto; /* đẩy xuống cuối sidebar */
-  color: #fecaca;
+  margin-top: auto;
+  color: #fca5a5;
 }
 
 .menu-item-danger:hover {
-  background: rgba(248, 113, 113, 0.2);
+  background: rgba(239, 68, 68, 0.15);
   color: #fee2e2;
 }
 
-/* MAIN */
+/* =========================================
+   2. MAIN CONTENT (Khu vực chính)
+   ========================================= */
 .admin-main {
   flex: 1;
-  padding: 1.5rem 2rem;
+  padding: 2rem;
+  overflow-y: auto;
+  max-height: 100vh;
 }
 
-/* Top bar trong main */
+/* Topbar */
 .admin-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 .page-title {
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
 }
 
-/* Các "page" bên trong admin (Dashboard, Users, Orders, Products) */
+/* Ẩn hiện các trang */
 .page {
   display: none;
+  animation: fadeUp 0.3s ease;
 }
 
 .page.active {
   display: block;
 }
 
-/* Responsive basic */
-@media (max-width: 900px) {
+/* Hiệu ứng chuyển trang nhẹ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header con của từng trang */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* =========================================
+   3. TOOLBAR & BUTTONS
+   ========================================= */
+/* Nút chính (Màu nâu) */
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  box-shadow: 0 4px 12px rgba(106, 70, 22, 0.2);
+}
+
+/* Nút phụ (Màu xám) */
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: #e5e7eb; }
+
+/* Thanh tìm kiếm */
+.toolbar { margin-bottom: 1.5rem; }
+.search-box {
+  position: relative;
+  max-width: 320px;
+}
+
+.search-box input {
+  width: 100%;
+  /* Padding: Trên - Phải (Rộng ra để né icon) - Dưới - Trái */
+  padding: 0.7rem 2.8rem 0.7rem 1rem;
+  
+  border: 1px solid #e5e7eb;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  background: white;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(106, 70, 22, 0.1);
+}
+
+.search-box i {
+  position: absolute;
+  /* Đổi từ left sang right */
+  right: 1rem; 
+  left: auto; /* Xóa thuộc tính left cũ đi */
+  
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none; /* Để bấm vào icon vẫn focus được vào ô input */
+}
+
+/* =========================================
+   4. TABLE (Bảng dữ liệu)
+   ========================================= */
+.table-container {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  overflow-x: auto; /* Cuộn ngang nếu màn hình nhỏ */
+  border: 1px solid #f3f4f6;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px; /* Đảm bảo bảng không bị co quá nhỏ */
+}
+
+.data-table th, 
+.data-table td {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table tr:hover {
+  background-color: #fcfaf5; /* Màu nền khi di chuột vào dòng */
+}
+
+/* Ảnh sản phẩm trong bảng */
+.product-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+/* Nút hành động (Sửa/Xóa) */
+.action-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.4rem;
+  color: #9ca3af;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.action-btn:hover { color: var(--color-primary); transform: scale(1.1); }
+.action-btn.text-red:hover { color: #ef4444; }
+
+/* Badge trạng thái (Còn hàng/Hết hàng) */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+
+/* =========================================
+   5. MODAL (POPUP)
+   ========================================= */
+/* Lớp nền tối mờ */
+.modal {
+  display: none; /* Mặc định ẩn */
+  position: fixed;
+  z-index: 9999; /* Đè lên tất cả */
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Đen mờ 50% */
+  backdrop-filter: blur(2px); /* Làm mờ nền sau */
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Khi modal được kích hoạt */
+.modal.show {
+  display: flex;
+  opacity: 1;
+}
+
+/* Hộp nội dung popup */
+.modal-content {
+  background-color: white;
+  width: 95%;
+  max-width: 550px;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content {
+  transform: scale(1);
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.close-modal {
+  font-size: 1.8rem;
+  color: #9ca3af;
+  cursor: pointer;
+  line-height: 1;
+}
+.close-modal:hover { color: #111827; }
+
+/* Form styles trong modal */
+.form-group { margin-bottom: 1.2rem; }
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+.form-row .form-group { flex: 1; }
+
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+select {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(106, 70, 22, 0.1);
+}
+
+/* Checkbox đẹp hơn */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-label input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--color-primary);
+}
+
+/* Footer modal */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 768px) {
   .sidebar {
-    width: 210px;
+    width: 70px; /* Thu nhỏ sidebar */
+    padding: 1rem 0.5rem;
+  }
+  
+  .sidebar-title, 
+  .menu-item span {
+    display: none; /* Ẩn chữ, chỉ hiện icon */
   }
 
-  .admin-main {
-    padding: 1rem;
+  .sidebar-header { border-bottom: none; margin-bottom: 1rem; }
+
+  .menu-item {
+    justify-content: center;
+    padding: 0.8rem;
   }
 
-  .page-title {
-    font-size: 1.1rem;
-  }
+  .menu-item:hover { padding-left: 0.8rem; }
+
+  .admin-main { padding: 1rem; }
+  
+  .form-row { flex-direction: column; gap: 0; }
 }

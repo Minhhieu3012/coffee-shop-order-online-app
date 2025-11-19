@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BrosCafe Admin</title>
 
-  <!-- Font & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -21,7 +20,6 @@
 </head>
 <body>
   <div class="admin-layout">
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-title">Bros Cafe Admin</div>
@@ -55,38 +53,119 @@
       </nav>
     </aside>
 
-    <!-- MAIN (tạm để trống, lát mình build từng page) -->
     <main class="admin-main">
       <header class="admin-topbar">
         <h1 class="page-title">Dashboard</h1>
-        <!-- sau này show tên admin, avatar, v.v -->
-      </header>
+        </header>
 
       <section id="page-dashboard" class="page active">
-        <!-- Dashboard content sau này build -->
-        <p>Dashboard content ở đây (doanh thu, số đơn,...)</p>
+        <div class="alert">Chào mừng quay trở lại, Admin!</div>
+        <p>Nội dung thống kê sẽ hiển thị ở đây.</p>
       </section>
 
       <section id="page-users" class="page">
-        <p>Quản lý users</p>
+        <h2 class="section-title">Danh sách người dùng</h2>
+        <p>Đang cập nhật...</p>
       </section>
 
       <section id="page-orders" class="page">
-        <p>Quản lý đơn hàng</p>
+        <h2 class="section-title">Danh sách đơn hàng</h2>
+        <p>Đang cập nhật...</p>
       </section>
 
       <section id="page-products" class="page">
-        <p>Quản lý sản phẩm</p>
+        <div class="page-header">
+          <h2 class="section-title">Danh sách sản phẩm</h2>
+          <button class="btn-primary" id="btnAddProduct">
+            <i class="fa-solid fa-plus"></i> Thêm món mới
+          </button>
+        </div>
+      
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchProduct" placeholder="Tìm tên món..." />
+          </div>
+        </div>
+      
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ảnh</th>
+                <th>Tên món</th>
+                <th>Danh mục</th>
+                <th>Giá bán</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody">
+              </tbody>
+          </table>
+        </div>
       </section>
     </main>
   </div>
 
-  <!-- Sau này add router + auth guard -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Thêm món mới</h3>
+        <span class="close-modal">&times;</span>
+      </div>
+      
+      <form id="productForm">
+        <input type="hidden" id="prodId">
+        
+        <div class="form-group">
+          <label for="prodName">Tên món</label>
+          <input type="text" id="prodName" required placeholder="VD: Cà phê sữa đá">
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prodCategory">Danh mục</label>
+            <select id="prodCategory" title="Chọn danh mục">
+              <option value="Cà phê">Cà phê</option>
+              <option value="Trà trái cây">Trà trái cây</option>
+              <option value="Đá xay">Đá xay</option>
+              <option value="Bánh ngọt">Bánh ngọt</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="prodPrice">Giá bán (VNĐ)</label>
+            <input type="number" id="prodPrice" required placeholder="VD: 25000">
+          </div>
+        </div>
+  
+        <div class="form-group">
+          <label for="prodImage">Link ảnh (URL)</label>
+          <input type="url" id="prodImage" placeholder="https://...">
+          <small style="color: #666; font-size: 0.8rem;">Tạm thời copy link ảnh trên mạng dán vào đây</small>
+        </div>
+  
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="prodStatus" checked>
+            Đang kinh doanh (Còn hàng)
+          </label>
+        </div>
+  
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary close-modal-btn">Hủy</button>
+          <button type="submit" class="btn-primary">Lưu sản phẩm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/auth.js"></script>
-  <!-- <script type="module" src="js/dashboard.js"></script>
+  
+  <script type="module" src="js/dashboard.js"></script>
   <script type="module" src="js/users.js"></script>
   <script type="module" src="js/orders.js"></script>
-  <script type="module" src="js/products.js"></script> -->
+  <script type="module" src="js/products.js"></script>
 </body>
 </html>
