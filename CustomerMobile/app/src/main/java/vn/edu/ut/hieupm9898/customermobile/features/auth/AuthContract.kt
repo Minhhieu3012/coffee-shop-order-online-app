@@ -2,10 +2,7 @@
 
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
-import androidx.compose.ui.text.input.KeyboardType
-
 // --- CÁC DATA CLASS CHO DỮ LIỆU FORM ---
-
 data class RegisterData(
     val username: String = "",
     val email: String = "",
