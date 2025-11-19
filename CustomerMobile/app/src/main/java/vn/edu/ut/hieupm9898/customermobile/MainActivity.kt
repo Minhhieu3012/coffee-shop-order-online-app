@@ -16,9 +16,11 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import dagger.hilt.android.AndroidEntryPoint
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppNavigation
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     companion object {

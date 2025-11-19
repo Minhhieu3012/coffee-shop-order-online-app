@@ -3,5 +3,7 @@ package vn.edu.ut.hieupm9898.customermobile
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
-@HiltAndroidApp // Quan trọng nhất: Cái này giúp Hilt biết đây là app container
-class BaseApplication : Application()
+@HiltAndroidApp
+class BaseApplication : Application() {
+    // Hilt sẽ tự động sinh code ở đây, bạn không cần viết gì thêm
+}
