@@ -22,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -113,7 +114,7 @@ fun LoginScreen(navController: NavController) {
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it }, colors = CheckboxDefaults.colors(checkedColor = BrosBrown))
-                            Text("Remember me", fontSize = 12.sp, color = BrosSubTitle)
+                            Text("Remember me", fontSize = 12.sp, color = BrosTitle)
                         }
                         Text("Forgot Password?", fontSize = 12.sp, color = BrosBrown, modifier = Modifier.clickable { /* TBD */ })
                     }
@@ -153,11 +154,15 @@ fun LoginScreen(navController: NavController) {
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.logo),
+                            painter = painterResource(id = R.drawable.google),
                             contentDescription = "Google Sign-in",
-                            modifier = Modifier.size(20.dp).padding(end = 8.dp)
+                            modifier = Modifier.size(50.dp).padding(end = 8.dp)
                         )
-                        Text("Continue with Google", fontSize = 16.sp, color = Color.Black)
+                        Text(
+                            text = "Continue with Google",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
