@@ -1,31 +1,74 @@
-// js/users.js
-const tbody = document.querySelector("#page-users tbody");
+// admin-web/js/users.js
 
-export function renderUsers() {
-  tbody.innerHTML = "";
+// 1. DỮ LIỆU GIẢ
+let usersData = [
+  { id: "admin_01", displayName: "Admin (Bạn)", email: "admin@bros.com", photoUrl: "assets/logo.png", role: "admin", phoneNumber: "0909.123.456" },
+  { id: "u001", displayName: "Nguyễn Văn A", email: "khach.a@gmail.com", photoUrl: "https://i.pravatar.cc/150?img=3", role: "customer", phoneNumber: "0912.345.678" },
+  { id: "u002", displayName: "Trần Thị B", email: "khach.b@gmail.com", photoUrl: "https://i.pravatar.cc/150?img=5", role: "customer", phoneNumber: "0933.444.555" }
+];
 
-  const fakeUsers = [
-    { id: "U001", name: "Nguyễn Văn Admin", email: "admin@broscafe.vn", role: "admin", joined: "2024-11-01" },
-    { id: "U002", name: "Trần Thị Nhân Viên", email: "nv1@broscafe.vn", role: "staff", joined: "2025-01-15" },
-    { id: "U003", name: "Lê Văn Khách", email: "khach@gmail.com", role: "customer", joined: "2025-03-10" },
-    { id: "U004", name: "Phạm Ngọc Ánh", email: "anhpn@broscafe.vn", role: "staff", joined: "2025-02-20" },
-    { id: "U005", name: "Hoàng Minh Quân", email: "quan@gmail.com", role: "customer", joined: "2025-04-05" },
-  ];
+// 2. HÀM RENDER (Nhận tham số data)
+function renderUserTable(data = usersData) {
+  const tableBody = document.getElementById("userTableBody");
+  if (!tableBody) return;
 
-  fakeUsers.forEach(user => {
-    const roleText = user.role === "admin" ? "Quản trị" : user.role === "staff" ? "Nhân viên" : "Khách hàng";
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${user.id}</td>
-      <td>${user.name}</td>
-      <td>${user.email}</td>
-      <td><span class="badge badge-${user.role}">${roleText}</span></td>
-      <td>${new Date(user.joined).toLocaleDateString('vi-VN')}</td>
-      <td class="actions">
-        <button class="btn-small btn-edit"><i class="fa-solid fa-edit"></i></button>
-        <button class="btn-small btn-delete"><i class="fa-solid fa-trash"></i></button>
+  tableBody.innerHTML = "";
+  
+  if (data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">Không tìm thấy user nào</td></tr>`;
+    return;
+  }
+
+  data.forEach(user => {
+    const row = document.createElement("tr");
+    const roleBadge = user.role === 'admin' 
+      ? `<span class="badge badge-admin" style="background:#e0e7ff; color:#3730a3;">Quản trị viên</span>` 
+      : `<span class="badge badge-customer" style="background:#f3f4f6; color:#374151;">Khách hàng</span>`;
+    const avatarSrc = user.photoUrl || 'assets/logo.png';
+
+    row.innerHTML = `
+      <td>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="${avatarSrc}" class="user-avatar" onerror="this.src='assets/logo.png'">
+          <div>
+            <div style="font-weight: 600; color: #111827;">${user.displayName}</div>
+            <small style="color: #6b7280;">${user.email}</small>
+          </div>
+        </div>
+      </td>
+      <td>${roleBadge}</td>
+      <td>${user.phoneNumber || "Trống"}</td>
+      <td style="text-align: center;">
+        ${user.role !== 'admin' ? `<button class="action-btn text-red" onclick="window.deleteUser('${user.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
       </td>
     `;
-    tbody.appendChild(tr);
+    tableBody.appendChild(row);
   });
 }
+
+// 3. LOGIC TÌM KIẾM USER (MỚI THÊM)
+const searchInput = document.getElementById("searchUser");
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    const keyword = e.target.value.toLowerCase().trim();
+
+    const filteredUsers = usersData.filter(user => {
+      return user.displayName.toLowerCase().includes(keyword) ||
+             user.email.toLowerCase().includes(keyword) ||
+             (user.phoneNumber && user.phoneNumber.includes(keyword));
+    });
+
+    renderUserTable(filteredUsers);
+  });
+}
+
+window.deleteUser = (id) => {
+  if (confirm("Xóa người dùng này?")) {
+    usersData = usersData.filter(u => u.id !== id);
+    renderUserTable();
+    searchInput.value = "";
+  }
+};
+
+renderUserTable();
+export { renderUserTable };

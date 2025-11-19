@@ -445,3 +445,19 @@ input:focus, select:focus {
   
   .form-row { flex-direction: column; gap: 0; }
 }
+/* admin-web/css/admin.css - Dán vào cuối file */
+
+/* Ảnh đại diện user (Avatar) */
+.user-avatar {
+  width: 40px;        /* Chiều rộng cố định */
+  height: 40px;       /* Chiều cao cố định */
+  border-radius: 50%; /* Bo tròn thành hình tròn */
+  object-fit: cover;  /* Cắt ảnh cho vừa khung, không bị méo */
+  border: 1px solid #e5e7eb;
+}
+
+/* Chỉnh lại padding bảng Users cho gọn hơn chút */
+#userTableBody td {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}

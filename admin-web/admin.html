@@ -62,11 +62,37 @@
         <div class="alert">Chào mừng quay trở lại, Admin!</div>
         <p>Nội dung thống kê sẽ hiển thị ở đây.</p>
       </section>
-
       <section id="page-users" class="page">
+        <div class="page-header">
+          <h2 class="section-title">Danh sách người dùng</h2>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchUser" placeholder="Tìm tên, email, sđt..." />
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Người dùng</th>
+                <th>Vai trò</th>
+                <th>Số điện thoại</th>
+                <th style="width: 100px; text-align: center;">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody">
+              </tbody>
+          </table>
+        </div>
+      </section>
+      <!-- <section id="page-users" class="page">
         <h2 class="section-title">Danh sách người dùng</h2>
         <p>Đang cập nhật...</p>
-      </section>
+      </section> -->
 
       <section id="page-orders" class="page">
         <h2 class="section-title">Danh sách đơn hàng</h2>
@@ -117,7 +143,7 @@
       
       <form id="productForm">
         <input type="hidden" id="prodId">
-        
+
         <div class="form-group">
           <label for="prodName">Tên món</label>
           <input type="text" id="prodName" required placeholder="VD: Cà phê sữa đá">
