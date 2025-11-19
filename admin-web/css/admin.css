@@ -461,3 +461,185 @@ input:focus, select:focus {
   padding-top: 0.8rem;
   padding-bottom: 0.8rem;
 }
+/* admin-web/css/admin.css - Thêm vào cuối file */
+
+/* --- STYLE CHO DASHBOARD --- */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Tự động chia cột */
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px); /* Hiệu ứng nổi lên khi di chuột */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Màu sắc cho từng loại icon */
+.bg-orange { background: #fff7ed; color: #ea580c; }
+.bg-blue { background: #eff6ff; color: #2563eb; }
+.bg-green { background: #f0fdf4; color: #16a34a; }
+.bg-purple { background: #faf5ff; color: #9333ea; }
+
+.stat-info h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.stat-info p {
+  margin: 0.3rem 0 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+/* admin-web/css/admin.css - Thêm vào cuối file */
+
+/* --- BỐ CỤC DASHBOARD DƯỚI (GRID SYSTEM) --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Bên trái rộng gấp đôi bên phải */
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Card nền trắng chung */
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* --- STYLE CHO BEST SELLER LIST --- */
+.best-seller-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.best-seller-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f9fafb;
+}
+
+.best-seller-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Số thứ tự (Top 1, 2, 3...) */
+.rank-number {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #9ca3af;
+  width: 20px;
+  text-align: center;
+}
+/* Top 1 màu vàng, Top 2 màu bạc, Top 3 màu đồng */
+.rank-1 { color: #eab308; font-size: 1.2rem; }
+.rank-2 { color: #94a3b8; }
+.rank-3 { color: #b45309; }
+
+.item-info { flex: 1; }
+.item-name { font-weight: 600; font-size: 0.95rem; color: #1f2937; display: block; }
+.item-price { font-size: 0.85rem; color: #6b7280; }
+
+.sold-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+}
+
+/* Responsive: Màn hình nhỏ thì cho thành 1 cột dọc */
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+/* admin-web/css/admin.css - Thêm vào cuối file */
+
+/* Style cho chi tiết đơn hàng trong Modal */
+.order-details-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.order-item-row:last-child {
+  border-bottom: none;
+}
+
+.order-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+}
+
+/* Màu nút trong modal đơn hàng */
+.btn-approve { background: #0891b2; color: white; }
+.btn-approve:hover { background: #0e7490; }
+
+.btn-complete { background: #16a34a; color: white; }
+.btn-complete:hover { background: #15803d; }
+
+.btn-cancel { background: #dc2626; color: white; }
+.btn-cancel:hover { background: #b91c1c; }

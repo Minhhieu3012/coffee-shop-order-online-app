@@ -8,12 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/admin.css" />
@@ -59,21 +54,71 @@
         </header>
 
       <section id="page-dashboard" class="page active">
-        <div class="alert">Chào mừng quay trở lại, Admin!</div>
-        <p>Nội dung thống kê sẽ hiển thị ở đây.</p>
+        <div class="page-header">
+          <h2 class="section-title">Tổng quan</h2>
+        </div>
+        
+        <div class="dashboard-cards">
+          <div class="stat-card">
+            <div class="stat-icon bg-green"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div class="stat-info"><h4>Doanh thu</h4><p id="statRevenue">0 đ</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-blue"><i class="fa-solid fa-receipt"></i></div>
+            <div class="stat-info"><h4>Đơn hàng</h4><p id="statOrders">0</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-purple"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info"><h4>Khách hàng</h4><p id="statCustomers">0</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-orange"><i class="fa-solid fa-mug-hot"></i></div>
+            <div class="stat-info"><h4>Sản phẩm</h4><p id="statProducts">0</p></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Đơn hàng vừa đặt</div>
+              <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="document.querySelector('[data-route=orders]').click()">Xem tất cả</button>
+            </div>
+            <div class="table-container" style="box-shadow: none; border: none;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="recentOrdersBody">
+                  </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Top bán chạy 🔥</div>
+            </div>
+            <div class="best-seller-list" id="bestSellerList">
+              </div>
+          </div>
+        </div>
       </section>
+
       <section id="page-users" class="page">
         <div class="page-header">
           <h2 class="section-title">Danh sách người dùng</h2>
         </div>
-
         <div class="toolbar">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="searchUser" placeholder="Tìm tên, email, sđt..." />
           </div>
         </div>
-
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -89,14 +134,33 @@
           </table>
         </div>
       </section>
-      <!-- <section id="page-users" class="page">
-        <h2 class="section-title">Danh sách người dùng</h2>
-        <p>Đang cập nhật...</p>
-      </section> -->
 
       <section id="page-orders" class="page">
-        <h2 class="section-title">Danh sách đơn hàng</h2>
-        <p>Đang cập nhật...</p>
+        <div class="page-header">
+          <h2 class="section-title">Danh sách đơn hàng</h2>
+        </div>
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchOrder" placeholder="Tìm mã đơn, tên khách..." />
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Thời gian</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="orderTableBody">
+              </tbody>
+          </table>
+        </div>
       </section>
 
       <section id="page-products" class="page">
@@ -106,14 +170,12 @@
             <i class="fa-solid fa-plus"></i> Thêm món mới
           </button>
         </div>
-      
         <div class="toolbar">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="searchProduct" placeholder="Tìm tên món..." />
           </div>
         </div>
-      
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -168,7 +230,7 @@
         <div class="form-group">
           <label for="prodImage">Link ảnh (URL)</label>
           <input type="url" id="prodImage" placeholder="https://...">
-          <small style="color: #666; font-size: 0.8rem;">Tạm thời copy link ảnh trên mạng dán vào đây</small>
+          <small style="color: #666; font-size: 0.8rem;">Copy link ảnh trên mạng dán vào đây</small>
         </div>
   
         <div class="form-group">
@@ -185,7 +247,40 @@
       </form>
     </div>
   </div>
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chi tiết đơn hàng <span id="ordModalId" style="color: #666;">#DH...</span></h3>
+        <span class="close-modal" id="closeOrderModal">&times;</span>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Khách hàng</label>
+            <input type="text" id="ordModalCustomer" readonly style="background: #f9fafb;">
+          </div>
+          <div class="form-group">
+            <label>Thời gian đặt</label>
+            <input type="text" id="ordModalDate" readonly style="background: #f9fafb;">
+          </div>
+        </div>
 
+        <label>Danh sách món ăn</label>
+        <div class="order-details-box" id="ordModalItems">
+          </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+          <span>Trạng thái đơn:</span>
+          <span id="ordModalStatus"></span>
+        </div>
+      </div>
+
+      <div class="modal-footer" id="ordModalFooter">
+        </div>
+    </div>
+  </div>
+  
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/auth.js"></script>
   
