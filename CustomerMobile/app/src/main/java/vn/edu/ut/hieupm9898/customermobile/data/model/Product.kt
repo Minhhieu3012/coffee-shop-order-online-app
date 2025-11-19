@@ -10,6 +10,7 @@ data class Product(
     val price: Double = 0.0,
     val imageUrl: String = "",
     val category: String = "",
+    val isFavorite: Boolean = false,
     // Đơn giản hóa options cho demo, thực tế có thể là List<Map<String, Any>>
     val isAvailable: Boolean = true
 )
