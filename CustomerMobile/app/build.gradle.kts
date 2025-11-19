@@ -3,10 +3,14 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+<<<<<<< HEAD
 
     // --- BỔ SUNG CHO HILT/KAPT ---
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+=======
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+>>>>>>> 82c972aeb76df1145086620cb76bc46b256bba72
 }
 
 // Khối hằng số (constants) để quản lý phiên bản dễ hơn
@@ -100,5 +104,17 @@ dependencies {
     testImplementation("androidx.navigation:navigation-testing:$navVersion")
 }
 
+<<<<<<< HEAD
 // Khối KAPT bị lỗi đã được XÓA hoàn toàn để khắc phục lỗi cú pháp
 // Nếu cần cấu hình, phải sử dụng cú pháp: configure<KaptExtension> { ... }
+=======
+    // Testing Navigation (Cần sửa phiên bản, ví dụ 2.7.5)
+    testImplementation("androidx.navigation:navigation-testing:2.7.5")
+
+    // --- ROOM DATABASE ---
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version") // Hỗ trợ Coroutines/Flow
+    ksp("androidx.room:room-compiler:$room_version")      // Trình biên dịch
+}
+>>>>>>> 82c972aeb76df1145086620cb76bc46b256bba72

@@ -5,10 +5,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+<<<<<<< HEAD
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+=======
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+>>>>>>> 82c972aeb76df1145086620cb76bc46b256bba72
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +84,7 @@ fun LoginScreen(navController: NavController) {
                         modifier = Modifier.padding(horizontal = 30.dp, vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+<<<<<<< HEAD
                         Text("Login", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
 
                         // Link Sign Up
@@ -85,6 +99,11 @@ fun LoginScreen(navController: NavController) {
                                     navController.navigate(AppRoutes.REGISTER)
                                 }
                             )
+=======
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it }, colors = CheckboxDefaults.colors(checkedColor = BrosBrown))
+                            Text("Remember me", fontSize = 12.sp, color = BrosTitle)
+>>>>>>> 82c972aeb76df1145086620cb76bc46b256bba72
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -108,6 +127,7 @@ fun LoginScreen(navController: NavController) {
                             Text("Forgot Password?", fontSize = 12.sp, color = BrosBrown, modifier = Modifier.clickable { navController.navigate(AppRoutes.FORGOT_PASSWORD) })
                         }
 
+<<<<<<< HEAD
                         // Nút Log In -> Bật cờ isLoginSuccess
                         BrosButton(
                             text = "Log In",
@@ -140,6 +160,40 @@ fun LoginScreen(navController: NavController) {
                             Text("Continue with Google", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
                         }
                         Spacer(modifier = Modifier.height(40.dp))
+=======
+                    Text("Or", modifier = Modifier.padding(vertical = 16.dp), color = BrosSubTitle)
+
+                    // 2. Sign Up (Nút phụ) - Đã sửa lỗi content
+                    Button(
+                        onClick = { navController.navigate(AppRoutes.REGISTER) },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = BrosBrown),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Sign Up", fontSize = 18.sp, color = Color.White) // NỘI DUNG
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 3. Continue with Google
+                    Button(
+                        onClick = { /* TBD */ },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, BrosSubTitle),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.google),
+                            contentDescription = "Google Sign-in",
+                            modifier = Modifier.size(50.dp).padding(end = 8.dp)
+                        )
+                        Text(
+                            text = "Continue with Google",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+>>>>>>> 82c972aeb76df1145086620cb76bc46b256bba72
                     }
                 }
             }
