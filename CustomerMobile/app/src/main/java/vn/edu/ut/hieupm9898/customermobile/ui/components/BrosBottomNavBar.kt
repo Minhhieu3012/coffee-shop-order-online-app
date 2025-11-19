@@ -42,7 +42,7 @@ private data class NavItem(
 // 2. Danh sách các item
 private val navItems = listOf(
     NavItem("Home", Icons.Default.Home, "home"),
-    NavItem("Favorite", Icons.Default.Favorite, "favorite"),
+    NavItem("Favorite", Icons.Default.Favorite, "vn/edu/ut/hieupm9898/customermobile/features/favorite"),
     NavItem("Cart", Icons.Default.ShoppingCart, "cart"),
     NavItem("Profile", Icons.Default.Person, "profile")
 )
