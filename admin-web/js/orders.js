@@ -1,10 +1,11 @@
 // admin-web/js/orders.js
 
-// DỮ LIỆU GIẢ
+// 1. DỮ LIỆU GIẢ
 let ordersData = [
   {
     id: "DH001",
     customerName: "Nguyễn Văn A",
+    createdAt: "20/11/2025 08:30", // Đã có thời gian
     totalPrice: 55000,
     status: "pending", 
     itemsDetail: [
@@ -15,6 +16,7 @@ let ordersData = [
   {
     id: "DH002",
     customerName: "Trần Thị B",
+    createdAt: "20/11/2025 09:15",
     totalPrice: 45000,
     status: "processing",
     itemsDetail: [
@@ -25,6 +27,7 @@ let ordersData = [
   {
     id: "DH003",
     customerName: "Lê Văn C",
+    createdAt: "19/11/2025 14:20",
     totalPrice: 120000,
     status: "completed",
     itemsDetail: [
@@ -34,6 +37,7 @@ let ordersData = [
   {
     id: "DH004",
     customerName: "Phạm Thị D",
+    createdAt: "19/11/2025 10:00",
     totalPrice: 35000,
     status: "cancelled",
     itemsDetail: [
@@ -51,7 +55,7 @@ function normalizeStr(str) {
             .toLowerCase().trim();
 }
 
-// HÀM RENDER BẢNG
+// 2. HÀM RENDER BẢNG (Đã sửa để khớp 6 cột trong HTML)
 function renderOrderTable(data = ordersData) {
   const tableBody = document.getElementById("orderTableBody");
   if (!tableBody) return;
@@ -59,7 +63,7 @@ function renderOrderTable(data = ordersData) {
   tableBody.innerHTML = "";
 
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">Không tìm thấy đơn hàng nào</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Không tìm thấy đơn hàng nào</td></tr>`;
     return;
   }
 
@@ -69,13 +73,14 @@ function renderOrderTable(data = ordersData) {
     let statusBadge = getStatusBadge(order.status);
     const itemsSummary = order.itemsDetail.map(i => `${i.quantity}x ${i.name}`).join(", ");
 
+    // Cấu trúc này khớp với 6 cột: Mã | Khách | Thời gian | Tiền | Trạng thái | Hành động
     row.innerHTML = `
       <td><b>${order.id}</b></td>
       <td>
         <div style="font-weight: 500;">${order.customerName}</div>
         <small style="color: #6b7280;">${itemsSummary}</small>
       </td>
-      <td style="font-weight: 600;">${price}</td>
+      <td>${order.createdAt}</td> <td style="font-weight: 600;">${price}</td>
       <td>${statusBadge}</td>
       <td>
         <button class="action-btn" onclick="window.viewOrder('${order.id}')" title="Xem & Xử lý">
@@ -97,21 +102,7 @@ function getStatusBadge(status) {
   }
 }
 
-// TÌM KIẾM THÔNG MINH
-const searchInput = document.getElementById("searchOrder");
-if (searchInput) {
-  searchInput.addEventListener("input", (e) => {
-    const keyword = normalizeStr(e.target.value);
-
-    const filteredData = ordersData.filter(order => 
-      normalizeStr(order.id).includes(keyword) || 
-      normalizeStr(order.customerName).includes(keyword)
-    );
-    renderOrderTable(filteredData);
-  });
-}
-
-// LOGIC MODAL & XỬ LÝ ĐƠN
+// 3. XỬ LÝ MODAL & POPUP CHI TIẾT
 const orderModal = document.getElementById("orderModal");
 const closeOrderBtn = document.getElementById("closeOrderModal");
 
@@ -122,12 +113,19 @@ window.addEventListener("click", (e) => {
   if (e.target == orderModal) orderModal.classList.remove("show");
 });
 
+// VIEW DETAIL
 window.viewOrder = (id) => {
   const order = ordersData.find(o => o.id === id);
   if (!order) return;
 
   document.getElementById("ordModalId").innerText = "#" + order.id;
   document.getElementById("ordModalCustomer").value = order.customerName;
+  
+  // Nếu trong Modal bạn vẫn giữ ô Thời gian thì bỏ comment dòng dưới ra nhé
+  if(document.getElementById("ordModalDate")) {
+      document.getElementById("ordModalDate").value = order.createdAt;
+  }
+  
   document.getElementById("ordModalStatus").innerHTML = getStatusBadge(order.status);
 
   const itemsContainer = document.getElementById("ordModalItems");
@@ -169,6 +167,7 @@ window.viewOrder = (id) => {
   if (orderModal) orderModal.classList.add("show");
 };
 
+// PROCESS ORDER
 window.processOrder = (id, newStatus) => {
   const index = ordersData.findIndex(o => o.id === id);
   if (index !== -1) {
@@ -182,6 +181,19 @@ window.processOrder = (id, newStatus) => {
     alert(msg);
   }
 };
+
+// 4. TÌM KIẾM THÔNG MINH (CÓ DẤU/KHÔNG DẤU)
+const searchInput = document.getElementById("searchOrder");
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    const keyword = normalizeStr(e.target.value);
+    const filteredData = ordersData.filter(order => 
+      normalizeStr(order.id).includes(keyword) || 
+      normalizeStr(order.customerName).includes(keyword)
+    );
+    renderOrderTable(filteredData);
+  });
+}
 
 renderOrderTable();
 export { renderOrderTable };
