@@ -28,12 +28,12 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onEditProfileClick: () -> Unit = {},
-    onAddressClick: () -> Unit = {},
-    onPaymentClick: () -> Unit = {},
-    onHistoryClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {}, // <-- ĐÃ THÊM THAM SỐ NÀY
-    onLogoutClick: () -> Unit = {}
+    onEditProfileClick: () -> Unit,
+    onAddressClick: () -> Unit,
+    onPaymentClick: () -> Unit,
+    onHistoryClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -244,6 +244,13 @@ fun ProfileOptionItem(
 @Composable
 fun ProfileScreenPreview() {
     CustomerMobileTheme {
-        ProfileScreen()
+        ProfileScreen(
+            onEditProfileClick = {},
+            onAddressClick = {},
+            onPaymentClick = {},
+            onHistoryClick = {},
+            onNotificationsClick = {},
+            onLogoutClick = {}
+        )
     }
 }
