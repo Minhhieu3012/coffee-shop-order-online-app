@@ -27,6 +27,11 @@ fun AppNavigation(navController: NavHostController) {
                     navController.navigate(AppRoutes.ONBOARDING_1) {
                         popUpTo(AppRoutes.SPLASH) { inclusive = true }
                     }
+                },
+                onTimeout = {
+                    navController.navigate(AppRoutes.ONBOARDING_1) {
+                        popUpTo(AppRoutes.SPLASH) { inclusive = true }
+                    }
                 }
             )
         }
@@ -35,21 +40,24 @@ fun AppNavigation(navController: NavHostController) {
         composable(AppRoutes.ONBOARDING_1) {
             Onboarding1Screen(
                 onSkip = { navigateToAuthFlow(navController) },
-                onNext = { navController.navigate(AppRoutes.ONBOARDING_2) }
+                onNext = { navController.navigate(AppRoutes.ONBOARDING_2) },
+                onGetStartedClick = { navigateToAuthFlow(navController) }
             )
         }
 
         composable(AppRoutes.ONBOARDING_2) {
             Onboarding2Screen(
                 onSkip = { navigateToAuthFlow(navController) },
-                onNext = { navController.navigate(AppRoutes.ONBOARDING_3) }
+                onNext = { navController.navigate(AppRoutes.ONBOARDING_3) },
+                onGetStartedClick = { navigateToAuthFlow(navController) }
             )
         }
 
         composable(AppRoutes.ONBOARDING_3) {
             Onboarding3Screen(
                 onSkip = { navigateToAuthFlow(navController) },
-                onNext = { navigateToAuthFlow(navController) }
+                onNext = { navigateToAuthFlow(navController) },
+                onGetStartedClick = { navigateToAuthFlow(navController) }
             )
         }
 
@@ -58,8 +66,14 @@ fun AppNavigation(navController: NavHostController) {
             startDestination = AppRoutes.LOGIN,
             route = AppRoutes.AUTH_GRAPH
         ) {
-            // ✅ TRUYỀN navController vào authNavGraph
-            authNavGraph(navController = navController)
+            authNavGraph(
+                navController = navController,
+                onLoginSuccess = {
+                    navController.navigate(AppRoutes.HOME) {
+                        popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // --- MAIN APP FLOW ---
