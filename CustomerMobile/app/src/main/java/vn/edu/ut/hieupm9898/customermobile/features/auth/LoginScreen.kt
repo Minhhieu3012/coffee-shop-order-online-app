@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
 import vn.edu.ut.hieupm9898.customermobile.R
@@ -31,7 +32,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.StatusScreen
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.*
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavHostController,
+    onLoginSuccess: () -> Unit
+) {
     var email by remember { mutableStateOf("hieupm9898@ut.edu.vn") }
     var password by remember { mutableStateOf("••••••••") }
     var rememberMe by remember { mutableStateOf(false) }
@@ -232,5 +236,8 @@ fun LoginScreen(navController: NavController) {
 @Preview(showSystemUi = true)
 @Composable
 private fun LoginScreenPreview() {
-    LoginScreen(navController = rememberNavController())
+    LoginScreen(
+        navController = rememberNavController(),
+        onLoginSuccess = {}
+    )
 }

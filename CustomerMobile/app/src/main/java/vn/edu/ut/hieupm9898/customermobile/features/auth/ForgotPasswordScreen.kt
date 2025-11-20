@@ -21,12 +21,13 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.*
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordScreen(navController: NavController) {
+fun ForgotPasswordScreen(navController: NavHostController) {
     var phoneNumber by remember { mutableStateOf("") }
 
     Scaffold(
