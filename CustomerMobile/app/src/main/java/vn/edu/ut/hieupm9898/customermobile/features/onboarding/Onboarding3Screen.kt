@@ -21,7 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color // Cần thiết cho Color.White
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +34,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
 @Composable
-fun Onboarding3Screen(onSkip: () -> Unit, onNext: () -> Unit) {
+fun Onboarding3Screen(
+    onSkip: () -> Unit, onNext: () -> Unit,
+    onGetStartedClick: () -> Unit
+) {
     // SỬA: Dùng BrosBackground (thay cho CreamBackground)
     Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
@@ -112,5 +115,5 @@ fun Onboarding3Screen(onSkip: () -> Unit, onNext: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun Onboarding3ScreenPreview() {
-    Onboarding3Screen(onSkip = {}, onNext = {})
+    Onboarding3Screen(onSkip = {}, onNext = {},  onGetStartedClick = {})
 }

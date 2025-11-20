@@ -33,7 +33,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 // import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosSubTitle // Có thể dùng nếu muốn màu nhạt hơn
 
 @Composable
-fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
+fun Onboarding2Screen(
+    onSkip: () -> Unit, onNext: () -> Unit,
+    onGetStartedClick: () -> Unit
+) {
     // Sử dụng Surface và màu nền chuẩn
     Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
@@ -122,5 +125,5 @@ fun Onboarding2Screen(onSkip: () -> Unit, onNext: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun Onboarding2Preview() {
-    Onboarding2Screen(onSkip = {}, onNext = {})
+    Onboarding2Screen(onSkip = {}, onNext = {}, onGetStartedClick = {})
 }

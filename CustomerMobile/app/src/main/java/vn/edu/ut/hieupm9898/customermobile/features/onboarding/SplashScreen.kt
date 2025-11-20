@@ -33,7 +33,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosButton     // Thay thế
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle      // Có thể dùng cho tiêu đề nếu cần thiết
 
 @Composable
-fun SplashScreen(onGetStartedClick: () -> Unit) {
+fun SplashScreen(
+    onGetStartedClick: () -> Unit,
+    onTimeout: () -> Unit
+) {
     // SỬA: Dùng BrosBackground cho màu nền
     Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
@@ -100,5 +103,5 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun SplashScreenPreview() {
-    SplashScreen(onGetStartedClick = {})
+    SplashScreen(onGetStartedClick = {}, onTimeout = {})
 }

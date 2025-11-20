@@ -36,7 +36,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
 
 @Composable
-fun Onboarding1Screen(onSkip: () -> Unit, onNext: () -> Unit) {
+fun Onboarding1Screen(
+    onSkip: () -> Unit, onNext: () -> Unit,
+    onGetStartedClick: () -> Unit
+) {
     // 1. Dùng BrosBackground (thay cho CreamBackground)
     Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
@@ -113,5 +116,5 @@ fun Onboarding1Screen(onSkip: () -> Unit, onNext: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun Onboarding1ScreenPreview() {
-    Onboarding1Screen(onSkip = {}, onNext = {})
+    Onboarding1Screen(onSkip = {}, onNext = {}, onGetStartedClick = {})
 }
