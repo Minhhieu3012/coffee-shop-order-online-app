@@ -1,44 +1,68 @@
-// js/auth.js
+// admin-web/js/auth.js
+import { auth } from "./firebase-config.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// 1. Xử lý Đăng nhập
+// 1. XỬ LÝ ĐĂNG NHẬP
 const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
+const btnLogin = document.getElementById("btnLogin");
 
 if (loginForm) {
-  loginForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // Chặn việc load lại trang
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault(); // Chặn load lại trang
 
     const email = loginForm.email.value;
     const password = loginForm.password.value;
 
-    // --- GIẢ LẬP CHECK TÀI KHOẢN (Sau này thay bằng Firebase) ---
-    if (email === "admin@gmail.com" && password === "123123") {
-      // Lưu trạng thái "đã đăng nhập" vào bộ nhớ trình duyệt
-      localStorage.setItem("isLoggedIn", "true");
+    // Hiệu ứng đang tải
+    const originalText = btnLogin.innerText;
+    btnLogin.innerText = "Đang xử lý...";
+    btnLogin.disabled = true;
+    if (loginError) loginError.style.display = "none";
+
+    try {
+      // --- GỌI FIREBASE AUTH ---
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       
-      // Chuyển sang trang admin
+      console.log("Đăng nhập thành công:", user.email);
+      
+      // Chuyển hướng sang trang Admin
       window.location.href = "admin.html"; 
-    } else {
-      // Hiện thông báo lỗi
+
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      
+      // Hiển thị thông báo lỗi thân thiện
       if (loginError) {
         loginError.style.display = "block";
-        loginError.textContent = "Sai email hoặc mật khẩu! (Thử: admin@gmail.com / 123123)";
+        let msg = "Đăng nhập thất bại!";
+        
+        if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+          msg = "Sai email hoặc mật khẩu.";
+        } else if (error.code === "auth/too-many-requests") {
+          msg = "Thử lại quá nhiều lần. Hãy đợi một lát.";
+        }
+        
+        loginError.textContent = msg;
       }
+    } finally {
+      // Trả lại nút bấm
+      btnLogin.innerText = originalText;
+      btnLogin.disabled = false;
     }
   });
 }
 
-// 2. Xử lý ẩn/hiện mật khẩu (Cái icon con mắt)
+// 2. XỬ LÝ ẨN/HIỆN MẬT KHẨU (Giữ nguyên logic cũ)
 const togglePasswordBtn = document.getElementById("togglePassword");
 const passwordInput = document.getElementById("password");
 
 if (togglePasswordBtn && passwordInput) {
   togglePasswordBtn.addEventListener("click", () => {
-    // Kiểm tra loại hiện tại là password hay text
     const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
     passwordInput.setAttribute("type", type);
 
-    // Đổi icon (mắt mở / mắt chéo)
     const icon = togglePasswordBtn.querySelector("i");
     if (type === "text") {
       icon.classList.remove("fa-eye");
