@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.data.model.Product
@@ -44,7 +43,10 @@ private val dummyProducts = listOf(
 private val categories = listOf("All", "Coffee", "Tea", "Food", "Dessert")
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    onProductClick: (Int) -> Unit,
+    onSearchClick: () -> Unit
+) {
     var searchText by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
 
@@ -174,9 +176,7 @@ fun HomeScreen(navController: NavController) {
                             imageUrl = product.imageUrl,
                             isFavorite = product.isFavorite,
                             onCardClick = {
-                                navController.navigate(
-                                    AppRoutes.createProductDetailRoute(product.id)
-                                )
+                                onProductClick(product.id.toInt())
                             },
                             onAddClick = { /* TODO: Add to cart */ },
                             onFavoriteClick = { /* TODO: Toggle favorite */ },
@@ -201,5 +201,8 @@ fun HomeScreen(navController: NavController) {
 @Preview(showSystemUi = true)
 @Composable
 fun HomePreview() {
-    HomeScreen(navController = rememberNavController())
+    HomeScreen(
+        onProductClick = {},
+        onSearchClick = {}
+    )
 }

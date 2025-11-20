@@ -1,12 +1,11 @@
 package vn.edu.ut.hieupm9898.customermobile.features.main
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,34 +23,6 @@ import vn.edu.ut.hieupm9898.customermobile.features.profile.*
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosBottomNavBar
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
-import vn.edu.ut.hieupm9898.customermobile.features.auth.LoginScreen
-import vn.edu.ut.hieupm9898.customermobile.features.auth.RegisterScreen
-
-// Khai báo hàm riêng cho Auth Graph để giữ MainScreen gọn gàng
-fun NavGraphBuilder.authGraph(
-    navController: NavHostController,
-    onLoginSuccess: () -> Unit
-) {
-    navigation(startDestination = AppRoutes.LOGIN, route = AppRoutes.AUTH_GRAPH) {
-
-        composable(AppRoutes.LOGIN) {
-            LoginScreen(
-                onLoginSuccess = onLoginSuccess,
-                onNavigateToRegister = { navController.navigate(AppRoutes.REGISTER) },
-                onNavigateToForgot = { navController.navigate("forgot_password") }
-            )
-        }
-
-        // ... (Thêm các composable khác của Auth như RegisterScreen, OTPVerificationScreen, v.v.)
-        // Ví dụ:
-        composable(AppRoutes.REGISTER) {
-            RegisterScreen(onBackClick = { navController.popBackStack() })
-        }
-        composable("forgot_password") {
-            ForgotPasswordScreen(onBackClick = { navController.popBackStack() })
-        }
-    }
-}
 
 @Composable
 fun MainScreen() {
@@ -88,19 +59,30 @@ fun MainScreen() {
 
                 // 1. ONBOARDING & SPLASH GRAPH
                 composable(AppRoutes.SPLASH) {
-                    SplashScreen(onTimeout = { navController.navigate(AppRoutes.ONBOARDING) })
+                    SplashScreen(
+                        onGetStartedClick = {
+                            navController.navigate(AppRoutes.AUTH_GRAPH) {
+                                popUpTo(AppRoutes.SPLASH) { inclusive = true }
+                            }
+                        },
+                        onTimeout = {
+                            navController.navigate(AppRoutes.ONBOARDING)
+                        }
+                    )
                 }
 
                 composable(AppRoutes.ONBOARDING) {
-                    OnboardingScreen(onGetStartedClick = {
-                        navController.navigate(AppRoutes.AUTH_GRAPH) {
-                            popUpTo(AppRoutes.SPLASH) { inclusive = true }
+                    OnboardingPagerScreen(
+                        onGetStartedClick = {
+                            navController.navigate(AppRoutes.AUTH_GRAPH) {
+                                popUpTo(AppRoutes.SPLASH) { inclusive = true }
+                            }
                         }
-                    })
+                    )
                 }
 
                 // 2. AUTH GRAPH (LOGIN, REGISTER, ETC.)
-                authGraph(
+                authNavGraph(
                     navController = navController,
                     onLoginSuccess = {
                         navController.navigate(AppRoutes.MAIN_APP_GRAPH) {
@@ -120,7 +102,18 @@ fun MainScreen() {
                         )
                     }
 
-                    composable(AppRoutes.FAVORITE) { FavoriteScreen() }
+                    composable(AppRoutes.FAVORITE) {
+                        FavoriteScreen(
+                            onProductClick = { id ->
+                                navController.navigate("${AppRoutes.DETAIL_BASE}/$id")
+                            },
+                            onGoHomeClick = {
+                                navController.navigate(AppRoutes.HOME) {
+                                    popUpTo(AppRoutes.HOME) { inclusive = false }
+                                }
+                            }
+                        )
+                    }
 
                     composable(AppRoutes.CART) {
                         OrderScreen(
@@ -135,7 +128,12 @@ fun MainScreen() {
                             onAddressClick = { navController.navigate(AppRoutes.ADDRESS_LIST) },
                             onPaymentClick = { navController.navigate(AppRoutes.PAYMENT_METHODS) },
                             onHistoryClick = { navController.navigate(AppRoutes.ORDER_HISTORY) },
-                            onNotificationsClick = { navController.navigate(AppRoutes.NOTIFICATIONS) }
+                            onNotificationsClick = { navController.navigate(AppRoutes.NOTIFICATIONS) },
+                            onLogoutClick = {
+                                navController.navigate(AppRoutes.AUTH_GRAPH) {
+                                    popUpTo(AppRoutes.MAIN_APP_GRAPH) { inclusive = true }
+                                }
+                            }
                         )
                     }
 
@@ -143,25 +141,111 @@ fun MainScreen() {
                     composable(
                         route = AppRoutes.DETAIL,
                         arguments = listOf(navArgument("id") { type = NavType.IntType })
-                    ) {
+                    ) { backStackEntry ->
+                        val productId = backStackEntry.arguments?.getInt("id") ?: 0
+
+                        // Mock data cho demo - thay bằng ViewModel thực tế
+                        var isFavorite by remember { mutableStateOf(false) }
+                        var selectedSize by remember { mutableStateOf("Small") }
+                        var selectedDairy by remember { mutableStateOf("Whole Milk") }
+
                         ProductDetailScreen(
-                            productId = it.arguments?.getInt("id") ?: 0,
+                            productId = productId,
+                            title = "Cold coffee frapuccino",
+                            subtitle = "90mg Caffeine : 100Cal",
+                            rating = 3.0f,
+                            ratingCountText = "(3.0)",
+                            description = "Tasteful and flavorful icecream coffee. Ice cream with whipped cream and caramel syrup.",
+                            imageUrl = "https://img.freepik.com/free-photo/cup-coffee-with-heart-drawn-foam_1286-70.jpg",
+                            isFavorite = isFavorite,
+                            availableSizes = listOf("Small", "Medium", "Large"),
+                            selectedSize = selectedSize,
+                            availableDairy = listOf(
+                                Pair("Whole Milk", 0.57),
+                                Pair("Almond Milk", 1.00),
+                                Pair("Oat Milk", 1.25)
+                            ),
+                            selectedDairy = selectedDairy,
+                            relatedProducts = emptyList(),
+                            onBackClick = { navController.popBackStack() },
+                            onFavoriteClick = { isFavorite = !isFavorite },
+                            onSizeSelected = { selectedSize = it },
+                            onDairySelected = { selectedDairy = it },
+                            onAddToCartClick = { /* TODO: Add to cart logic */ }
+                        )
+                    }
+
+                    composable(AppRoutes.SEARCH) {
+                        SearchScreen(
                             onBackClick = { navController.popBackStack() }
                         )
                     }
 
-                    composable(AppRoutes.SEARCH) { SearchScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.EDIT_PROFILE) { EditProfileScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.ADDRESS_LIST) { AddressScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.ADD_ADDRESS) { AddAddressScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.CHANGE_PASS) { ChangePasswordScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.CONTACT) { ContactUsScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.NOTIFICATIONS) { NotificationScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.ORDER_HISTORY) { OrderHistoryScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.REWARDS) { RewardsScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.SETTINGS) { SettingsScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.FEEDBACK) { FeedbackScreen(onBackClick = { navController.popBackStack() }) }
-                    composable(AppRoutes.DELETE_ACCOUNT) { DeleteAccountScreen(onBackClick = { navController.popBackStack() }) }
+                    composable(AppRoutes.EDIT_PROFILE) {
+                        EditProfileScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.ADDRESS_LIST) {
+                        AddressScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.ADD_ADDRESS) {
+                        AddAddressScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.CHANGE_PASS) {
+                        ChangePasswordScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.CONTACT) {
+                        ContactUsScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.NOTIFICATIONS) {
+                        NotificationScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.ORDER_HISTORY) {
+                        OrderHistoryScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.REWARDS) {
+                        RewardsScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.SETTINGS) {
+                        SettingsScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.FEEDBACK) {
+                        FeedbackScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoutes.DELETE_ACCOUNT) {
+                        DeleteAccountScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
 
                     // CART FLOW
                     composable(AppRoutes.PAYMENT_QR) {
@@ -178,7 +262,11 @@ fun MainScreen() {
                         )
                     }
 
-                    composable(AppRoutes.DELIVERY) { DeliveryScreen(onBackClick = { navController.navigate(AppRoutes.ORDER_HISTORY) }) }
+                    composable(AppRoutes.DELIVERY) {
+                        DeliveryScreen(
+                            onBackClick = { navController.navigate(AppRoutes.ORDER_HISTORY) }
+                        )
+                    }
                 }
             }
         }
@@ -189,6 +277,6 @@ fun MainScreen() {
 @Composable
 fun MainScreenPreview() {
     CustomerMobileTheme {
-        // Preview đơn giản của MainScreen
+        MainScreen()
     }
 }
