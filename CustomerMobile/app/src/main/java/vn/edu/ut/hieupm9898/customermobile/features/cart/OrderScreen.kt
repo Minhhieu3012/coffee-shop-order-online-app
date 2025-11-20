@@ -28,8 +28,8 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(
-    onBackClick: () -> Unit = {},
-    onOrderClick: () -> Unit = {}
+    onBackClick: () -> Unit,
+    onOrderClick: () -> Unit
 ) {
     // Dùng Scaffold để dựng khung chuẩn Material Design
     Scaffold(
@@ -324,6 +324,9 @@ fun OrderBottomBar(totalPrice: Double, onOrderClick: () -> Unit) {
 fun OrderScreenPreviewIntegrated() {
     // Bọc trong CustomerMobileTheme để thấy đúng màu sắc
     CustomerMobileTheme {
-        OrderScreen()
+        OrderScreen(
+            onBackClick = {},
+            onOrderClick = {}
+        )
     }
 }

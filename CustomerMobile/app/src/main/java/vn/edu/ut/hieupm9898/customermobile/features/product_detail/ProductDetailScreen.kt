@@ -60,6 +60,7 @@ fun ProductDetailScreen(
     availableDairy: List<Pair<String, Double>>,
     selectedDairy: String,
     relatedProducts: List<RelatedProduct> = emptyList(),
+    productId: Int,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onSizeSelected: (String) -> Unit,
@@ -631,6 +632,7 @@ fun ImprovedProductDetailPreview() {
             availableDairy = fakeDairy,
             selectedDairy = selectedDairy,
             relatedProducts = fakeRelated,
+            productId = 1,            // 👈 THÊM DÒNG NÀY
             onBackClick = {},
             onFavoriteClick = { isFavorite = !isFavorite },
             onSizeSelected = { selectedSize = it },
