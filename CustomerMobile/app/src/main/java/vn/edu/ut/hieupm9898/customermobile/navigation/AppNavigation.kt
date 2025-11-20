@@ -8,11 +8,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import vn.edu.ut.hieupm9898.customermobile.features.auth.authNavGraph
-import vn.edu.ut.hieupm9898.customermobile.features.main.MainScreen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.SplashScreen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding1Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding2Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding3Screen
+import vn.edu.ut.hieupm9898.customermobile.features.main.MainScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -56,7 +56,7 @@ fun AppNavigation(navController: NavHostController) {
         // --- AUTH FLOW (Nested Navigation) ---
         navigation(
             startDestination = AppRoutes.LOGIN,
-            route = AppRoutes.AUTH_FLOW
+            route = AppRoutes.AUTH_GRAPH
         ) {
             // ✅ TRUYỀN navController vào authNavGraph
             authNavGraph(navController = navController)
@@ -87,7 +87,7 @@ fun AppNavigation(navController: NavHostController) {
  * Helper function để navigate tới Auth Flow
  */
 private fun navigateToAuthFlow(navController: NavHostController) {
-    navController.navigate(AppRoutes.AUTH_FLOW) {
+    navController.navigate(AppRoutes.AUTH_GRAPH) {
         popUpTo(AppRoutes.SPLASH) { inclusive = true }
     }
 }

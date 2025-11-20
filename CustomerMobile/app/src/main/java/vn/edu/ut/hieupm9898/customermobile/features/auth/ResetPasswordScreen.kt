@@ -32,7 +32,7 @@ fun ResetPasswordScreen(navController: NavController) {
         if (isResetSuccess) {
             // Chuyển về màn Login
             navController.navigate(AppRoutes.LOGIN) {
-                popUpTo(AppRoutes.AUTH_FLOW) { inclusive = true }
+                popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
             }
         }
     }

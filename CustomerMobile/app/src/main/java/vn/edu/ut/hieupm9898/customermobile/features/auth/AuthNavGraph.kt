@@ -1,11 +1,11 @@
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 
-fun NavGraphBuilder.authNavGraph(navController: NavController) {
+fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
     composable(AppRoutes.LOGIN) {
         LoginScreen(navController = navController)
     }

@@ -1,13 +1,11 @@
-package vn.edu.ut.hieupm9898.features.Main
-
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+package vn.edu.ut.hieupm9898.customermobile.features.main
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,6 +24,8 @@ import vn.edu.ut.hieupm9898.customermobile.features.profile.*
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosBottomNavBar
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
+import vn.edu.ut.hieupm9898.customermobile.features.auth.LoginScreen
+import vn.edu.ut.hieupm9898.customermobile.features.auth.RegisterScreen
 
 // Khai báo hàm riêng cho Auth Graph để giữ MainScreen gọn gàng
 fun NavGraphBuilder.authGraph(

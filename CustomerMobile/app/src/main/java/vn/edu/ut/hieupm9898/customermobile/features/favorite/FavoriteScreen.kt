@@ -1,4 +1,4 @@
-package vn.edu.ut.hieupm9898.customermobile.features.home
+package vn.edu.ut.hieupm9898.customermobile.features.favorite
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells

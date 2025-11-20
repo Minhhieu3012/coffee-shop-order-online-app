@@ -16,7 +16,7 @@ data class CartEntity(
     val size: String = "Medium", // Ví dụ lưu size đã chọn
     val notes: String = ""       // Ví dụ lưu ghi chú (ít đường...)
 ) {
-    // Hàm tính tổng tiền của dòng này
+    // Hàm tính tổng tiền
     val totalPrice: Double
         get() = price * quantity
 }

@@ -190,7 +190,7 @@ fun CreateProfileScreen(navController: NavController) {
                     isSuccess = false
                     // Điều hướng sang Home, xóa luồng Auth cũ
                     navController.navigate(AppRoutes.HOME) {
-                        popUpTo(AppRoutes.AUTH_FLOW) { inclusive = true }
+                        popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
                     }
                 }
             )
