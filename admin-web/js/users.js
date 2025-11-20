@@ -1,48 +1,51 @@
 // admin-web/js/users.js
+import { db } from "./firebase-config.js";
+import { collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// DỮ LIỆU GIẢ
-let usersData = [
-  { id: "admin_01", displayName: "Admin (Bạn)", email: "admin@bros.com", photoUrl: "assets/logo.png", role: "admin", phoneNumber: "0909.123.456" },
-  { id: "u001", displayName: "Nguyễn Văn A", email: "khach.a@gmail.com", photoUrl: "https://i.pravatar.cc/150?img=3", role: "customer", phoneNumber: "0912.345.678" },
-  { id: "u002", displayName: "Trần Thị B", email: "khach.b@gmail.com", photoUrl: "https://i.pravatar.cc/150?img=5", role: "customer", phoneNumber: "0933.444.555" }
-];
+let usersData = [];
 
-// HÀM HỖ TRỢ: Xóa dấu Tiếng Việt
-function normalizeStr(str) {
-  if (!str) return "";
-  return str.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-            .toLowerCase().trim();
+async function fetchUsers() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    usersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderUserTable(usersData);
+  } catch (error) {
+    console.error("Lỗi lấy users:", error);
+  }
 }
 
-// HÀM RENDER
+async function removeUser(id) {
+  try {
+    await deleteDoc(doc(db, "users", id));
+    fetchUsers();
+  } catch (e) { alert("Lỗi xóa: " + e.message); }
+}
+
+function normalizeStr(str) {
+  if (!str) return "";
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
+}
+
 function renderUserTable(data = usersData) {
   const tableBody = document.getElementById("userTableBody");
   if (!tableBody) return;
-
   tableBody.innerHTML = "";
-  
+
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">Không tìm thấy user nào</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">Không có user nào</td></tr>`;
     return;
   }
 
   data.forEach(user => {
     const row = document.createElement("tr");
-    const roleBadge = user.role === 'admin' 
-      ? `<span class="badge badge-admin" style="background:#e0e7ff; color:#3730a3;">Quản trị viên</span>` 
-      : `<span class="badge badge-customer" style="background:#f3f4f6; color:#374151;">Khách hàng</span>`;
+    const roleBadge = user.role === 'admin' ? `<span class="badge badge-admin" style="background:#e0e7ff; color:#3730a3;">Admin</span>` : `<span class="badge badge-customer" style="background:#f3f4f6; color:#374151;">Khách</span>`;
     const avatarSrc = user.photoUrl || 'assets/logo.png';
 
     row.innerHTML = `
       <td>
         <div style="display: flex; align-items: center; gap: 12px;">
           <img src="${avatarSrc}" class="user-avatar" onerror="this.src='assets/logo.png'">
-          <div>
-            <div style="font-weight: 600; color: #111827;">${user.displayName}</div>
-            <small style="color: #6b7280;">${user.email}</small>
-          </div>
+          <div><div style="font-weight: 600;">${user.displayName || "Chưa đặt tên"}</div><small>${user.email}</small></div>
         </div>
       </td>
       <td>${roleBadge}</td>
@@ -55,29 +58,19 @@ function renderUserTable(data = usersData) {
   });
 }
 
-// TÌM KIẾM THÔNG MINH (KHÔNG DẤU)
 const searchInput = document.getElementById("searchUser");
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
     const keyword = normalizeStr(e.target.value);
-
-    const filteredUsers = usersData.filter(user => {
-      return normalizeStr(user.displayName).includes(keyword) ||
-             normalizeStr(user.email).includes(keyword) ||
-             (user.phoneNumber && user.phoneNumber.includes(keyword));
-    });
-
-    renderUserTable(filteredUsers);
+    const filtered = usersData.filter(u => normalizeStr(u.displayName).includes(keyword) || normalizeStr(u.email).includes(keyword));
+    renderUserTable(filtered);
   });
 }
 
-window.deleteUser = (id) => {
-  if (confirm("Xóa người dùng này?")) {
-    usersData = usersData.filter(u => u.id !== id);
-    renderUserTable();
-    searchInput.value = "";
+window.deleteUser = async (id) => {
+  if (confirm("Xóa user này khỏi database?")) {
+    await removeUser(id);
   }
 };
 
-renderUserTable();
-export { renderUserTable };
+fetchUsers();

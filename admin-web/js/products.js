@@ -1,48 +1,81 @@
 // admin-web/js/products.js
+import { db } from "./firebase-config.js";
+import { 
+  collection, addDoc, getDocs, doc, deleteDoc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 1. DỮ LIỆU GIẢ
-let productsData = [
-  { id: "sp001", name: "Cà phê Đen Đá", category: "Cà phê", price: 25000, imageUrl: "https://img.freepik.com/free-photo/iced-coffee-glass_144627-23578.jpg", isAvailable: true },
-  { id: "sp002", name: "Bạc Xỉu", category: "Cà phê", price: 29000, imageUrl: "https://img.freepik.com/free-photo/glass-coffee-with-milk_140725-5781.jpg", isAvailable: true },
-  { id: "sp003", name: "Trà Đào Cam Sả", category: "Trà trái cây", price: 35000, imageUrl: "https://img.freepik.com/free-photo/glass-peach-tea-with-ice-cubes_140725-4777.jpg", isAvailable: false },
-  { id: "sp004", name: "Croissant Hạnh Nhân", category: "Bánh ngọt", price: 45000, imageUrl: "https://img.freepik.com/free-photo/croissants-wooden-cutting-board_1150-24898.jpg", isAvailable: true }
-];
+// Biến chứa dữ liệu
+let productsData = [];
 
-// HÀM HỖ TRỢ: Xóa dấu Tiếng Việt (đ -> d, ă -> a,...)
-function normalizeStr(str) {
-  if (!str) return "";
-  return str.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-            .toLowerCase().trim();
+// --- API FIREBASE ---
+async function fetchProducts() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "products"));
+    productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderTable(productsData);
+  } catch (error) {
+    console.error("Lỗi lấy sản phẩm:", error);
+  }
 }
 
-// 2. HÀM RENDER BẢNG
+async function createProduct(productObj) {
+  try {
+    await addDoc(collection(db, "products"), productObj);
+    alert("Đã lưu thành công lên Firebase!");
+    fetchProducts();
+    return true;
+  } catch (e) {
+    alert("Lỗi: " + e.message);
+    return false;
+  }
+}
+
+async function updateProduct(id, productObj) {
+  try {
+    await updateDoc(doc(db, "products", id), productObj);
+    alert("Đã cập nhật thành công!");
+    fetchProducts();
+    return true;
+  } catch (e) {
+    alert("Lỗi cập nhật: " + e.message);
+    return false;
+  }
+}
+
+async function removeProduct(id) {
+  try {
+    await deleteDoc(doc(db, "products", id));
+    fetchProducts();
+  } catch (e) {
+    alert("Lỗi xóa: " + e.message);
+  }
+}
+
+// --- RENDER & LOGIC ---
+function normalizeStr(str) {
+  if (!str) return "";
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
+}
+
 function renderTable(data = productsData) {
   const tableBody = document.getElementById("productTableBody");
   if (!tableBody) return;
-
   tableBody.innerHTML = "";
 
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Không tìm thấy sản phẩm nào</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Không có dữ liệu</td></tr>`;
     return;
   }
 
   data.forEach(product => {
     const row = document.createElement("tr");
     const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price);
-    const statusBadge = product.isAvailable 
-      ? `<span class="badge badge-success">Còn hàng</span>` 
-      : `<span class="badge badge-danger">Hết hàng</span>`;
+    const statusBadge = product.isAvailable ? `<span class="badge badge-success">Còn hàng</span>` : `<span class="badge badge-danger">Hết hàng</span>`;
     const imgUrl = product.imageUrl || 'assets/logo.png';
 
     row.innerHTML = `
       <td><img src="${imgUrl}" class="product-img" onerror="this.src='assets/logo.png'"></td>
-      <td>
-        <div style="font-weight: 500;">${product.name}</div>
-        <small style="color: #888;">ID: ${product.id}</small>
-      </td>
+      <td><div style="font-weight: 500;">${product.name}</div><small style="color: #888;">ID: ...${product.id.slice(-5)}</small></td>
       <td>${product.category}</td>
       <td>${formattedPrice}</td>
       <td>${statusBadge}</td>
@@ -55,23 +88,17 @@ function renderTable(data = productsData) {
   });
 }
 
-// 3. TÌM KIẾM TIẾNG VIỆT KHÔNG DẤU
+// Search
 const searchInput = document.getElementById("searchProduct");
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
-    const keyword = normalizeStr(e.target.value); // Xóa dấu từ khóa nhập vào
-    
-    const filteredData = productsData.filter(product => {
-      // So sánh tên (không dấu) và ID
-      return normalizeStr(product.name).includes(keyword) || 
-             normalizeStr(product.id).includes(keyword);
-    });
-
+    const keyword = normalizeStr(e.target.value);
+    const filteredData = productsData.filter(p => normalizeStr(p.name).includes(keyword));
     renderTable(filteredData);
   });
 }
 
-// 4. CÁC LOGIC MODAL & FORM GIỮ NGUYÊN
+// Modal & Form
 const modal = document.getElementById("productModal");
 const btnAdd = document.getElementById("btnAddProduct");
 const closeElements = document.querySelectorAll(".close-modal, .close-modal-btn");
@@ -86,6 +113,7 @@ if (btnAdd) {
     if (modal) modal.classList.add("show");
   });
 }
+
 window.editProduct = (id) => {
   const product = productsData.find(p => p.id === id);
   if (product) {
@@ -99,42 +127,37 @@ window.editProduct = (id) => {
     if (modal) modal.classList.add("show");
   }
 };
-closeElements.forEach(el => {
-  el.addEventListener("click", () => { if (modal) modal.classList.remove("show"); });
-});
+
+closeElements.forEach(el => el.addEventListener("click", () => modal.classList.remove("show")));
 window.addEventListener("click", (e) => { if (e.target == modal) modal.classList.remove("show"); });
 
 if (productForm) {
-  productForm.addEventListener("submit", (e) => {
+  productForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("prodId").value;
-    const name = document.getElementById("prodName").value;
-    const category = document.getElementById("prodCategory").value;
-    const price = Number(document.getElementById("prodPrice").value);
-    const imageUrl = document.getElementById("prodImage").value;
-    const isAvailable = document.getElementById("prodStatus").checked;
+    const productObj = {
+      name: document.getElementById("prodName").value,
+      category: document.getElementById("prodCategory").value,
+      price: Number(document.getElementById("prodPrice").value),
+      imageUrl: document.getElementById("prodImage").value,
+      isAvailable: document.getElementById("prodStatus").checked
+    };
 
+    let success = false;
     if (id) {
-      const index = productsData.findIndex(p => p.id === id);
-      if (index !== -1) {
-        productsData[index] = { ...productsData[index], name, category, price, imageUrl, isAvailable };
-      }
+      success = await updateProduct(id, productObj);
     } else {
-      const newProduct = { id: "sp" + Date.now(), name, category, price, imageUrl, isAvailable };
-      productsData.unshift(newProduct);
+      success = await createProduct(productObj);
     }
-    renderTable();
-    searchInput.value = "";
-    if (modal) modal.classList.remove("show");
+
+    if (success && modal) modal.classList.remove("show");
   });
 }
 
-window.deleteProduct = (id) => {
+window.deleteProduct = async (id) => {
   if (confirm("Xóa sản phẩm này?")) {
-    productsData = productsData.filter(p => p.id !== id);
-    renderTable();
-    searchInput.value = "";
+    await removeProduct(id);
   }
 };
 
-renderTable();
+fetchProducts();
