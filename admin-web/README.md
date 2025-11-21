@@ -30,28 +30,23 @@ Admin chịu trách nhiệm quản lý toàn bộ hoạt động của hệ th�
   - Theo dõi lịch sử và doanh thu
 
 - Dashboard & Thống kê
-  - Hiển thị doanh thu theo ngày / tháng / năm
+  - Hiển thị doanh thu  
   - Thống kê top sản phẩm bán chạy
-  - Biểu đồ trực quan bằng Chart.js
+  
 
 - Kết nối Firebase
   - Ghi / đọc dữ liệu từ Firestore
-  - Upload ảnh lên Firebase Storage
   - Cập nhật realtime khi dữ liệu thay đổi
 
 - Giao diện người dùng (UI/UX)
   - Giao diện thân thiện, dễ thao tác
-  - Responsive trên các kích thước màn hình
   - Đảm bảo trải nghiệm mượt và trực quan
-
 ---
-
 ## 3. Công nghệ sử dụng
 
 - HTML5, CSS3 (Bootstrap 5)
 - JavaScript (ES6)
 - Firebase SDK (Auth, Firestore, Storage)
-- Chart.js – trực quan hóa dữ liệu
 - Firebase Hosting – triển khai ứng dụng
 
 ---
