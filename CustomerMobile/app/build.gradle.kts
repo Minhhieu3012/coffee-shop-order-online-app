@@ -2,19 +2,19 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 
-    // KSP thay thế cho KAPT (dùng cho Room và Hilt)
+    // KSP (Thay thế cho KAPT - Tối ưu cho Room & Hilt)
     id("com.google.devtools.ksp")
 
-    // Hilt
+    // Hilt (Dependency Injection)
     id("com.google.dagger.hilt.android")
 
-    // Firebase
+    // Firebase (Quan trọng để đọc file google-services.json)
     id("com.google.gms.google-services")
 }
 
 android {
     namespace = "vn.edu.ut.hieupm9898.customermobile"
-    compileSdk = 34 // Android 14 (Upside Down Cake)
+    compileSdk = 34 // Android 14
 
     defaultConfig {
         applicationId = "vn.edu.ut.hieupm9898.customermobile"
@@ -39,7 +39,7 @@ android {
         }
     }
 
-    // Java 17
+    // Cấu hình Java 17 (Bắt buộc cho Hilt và compileSdk 34)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -50,9 +50,13 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true // Bật tính năng này nếu bạn cần dùng BuildConfig.DEBUG
     }
 
     composeOptions {
+        // Phiên bản này phải khớp với version Kotlin bạn đang dùng
+        // Kotlin 1.9.0 -> 1.5.2
+        // Kotlin 1.9.20 -> 1.5.4
         kotlinCompilerExtensionVersion = "1.5.2"
     }
 
@@ -70,8 +74,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
 
-    // --- Compose (Sử dụng BOM để quản lý phiên bản đồng bộ) ---
-    // BOM 2024.02.00 tương thích tốt với Kotlin 1.9.0
+    // --- Compose (Sử dụng BOM) ---
+    // BOM giúp đồng bộ phiên bản các thư viện Compose
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -81,19 +85,18 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
-    // Thư viện Icon mở rộng (để dùng StarHalf, StarBorder...)
+    // Icon mở rộng (Google Icons)
     implementation("androidx.compose.material:material-icons-extended")
 
     // --- Navigation ---
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // --- Coil (Tải ảnh) ---
+    // --- Coil (Load ảnh từ URL) ---
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     // --- Hilt (Dependency Injection) ---
-    // Lưu ý: Phiên bản Hilt phải khớp với plugin khai báo ở file gốc (2.48)
     implementation("com.google.dagger:hilt-android:2.48")
-    ksp("com.google.dagger:hilt-compiler:2.48")
+    ksp("com.google.dagger:hilt-compiler:2.48") // Dùng ksp thay vì kapt
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // --- Coroutines ---
@@ -105,13 +108,13 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
-    implementation("com.google.firebase:firebase-messaging-ktx")
+    // implementation("com.google.firebase:firebase-messaging-ktx") // Bỏ comment nếu dùng thông báo
 
     // --- Room Database ---
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion") // Hỗ trợ Coroutines/Flow
-    ksp("androidx.room:room-compiler:$roomVersion")      // Dùng KSP để biên dịch
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 
     // --- Testing ---
     testImplementation("junit:junit:4.13.2")
@@ -121,5 +124,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    // Pager (Carousel)
     implementation("com.google.accompanist:accompanist-pager:0.30.1")
 }

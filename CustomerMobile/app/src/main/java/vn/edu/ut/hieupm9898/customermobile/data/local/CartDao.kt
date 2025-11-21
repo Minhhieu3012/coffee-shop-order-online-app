@@ -10,27 +10,29 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CartDao {
-    // Lấy toàn bộ giỏ hàng (trả về Flow để tự động cập nhật UI khi data đổi)
-    @Query("SELECT * FROM cart_items")
+    // 1. Lấy toàn bộ giỏ hàng (Sắp xếp món mới nhất lên đầu)
+    // Lưu ý: 'cart_table' phải trùng với tableName trong CartEntity
+    @Query("SELECT * FROM cart_table ORDER BY id DESC")
     fun getAllCartItems(): Flow<List<CartEntity>>
 
-    // Lấy 1 món cụ thể (để kiểm tra xem đã có trong giỏ chưa)
-    @Query("SELECT * FROM cart_items WHERE productId = :id")
+    // 2. Lấy 1 món cụ thể (bạn có thể dùng để check trùng món sau này)
+    @Query("SELECT * FROM cart_table WHERE productId = :id")
     suspend fun getCartItemById(id: String): CartEntity?
 
-    // Thêm món vào giỏ (Nếu trùng ID thì thay thế/update)
+    // 3. Thêm món vào giỏ
+    // Đổi tên thành 'addToCart' để khớp với CartRepository
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCartItem(item: CartEntity)
+    suspend fun addToCart(item: CartEntity)
 
-    // Cập nhật (ví dụ tăng giảm số lượng)
+    // 4. Cập nhật (ví dụ tăng giảm số lượng)
     @Update
     suspend fun updateCartItem(item: CartEntity)
 
-    // Xóa 1 món
+    // 5. Xóa 1 món (Swipe to delete)
     @Delete
     suspend fun deleteCartItem(item: CartEntity)
 
-    // Xóa sạch giỏ hàng (khi đặt hàng xong)
-    @Query("DELETE FROM cart_items")
+    // 6. Xóa sạch giỏ hàng (khi đặt hàng thành công)
+    @Query("DELETE FROM cart_table")
     suspend fun clearCart()
 }

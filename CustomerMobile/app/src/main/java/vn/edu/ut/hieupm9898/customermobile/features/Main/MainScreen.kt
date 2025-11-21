@@ -13,6 +13,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+// --- IMPORT CÁC FEATURE ---
+import vn.edu.ut.hieupm9898.customermobile.data.model.Product // Import Product Model
 import vn.edu.ut.hieupm9898.customermobile.features.auth.*
 import vn.edu.ut.hieupm9898.customermobile.features.cart.*
 import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
@@ -81,7 +83,7 @@ fun MainScreen() {
                     )
                 }
 
-                // 2. AUTH GRAPH (LOGIN, REGISTER, ETC.)
+                // 2. AUTH GRAPH
                 authNavGraph(
                     navController = navController,
                     onLoginSuccess = {
@@ -91,12 +93,13 @@ fun MainScreen() {
                     }
                 )
 
-                // 3. MAIN APP GRAPH (HOME, PROFILE, ETC.)
+                // 3. MAIN APP GRAPH
                 navigation(startDestination = AppRoutes.HOME, route = AppRoutes.MAIN_APP_GRAPH) {
 
-                    // MAIN TABS
+                    // --- MAIN TABS ---
                     composable(AppRoutes.HOME) {
                         HomeScreen(
+                            // Sửa logic click: Truyền ID sản phẩm vào route
                             onProductClick = { id -> navController.navigate("${AppRoutes.DETAIL_BASE}/$id") },
                             onSearchClick = { navController.navigate(AppRoutes.SEARCH) }
                         )
@@ -137,117 +140,83 @@ fun MainScreen() {
                         )
                     }
 
-                    // SUB SCREENS
-                    composable(
-                        route = AppRoutes.DETAIL,
-                        arguments = listOf(navArgument("id") { type = NavType.IntType })
-                    ) { backStackEntry ->
-                        val productId = backStackEntry.arguments?.getInt("id") ?: 0
+                    // --- SUB SCREENS ---
 
-                        // Mock data cho demo - thay bằng ViewModel thực tế
-                        var isFavorite by remember { mutableStateOf(false) }
-                        var selectedSize by remember { mutableStateOf("Small") }
-                        var selectedDairy by remember { mutableStateOf("Whole Milk") }
+                    // 🟢 ĐÃ SỬA ĐOẠN NÀY: Product Detail
+                    composable(
+                        route = AppRoutes.DETAIL, // Đảm bảo route này là "detail/{id}"
+                        arguments = listOf(navArgument("id") { type = NavType.StringType }) // Đổi sang String
+                    ) { backStackEntry ->
+                        // Lấy ID từ đường dẫn
+                        val productId = backStackEntry.arguments?.getString("id") ?: ""
+
+                        // Tạo sản phẩm tạm thời để hiển thị (Mock Data)
+                        // ViewModel bên trong ProductDetailScreen sẽ lo phần logic thêm giỏ hàng
+                        val productPassed = Product(
+                            id = productId,
+                            name = "Sản phẩm đang tải...", // Tên tạm
+                            description = "Chi tiết sản phẩm sẽ hiển thị ở đây.",
+                            price = 45000.0,
+                            category = "Coffee",
+                            imageUrl = "", // Link ảnh trống
+                            imageRes = null
+                        )
 
                         ProductDetailScreen(
-                            productId = productId,
-                            title = "Cold coffee frapuccino",
-                            subtitle = "90mg Caffeine : 100Cal",
-                            rating = 3.0f,
-                            ratingCountText = "(3.0)",
-                            description = "Tasteful and flavorful icecream coffee. Ice cream with whipped cream and caramel syrup.",
-                            imageUrl = "https://img.freepik.com/free-photo/cup-coffee-with-heart-drawn-foam_1286-70.jpg",
-                            isFavorite = isFavorite,
-                            availableSizes = listOf("Small", "Medium", "Large"),
-                            selectedSize = selectedSize,
-                            availableDairy = listOf(
-                                Pair("Whole Milk", 0.57),
-                                Pair("Almond Milk", 1.00),
-                                Pair("Oat Milk", 1.25)
-                            ),
-                            selectedDairy = selectedDairy,
-                            relatedProducts = emptyList(),
-                            onBackClick = { navController.popBackStack() },
-                            onFavoriteClick = { isFavorite = !isFavorite },
-                            onSizeSelected = { selectedSize = it },
-                            onDairySelected = { selectedDairy = it },
-                            onAddToCartClick = { /* TODO: Add to cart logic */ }
+                            navController = navController,
+                            product = productPassed
                         )
                     }
 
                     composable(AppRoutes.SEARCH) {
-                        SearchScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        SearchScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.EDIT_PROFILE) {
-                        EditProfileScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        EditProfileScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.ADDRESS_LIST) {
-                        AddressScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        AddressScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.ADD_ADDRESS) {
-                        AddAddressScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        AddAddressScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.CHANGE_PASS) {
-                        ChangePasswordScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        ChangePasswordScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.CONTACT) {
-                        ContactUsScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        ContactUsScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.NOTIFICATIONS) {
-                        NotificationScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        NotificationScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.ORDER_HISTORY) {
-                        OrderHistoryScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        OrderHistoryScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.REWARDS) {
-                        RewardsScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        RewardsScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.SETTINGS) {
-                        SettingsScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        SettingsScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.FEEDBACK) {
-                        FeedbackScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        FeedbackScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable(AppRoutes.DELETE_ACCOUNT) {
-                        DeleteAccountScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                        DeleteAccountScreen(onBackClick = { navController.popBackStack() })
                     }
 
-                    // CART FLOW
+                    // --- CART FLOW ---
                     composable(AppRoutes.PAYMENT_QR) {
                         PaymentQRScreen(
                             onBackClick = { navController.popBackStack() },

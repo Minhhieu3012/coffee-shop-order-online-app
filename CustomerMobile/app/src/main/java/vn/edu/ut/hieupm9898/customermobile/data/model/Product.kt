@@ -1,16 +1,17 @@
 package vn.edu.ut.hieupm9898.customermobile.data.model
 
-/**
- * Đại diện cho một sản phẩm trên Firestore (Collection "products")
- */
+import androidx.annotation.DrawableRes
+
 data class Product(
     val id: String = "",
     val name: String = "",
     val description: String = "",
     val price: Double = 0.0,
-    val imageUrl: String = "",
+    val imageUrl: String = "",    // Dùng khi có Server (chứa link ảnh https://...)
     val category: String = "",
     val isFavorite: Boolean = false,
-    // Đơn giản hóa options cho demo, thực tế có thể là List<Map<String, Any>>
-    val isAvailable: Boolean = true
+    val isAvailable: Boolean = true,
+
+
+    @DrawableRes val imageRes: Int? = null
 )
