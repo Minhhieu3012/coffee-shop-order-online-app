@@ -1,13 +1,11 @@
 package vn.edu.ut.hieupm9898.customermobile.features.profile
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
@@ -33,18 +31,22 @@ fun AddressScreen(
 ) {
     // Dữ liệu giả
     val addresses = listOf(
-        AddressData(1, "Home", "KTX Khu B, ĐHQG TP.HCM", "Đường Tô Vĩnh Diện, Đông Hòa, Dĩ An, Bình Dương", true, Icons.Default.Home),
-        AddressData(2, "Work", "Bros Coffee HQ", "123 Vo Van Ngan, Thu Duc City", false, Icons.Default.Work)
+        AddressData(1, "Nhà", "KTX Khu B, ĐHQG TP.HCM", "Đường Tô Vĩnh Diện, Đông Hòa, Dĩ An, Bình Dương", true, Icons.Default.Home),
+        AddressData(2, "Công ty", "Bros Coffee HQ", "123 Vo Van Ngan, Thu Duc City", false, Icons.Default.Work)
     )
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("My Addresses", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium) },
+                title = { Text("Địa chỉ của tôi", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -54,8 +56,10 @@ fun AddressScreen(
         },
         bottomBar = {
             Box(modifier = Modifier.padding(24.dp)) {
-                BrosButton(text = "Add New Address", onClick = onAddAddressClick, modifier = Modifier.fillMaxWidth())
+                BrosButton(text = "Thêm địa chỉ", onClick = onAddAddressClick, modifier = Modifier.fillMaxWidth().height(60.dp))
             }
+
+            Spacer(modifier = Modifier.height(160.dp))
         }
     ) { paddingValues ->
         LazyColumn(
@@ -78,6 +82,8 @@ data class AddressData(val id: Int, val label: String, val name: String, val det
 fun AddressItem(address: AddressData) {
     val borderColor = if (address.isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
 
+    Spacer(modifier = Modifier.height(20.dp))
+
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -99,7 +105,7 @@ fun AddressItem(address: AddressData) {
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(address.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            Text(address.detail, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
+            Text(address.detail, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
 
             if (address.isDefault) {
                 Spacer(modifier = Modifier.height(12.dp))

@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
@@ -33,7 +34,11 @@ fun ContactUsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Contact Us", fontWeight = FontWeight.Bold) },
+                title = { Text(
+                    "Liên hệ",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 30.sp
+                ) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -54,15 +59,15 @@ fun ContactUsScreen(
                 .padding(24.dp)
         ) {
             // Social Media Buttons
-            ContactItem(icon = Icons.Default.Call, text = "Customer Service", onClick = {})
+            ContactItem(icon = Icons.Default.Call, text = "Dịch vụ hỗ trợ khách hàng", onClick = {})
             Spacer(modifier = Modifier.height(16.dp))
             ContactItem(icon = Icons.Default.Send, text = "WhatsApp", onClick = {})
             Spacer(modifier = Modifier.height(16.dp))
-            ContactItem(icon = Icons.Default.Email, text = "Website", onClick = {})
+            ContactItem(icon = Icons.Default.Email, text = "Trang web", onClick = {})
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text("Write us a message", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Viết cho chúng tôi một tin nhắn", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(12.dp))
 
             // Message Box
@@ -73,7 +78,7 @@ fun ContactUsScreen(
                     .fillMaxWidth()
                     .height(150.dp)
                     .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp)),
-                placeholder = { Text("Write your message here...", color = Color.Gray) },
+                placeholder = { Text("Viết vào đây...", color = Color.Gray) },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -81,9 +86,9 @@ fun ContactUsScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            BrosButton(text = "Send", onClick = onSendMessage, modifier = Modifier.fillMaxWidth())
+            BrosButton(text = "Gửi", onClick = onSendMessage, modifier = Modifier.fillMaxWidth().height(60.dp))
         }
     }
 }

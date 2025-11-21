@@ -27,10 +27,14 @@ fun ChangePasswordScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Change Password", fontWeight = FontWeight.Bold) },
+                title = { Text("Thay đổi mật khẩu", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -38,15 +42,15 @@ fun ChangePasswordScreen(
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).padding(24.dp).fillMaxSize()) {
-            BrosTextField(value = oldPass, onValueChange = { oldPass = it }, label = "Old Password", isPassword = true)
+            BrosTextField(value = oldPass, onValueChange = { oldPass = it }, label = "Mật khẩu cũ", isPassword = true)
             Spacer(modifier = Modifier.height(16.dp))
-            BrosTextField(value = newPass, onValueChange = { newPass = it }, label = "New Password", isPassword = true)
+            BrosTextField(value = newPass, onValueChange = { newPass = it }, label = "Mật khẩu mới", isPassword = true)
             Spacer(modifier = Modifier.height(16.dp))
-            BrosTextField(value = confirmPass, onValueChange = { confirmPass = it }, label = "Confirm New Password", isPassword = true)
+            BrosTextField(value = confirmPass, onValueChange = { confirmPass = it }, label = "Xác nhận mật khẩu mới", isPassword = true)
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(400.dp))
 
-            BrosButton(text = "Update Password", onClick = onSaveClick, modifier = Modifier.fillMaxWidth())
+            BrosButton(text = "Cập nhật", onClick = onSaveClick, modifier = Modifier.fillMaxWidth().height(60.dp))
         }
     }
 }

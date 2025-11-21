@@ -27,10 +27,14 @@ fun AddAddressScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Add Address", fontWeight = FontWeight.Bold) },
+                title = { Text("Thêm địa chỉ", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -40,15 +44,15 @@ fun AddAddressScreen(
         Column(
             modifier = Modifier.padding(paddingValues).padding(24.dp).fillMaxSize()
         ) {
-            BrosTextField(value = name, onValueChange = { name = it }, label = "Address Name (e.g. Home, Work)")
+            BrosTextField(value = name, onValueChange = { name = it }, label = "Tên địa chỉ (ví dụ: Nhà riêng, Cơ quan)")
             Spacer(modifier = Modifier.height(16.dp))
-            BrosTextField(value = detail, onValueChange = { detail = it }, label = "Full Address")
+            BrosTextField(value = detail, onValueChange = { detail = it }, label = "Địa chỉ đầy đủ")
             Spacer(modifier = Modifier.height(16.dp))
-            BrosTextField(value = note, onValueChange = { note = it }, label = "Note for Driver (Optional)")
+            BrosTextField(value = note, onValueChange = { note = it }, label = "Lưu ý cho tài xế (Tùy chọn)")
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(400.dp))
 
-            BrosButton(text = "Save Address", onClick = onSaveClick, modifier = Modifier.fillMaxWidth())
+            BrosButton(text = "Lưu địa chỉ", onClick = onSaveClick, modifier = Modifier.fillMaxWidth().height(60.dp))
         }
     }
 }
