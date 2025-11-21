@@ -61,20 +61,16 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // --- AUTH FLOW (Nested Navigation) ---
-        navigation(
-            startDestination = AppRoutes.LOGIN,
-            route = AppRoutes.AUTH_GRAPH
-        ) {
-            authNavGraph(
-                navController = navController,
-                onLoginSuccess = {
-                    navController.navigate(AppRoutes.HOME) {
-                        popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
-                    }
+        // --- AUTH FLOW (Direct call without extra nesting) ---
+        // ✅ FIX: Gọi trực tiếp authNavGraph không cần nested navigation
+        authNavGraph(
+            navController = navController,
+            onLoginSuccess = {
+                navController.navigate(AppRoutes.HOME) {
+                    popUpTo(AppRoutes.LOGIN) { inclusive = true }
                 }
-            )
-        }
+            }
+        )
 
         // --- MAIN APP FLOW ---
         composable(AppRoutes.HOME) {
@@ -101,7 +97,8 @@ fun AppNavigation(navController: NavHostController) {
  * Helper function để navigate tới Auth Flow
  */
 private fun navigateToAuthFlow(navController: NavHostController) {
-    navController.navigate(AppRoutes.AUTH_GRAPH) {
+    // ✅ FIX: Navigate đến LOGIN trực tiếp thay vì "auth"
+    navController.navigate(AppRoutes.LOGIN) {
         popUpTo(AppRoutes.SPLASH) { inclusive = true }
     }
 }
