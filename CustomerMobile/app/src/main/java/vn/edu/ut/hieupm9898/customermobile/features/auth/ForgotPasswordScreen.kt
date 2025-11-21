@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField

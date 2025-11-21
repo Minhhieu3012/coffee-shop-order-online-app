@@ -13,7 +13,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @Composable
 fun EmptyStateScreen(

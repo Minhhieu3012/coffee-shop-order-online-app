@@ -1,5 +1,3 @@
-// features/onboarding/Onboarding3Screen.kt
-
 package vn.edu.ut.hieupm9898.customermobile.features.onboarding
 
 import androidx.compose.foundation.Image
@@ -13,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +30,7 @@ import vn.edu.ut.hieupm9898.customermobile.R
 // IMPORTS MÀU SẮC ĐÃ SỬA:
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosSubTitle
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
 @Composable
@@ -38,12 +38,11 @@ fun Onboarding3Screen(
     onSkip: () -> Unit, onNext: () -> Unit,
     onGetStartedClick: () -> Unit
 ) {
-    // SỬA: Dùng BrosBackground (thay cho CreamBackground)
     Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 40.dp),
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.Start
         ) {
             // --- 1. Vị trí ảnh ---
@@ -51,36 +50,42 @@ fun Onboarding3Screen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.5f)
-                    .padding(top = 50.dp),
+                    .padding(top = 200.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.image_19), // NỘI DUNG MÀN HÌNH 3
-                    contentDescription = "Grab and Go",
+                    painter = painterResource(id = R.drawable.onboarding3), // NỘI DUNG MÀN HÌNH 3
+                    contentDescription = "Grab và Go",
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .aspectRatio(1f)
+                        .size(420.dp)
                 )
             }
 
             // --- 2. Nội dung Text và Điều hướng ---
             Column(
                 modifier = Modifier
-                    .weight(0.5f)
-                    .padding(vertical = 20.dp),
+                    .weight(0.5f),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                val title = "Grab and Go"
-                val description = "Pick up your freshly prepared coffee instantly—no waiting in line."
+                val title = "Grab và Go"
+                val description = "Nhận ngay cà phê mới pha mà bạn yêu thích—không cần phải xếp hàng chờ đợi."
 
-                // SỬA: Dùng BrosBrown cho Text
-                Text(text = title, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosBrown)
-                Spacer(modifier = Modifier.height(16.dp))
-                // SỬA: Dùng BrosBrown cho Text
-                Text(text = description, fontSize = 14.sp, color = BrosBrown, lineHeight = 20.sp)
+                Text(text = title,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BrosTitle
+                )
 
-                Spacer(modifier = Modifier.height(60.dp))
+                Spacer(modifier = Modifier.height(18.dp))
+                
+                Text(text = description,
+                    fontSize = 18.sp,
+                    color = BrosSubTitle,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(100.dp))
 
                 // --- 3. Điều hướng (Skip/Next) ---
                 Row(
@@ -88,25 +93,30 @@ fun Onboarding3Screen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // SỬA: Dùng BrosBrown cho Skip Text
+
                     Text(
-                        text = "Skip",
+                        text = "Bỏ qua",
                         modifier = Modifier.clickable(onClick = onSkip),
                         color = BrosBrown,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 22.sp
                     )
 
                     Button(
                         onClick = onNext,
-                        modifier = Modifier.height(48.dp),
-                        // SỬA: Dùng BrosBrown cho màu nền nút
+                        modifier = Modifier.height(55.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = BrosBrown),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        // SỬA: Dùng Color.White
-                        Text(text = "Next →", color = Color.White)
+
+                        Text(text = "Tiếp tục →",
+                            color = Color.White,
+                            fontSize = 22.sp
+                        )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(70.dp))
             }
         }
     }
