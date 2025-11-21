@@ -1,4 +1,5 @@
 # Task:
+
 - Xây dựng ứng dụng Mobile dành cho khách hàng (Android)
 - Thiết kế giao diện bằng Jetpack Compose
 - Tích hợp Firebase Auth (đăng ký, đăng nhập, đăng xuất)
@@ -9,6 +10,7 @@
 - Tối ưu hiệu năng & trải nghiệm người dùng
 
 # Tech:
+
 - Kotlin + Jetpack Compose
 - Firebase (Auth, Firestore, Storage, FCM)
 - Android Studio
@@ -16,6 +18,7 @@
 - Optional: Firebase Emulator cho test cục bộ
 
 # Deliverables:
+
 - UI/UX theo bản thiết kế Figma
 - Tích hợp hoàn chỉnh Firebase
 - Module giỏ hàng & đặt hàng hoạt động
