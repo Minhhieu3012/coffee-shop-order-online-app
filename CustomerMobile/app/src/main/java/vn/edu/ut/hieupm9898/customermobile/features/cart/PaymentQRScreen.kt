@@ -1,6 +1,5 @@
 package vn.edu.ut.hieupm9898.customermobile.features.cart
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +22,7 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
+import java.nio.file.Files.size
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,10 +48,14 @@ fun PaymentQRScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Payment", fontWeight = FontWeight.Bold) },
+                title = { Text("Thanh toán", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -71,9 +73,10 @@ fun PaymentQRScreen(
         ) {
             // Hướng dẫn
             Text(
-                "Scan the QR code below to pay",
+                "Quét mã QR bên dưới để thanh toán",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 18.sp
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -108,12 +111,14 @@ fun PaymentQRScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Tổng tiền
-            Text("Total Amount", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text("Tổng số tiền", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
-                "155.000đ",
+                "36.000đ",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 32.sp
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -130,20 +135,21 @@ fun PaymentQRScreen(
                     Icon(Icons.Default.Timer, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Time remaining: $formattedTime",
+                        text = "Thời gian còn lại: $formattedTime",
                         color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(140.dp))
 
             // Nút giả lập "Tôi đã thanh toán"
             BrosButton(
-                text = "I Have Paid",
+                text = "Tôi đã thanh toán",
                 onClick = onPaymentSuccess,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(60.dp)
             )
         }
     }

@@ -1,6 +1,7 @@
 package vn.edu.ut.hieupm9898.customermobile.features.cart
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -18,11 +19,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @Composable
@@ -32,14 +35,11 @@ fun DeliveryScreen(
     // Box chứa toàn bộ màn hình
     Box(modifier = Modifier.fillMaxSize()) {
         // 1. Bản đồ nền (Giả lập bằng ảnh)
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data("https://media.wired.com/photos/59269cd37034dc5f91becd64/master/pass/GoogleMapTA.jpg")
-                .crossfade(true)
-                .build(),
-            contentDescription = "Map Background",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+        Image(
+            painter = painterResource(id = R.drawable.map),
+            contentDescription = "Map",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
 
         // 2. Các nút điều khiển phía trên (Back, GPS)
@@ -80,7 +80,8 @@ fun DeliveryTopControls(
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(30.dp)
                 )
             }
         }
@@ -91,7 +92,7 @@ fun DeliveryTopControls(
             shape = RoundedCornerShape(14.dp),
             color = Color.White,
             shadowElevation = 4.dp,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(52.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
@@ -129,14 +130,14 @@ fun DeliveryBottomSheet(modifier: Modifier = Modifier) {
 
             // Thời gian dự kiến
             Text(
-                text = "10 minutes left",
+                text = "Còn 10 phút",
                 style = MaterialTheme.typography.headlineSmall, // Font to đậm
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = "Delivery to Jl. Kpg Sutoyo",
+                text = "Giao hàng đến UTH",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -222,7 +223,7 @@ fun DriverInfoCard() {
                 modifier = Modifier
                     .size(56.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .background(MaterialTheme.colorScheme.onSurface)
             )
 
             Spacer(modifier = Modifier.width(14.dp))
@@ -230,15 +231,15 @@ fun DriverInfoCard() {
             // Tên & Chức vụ
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Johan Hawn",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "Ronaldo",
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Personal Courier",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    text = "Chuyển phát nhanh cá nhân",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 

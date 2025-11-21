@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CheckoutItemCard
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
@@ -38,8 +39,8 @@ fun OrderScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Order",
-                        style = MaterialTheme.typography.headlineMedium // Font chuẩn từ Theme
+                        text = "Đơn hàng",
+                        style = MaterialTheme.typography.headlineLarge
                     )
                 },
                 navigationIcon = {
@@ -47,7 +48,8 @@ fun OrderScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(60.dp)
                         )
                     }
                 },
@@ -78,8 +80,8 @@ fun OrderScreen(
             // 2. Địa chỉ nhận hàng
             item {
                 Text(
-                    text = "Delivery Address",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "Địa chỉ giao hàng",
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -153,7 +155,7 @@ fun DeliveryToggle() {
             )
             .padding(4.dp)
     ) {
-        val options = listOf("Deliver", "Pick Up")
+        val options = listOf("Giao hàng", "Nhận hàng")
         options.forEach { option ->
             val isSelected = option == selectedOption
             Box(
@@ -169,7 +171,8 @@ fun DeliveryToggle() {
                 Text(
                     text = option,
                     style = MaterialTheme.typography.labelLarge,
-                    color = if (isSelected) surfaceColor else MaterialTheme.colorScheme.onSurface
+                    color = if (isSelected) surfaceColor else MaterialTheme.colorScheme.onSurface,
+                    fontSize = 18.sp
                 )
             }
         }
@@ -181,13 +184,13 @@ fun AddressSection() {
     Column {
         Text(
             text = "KTX Khu B, ĐHQG TP.HCM",
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = "Đường Tô Vĩnh Diện, Đông Hòa, Dĩ An, Bình Dương",
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.secondary
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -206,8 +209,8 @@ fun AddressSection() {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Edit Address",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "Sửa địa chỉ",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -228,8 +231,8 @@ fun AddressSection() {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Add Note",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "Thêm ghi chú",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -242,7 +245,7 @@ fun PaymentSummary(subTotal: Double, deliveryFee: Double, discount: Double) {
     val total = subTotal + deliveryFee - discount
     val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
 
-    Text("Payment Summary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    Text("Tóm tắt thanh toán", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     Spacer(modifier = Modifier.height(12.dp))
 
     // Tiền hàng
@@ -254,7 +257,7 @@ fun PaymentSummary(subTotal: Double, deliveryFee: Double, discount: Double) {
 
     // Phí ship
     Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-        Text("Delivery Fee", style = MaterialTheme.typography.bodyMedium)
+        Text("Phí vận chuyển", style = MaterialTheme.typography.bodyMedium)
         Row {
             Text(
                 formatter.format(deliveryFee),
@@ -275,7 +278,7 @@ fun PaymentSummary(subTotal: Double, deliveryFee: Double, discount: Double) {
 
     // Tổng cộng
     Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-        Text("Total Payment", style = MaterialTheme.typography.titleMedium)
+        Text("Tổng thanh toán", style = MaterialTheme.typography.titleMedium)
         Text(
             formatter.format(total),
             style = MaterialTheme.typography.titleMedium,
@@ -300,7 +303,7 @@ fun OrderBottomBar(totalPrice: Double, onOrderClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Có thể thêm icon Ví tiền hoặc Tiền mặt ở đây nếu muốn
-                Text("Cash/Wallet", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Text("Tiền mặt/Ví", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
                 Text(
                     NumberFormat.getCurrencyInstance(Locale("vi", "VN")).format(totalPrice),
                     style = MaterialTheme.typography.headlineSmall,
@@ -312,9 +315,10 @@ fun OrderBottomBar(totalPrice: Double, onOrderClick: () -> Unit) {
             BrosButton(
                 text = "Order",
                 onClick = onOrderClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(60.dp),
             )
         }
+        Spacer(modifier = Modifier.height(200.dp))
     }
 }
 

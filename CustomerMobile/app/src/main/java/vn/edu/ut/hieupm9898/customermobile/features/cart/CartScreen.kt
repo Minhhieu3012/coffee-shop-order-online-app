@@ -75,9 +75,11 @@ fun CartScreenContent(
             .background(BackgroundColor)
             .padding(top = 16.dp)
     ) {
+
+        Spacer(modifier = Modifier.height(20.dp))
         // Header
         Text(
-            text = "My Order",
+            text = "Đơn hàng của tôi",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = CoffeeBrown,
@@ -167,7 +169,7 @@ fun EmptyCartView() {
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(imageVector = Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(100.dp), tint = Color.LightGray)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Your cart is empty!", style = MaterialTheme.typography.titleLarge, color = Color.Gray)
+        Text(text = "Giỏ hàng trống!", style = MaterialTheme.typography.titleLarge, color = Color.Gray)
     }
 }
 

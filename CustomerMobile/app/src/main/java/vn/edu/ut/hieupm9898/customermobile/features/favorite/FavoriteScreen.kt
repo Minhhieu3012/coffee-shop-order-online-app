@@ -35,7 +35,7 @@ fun FavoriteScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Favorites",
+                        "Yêu thích",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.headlineMedium
                     )
