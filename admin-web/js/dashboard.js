@@ -1,68 +1,68 @@
 // admin-web/js/dashboard.js
 import { db } from "./firebase-config.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Biến toàn cục để lưu dữ liệu mới nhất (Dùng để tính toán chéo)
+let allProducts = [];
+let allOrders = [];
 
 // ===================================================
-// 1. HÀM LOAD DỮ LIỆU THỐNG KÊ TỔNG HỢP
+// 1. KHỞI ĐỘNG CÁC BỘ LẮNG NGHE (REALTIME LISTENERS)
 // ===================================================
-async function loadDashboardStats() {
-  try {
-    // --- A. LẤY DỮ LIỆU TỪ FIREBASE ---
-    // Sử dụng Promise.all để chạy song song 3 lệnh lấy dữ liệu cho nhanh
-    const [productsSnap, usersSnap, ordersSnap] = await Promise.all([
-      getDocs(collection(db, "products")),
-      getDocs(collection(db, "users")),
-      getDocs(collection(db, "orders"))
-    ]);
-
-    // --- B. XỬ LÝ SỐ LIỆU TỔNG QUAN ---
-    const productsData = productsSnap.docs.map(doc => doc.data());
-    const usersData = usersSnap.docs.map(doc => doc.data());
+function initRealtimeDashboard() {
+  
+  // --- LẮNG NGHE SẢN PHẨM (Products) ---
+  onSnapshot(collection(db, "products"), (snapshot) => {
+    // 1. Cập nhật biến toàn cục
+    allProducts = snapshot.docs.map(doc => doc.data());
     
-    // Lấy danh sách đơn hàng và thêm ID để xử lý
-    const ordersData = ordersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // 2. Cập nhật số lượng trên thẻ
+    updateStat("statProducts", snapshot.size);
 
-    // 1. Tổng Sản phẩm
-    const totalProducts = productsSnap.size;
+    // 3. Tính toán lại Best Seller (Vì nhỡ đâu vừa sửa ảnh/tên món)
+    if (allOrders.length > 0) calculateAndRenderBestSellers(allOrders, allProducts);
+  });
 
-    // 2. Tổng Khách hàng (Lọc: chỉ đếm role 'customer', trừ 'admin')
-    const totalCustomers = usersData.filter(u => u.role !== 'admin').length;
+  // --- LẮNG NGHE NGƯỜI DÙNG (Users) ---
+  onSnapshot(collection(db, "users"), (snapshot) => {
+    const users = snapshot.docs.map(doc => doc.data());
+    // Chỉ đếm khách hàng
+    const totalCustomers = users.filter(u => u.role !== 'admin').length;
+    updateStat("statCustomers", totalCustomers);
+  });
 
-    // 3. Tổng Đơn hàng
-    const totalOrders = ordersSnap.size;
+  // --- LẮNG NGHE ĐƠN HÀNG (Orders) - QUAN TRỌNG NHẤT ---
+  onSnapshot(collection(db, "orders"), (snapshot) => {
+    // 1. Cập nhật biến toàn cục
+    allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // 4. Tổng Doanh thu (Chỉ tính đơn 'completed' - Hoàn thành)
-    // Cần đảm bảo field totalPrice là số (nếu lưu string thì phải parse)
-    const totalRevenue = ordersData.reduce((sum, order) => {
+    // 2. Cập nhật Tổng đơn hàng
+    updateStat("statOrders", snapshot.size);
+
+    // 3. Tính Tổng doanh thu (Chỉ tính đơn completed)
+    const totalRevenue = allOrders.reduce((sum, order) => {
       if (order.status === 'completed') {
         return sum + Number(order.totalPrice || 0);
       }
       return sum;
     }, 0);
-
-    // --- C. HIỂN THỊ SỐ LIỆU LÊN HTML ---
     updateStat("statRevenue", new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue));
-    updateStat("statOrders", totalOrders);
-    updateStat("statCustomers", totalCustomers);
-    updateStat("statProducts", totalProducts);
 
-    // --- D. XỬ LÝ 2 BẢNG DƯỚI ---
-    renderRecentOrders(ordersData);
-    calculateAndRenderBestSellers(ordersData, productsData);
-
-  } catch (error) {
-    console.error("Lỗi tải Dashboard:", error);
-  }
+    // 4. Cập nhật 2 bảng dữ liệu bên dưới
+    renderRecentOrders(allOrders);
+    // Cần cả data sản phẩm để hiển thị ảnh trong Best Seller
+    if (allProducts.length > 0) calculateAndRenderBestSellers(allOrders, allProducts);
+  });
 }
 
-// Hàm phụ để gán text an toàn
+// Hàm phụ cập nhật text
 function updateStat(id, value) {
   const el = document.getElementById(id);
   if (el) el.innerText = value;
 }
 
 // ===================================================
-// 2. BẢNG ĐƠN HÀNG GẦN ĐÂY (RECENT ORDERS)
+// 2. BẢNG ĐƠN HÀNG GẦN ĐÂY
 // ===================================================
 function renderRecentOrders(orders) {
   const tableBody = document.getElementById("recentOrdersBody");
@@ -70,16 +70,14 @@ function renderRecentOrders(orders) {
 
   tableBody.innerHTML = "";
 
-  // Sắp xếp đơn mới nhất lên đầu (Dựa vào createdAt)
-  // Lưu ý: createdAt trên Firebase thường là String hoặc Timestamp. 
-  // Đây là so sánh chuỗi đơn giản, nếu cần chính xác tuyệt đối nên dùng Timestamp.
+  // Sắp xếp mới nhất lên đầu
   const sortedOrders = [...orders].sort((a, b) => {
     const timeA = a.createdAt || "";
     const timeB = b.createdAt || "";
     return timeB.localeCompare(timeA); 
   });
 
-  // Lấy 5 đơn đầu tiên
+  // Lấy 5 đơn
   const recentOrders = sortedOrders.slice(0, 5);
 
   if (recentOrders.length === 0) {
@@ -90,8 +88,7 @@ function renderRecentOrders(orders) {
   recentOrders.forEach(order => {
     const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice || 0);
     
-    // Badge trạng thái
-    let statusBadge = `<span class="badge badge-warning">Chờ</span>`; // Mặc định
+    let statusBadge = `<span class="badge badge-warning">Chờ</span>`;
     if (order.status === 'processing') statusBadge = `<span class="badge badge-info">Làm</span>`;
     if (order.status === 'completed') statusBadge = `<span class="badge badge-success">Xong</span>`;
     if (order.status === 'cancelled') statusBadge = `<span class="badge badge-danger">Hủy</span>`;
@@ -108,7 +105,7 @@ function renderRecentOrders(orders) {
 }
 
 // ===================================================
-// 3. TÍNH TOÁN & HIỂN THỊ BEST SELLER (TOP BÁN CHẠY)
+// 3. BẢNG TOP BÁN CHẠY (BEST SELLER)
 // ===================================================
 function calculateAndRenderBestSellers(orders, products) {
   const listContainer = document.getElementById("bestSellerList");
@@ -116,17 +113,14 @@ function calculateAndRenderBestSellers(orders, products) {
 
   listContainer.innerHTML = "";
 
-  // --- Bước 1: Đếm số lượng bán của từng món ---
-  // Tạo map: { "Tên Món": { qty: 10, revenue: 500000 } }
   const salesMap = {};
 
   orders.forEach(order => {
-    // Chỉ tính các đơn Đã Hoàn Thành (completed)
+    // Chỉ tính đơn đã hoàn thành
     if (order.status === 'completed' && Array.isArray(order.items)) {
       order.items.forEach(item => {
         const name = item.name;
         const qty = item.quantity || 1;
-        
         if (!salesMap[name]) {
           salesMap[name] = { qty: 0, name: name };
         }
@@ -135,10 +129,7 @@ function calculateAndRenderBestSellers(orders, products) {
     }
   });
 
-  // --- Bước 2: Chuyển Map thành Array và Sắp xếp ---
   let sortedSales = Object.values(salesMap).sort((a, b) => b.qty - a.qty);
-
-  // Lấy Top 5
   const top5 = sortedSales.slice(0, 5);
 
   if (top5.length === 0) {
@@ -146,14 +137,10 @@ function calculateAndRenderBestSellers(orders, products) {
     return;
   }
 
-  // --- Bước 3: Hiển thị ra màn hình ---
   top5.forEach((item, index) => {
-    // Tìm ảnh của sản phẩm trong danh sách products (để hiển thị cho đẹp)
-    // Nếu không tìm thấy thì dùng logo mặc định
+    // Tìm ảnh sản phẩm
     const productInfo = products.find(p => p.name === item.name);
     const imgUrl = productInfo ? productInfo.imageUrl : 'assets/logo.png';
-
-    // Class màu cho Top 1, 2, 3
     const rankClass = index === 0 ? "rank-1" : (index === 1 ? "rank-2" : (index === 2 ? "rank-3" : ""));
 
     const div = document.createElement("div");
@@ -171,5 +158,5 @@ function calculateAndRenderBestSellers(orders, products) {
   });
 }
 
-// Chạy hàm chính khi file load
-loadDashboardStats();
+// Kích hoạt chế độ Realtime
+initRealtimeDashboard();

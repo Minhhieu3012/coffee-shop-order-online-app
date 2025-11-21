@@ -6,7 +6,7 @@ import { getStorage, connectStorageEmulator } from "https://www.gstatic.com/fire
 
 // --- CẤU HÌNH THẬT (Lấy từ ảnh bạn gửi) ---
 const firebaseConfig = {
-  apiKey: "AIzaSyARH0EF4ryzpJajFU9jSXDOstNETOub4Cg",
+  apiKey: "AIzaSyB0nE9CLzo4djm39t0MZ9JYZQgfrSjsLEc",
   authDomain: "broscoffeeshop-94f07.firebaseapp.com",
   projectId: "broscoffeeshop-94f07",
   storageBucket: "broscoffeeshop-94f07.firebasestorage.app",
