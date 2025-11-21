@@ -206,30 +206,3 @@ fun PreviewLoginSuccess() {
     )
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "2. Reset Password")
-@Composable
-fun PreviewResetPassword() {
-    StatusScreen(
-        icon = Icons.Default.Lock,
-        title = "Đặt lại mật khẩu",
-        statusText = "thành công !",
-        subtitle = "Vui lòng chờ...\nBạn sẽ sớm được chuyển hướng đến trang chủ."
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "3. Sign Up Success")
-@Composable
-fun PreviewSignUpSuccess() {
-    val greenPrimary = Color(0xFF4CAF50)
-    val greenLight = Color(0xFF81C784)
-
-    StatusScreen(
-        icon = Icons.Default.Person,
-        title = "Đăng ký",
-        statusText = "thành công !",
-        subtitle = "Chào mừng! Tài khoản của bạn đã được tạo.",
-        iconBackgroundColor = greenPrimary,
-        titleColor = greenPrimary,
-        decorativeDotsColor = greenLight
-    )
-}

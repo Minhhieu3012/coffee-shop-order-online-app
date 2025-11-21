@@ -1,6 +1,5 @@
 package vn.edu.ut.hieupm9898.customermobile.features.product_detail
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,93 +22,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import vn.edu.ut.hieupm9898.customermobile.data.model.Product
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 import java.text.NumberFormat
 import java.util.Locale
 
-// --- MÀU SẮC (Nên đưa vào ui/theme/Color.kt sau này) ---
+// Màu sắc tùy chỉnh
 private val CoffeeBackground = Color(0xFFF5F1E8)
 private val CoffeeBrown = Color(0xFF6F4E37)
 private val StarYellow = Color(0xFFFFC107)
 
 /**
- * Màn hình chính: ProductDetailScreen
- * Chịu trách nhiệm kết nối ViewModel và điều hướng
- */
-@Composable
-fun ProductDetailScreen(
-    navController: NavController,
-    product: Product, // Nhận object Product từ màn hình Home truyền sang
-    viewModel: ProductDetailViewModel = hiltViewModel()
-) {
-    val context = LocalContext.current
-
-    // State nội bộ của màn hình
-    var selectedSize by remember { mutableStateOf("M") } // Mặc định Size M
-    var selectedDairy by remember { mutableStateOf("Whole Milk") }
-    var isFavorite by remember { mutableStateOf(product.isFavorite) }
-
-    // Dữ liệu giả lập cho Option (Sau này có thể lấy từ DB)
-    val availableSizes = listOf("S", "M", "L")
-    val availableDairy = listOf(
-        Pair("Whole Milk", 0.0),
-        Pair("Almond Milk", 10000.0),
-        Pair("Oat Milk", 15000.0)
-    )
-
-    // Gọi phần hiển thị giao diện
-    ProductDetailContent(
-        product = product, // Truyền nguyên object để dùng
-        rating = 4.5f,
-        ratingCountText = "(120 reviews)",
-        isFavorite = isFavorite,
-        availableSizes = availableSizes,
-        selectedSize = selectedSize,
-        availableDairy = availableDairy,
-        selectedDairy = selectedDairy,
-
-        // --- XỬ LÝ SỰ KIỆN ---
-        onBackClick = { navController.popBackStack() },
-        onFavoriteClick = { isFavorite = !isFavorite },
-        onSizeSelected = { newSize -> selectedSize = newSize },
-        onDairySelected = { newDairy -> selectedDairy = newDairy },
-
-        // LOGIC THÊM VÀO GIỎ HÀNG
-        onAddToCartClick = {
-            // 1. Gọi ViewModel để lưu vào Repository
-            viewModel.addToCart(
-                product = product,
-                quantity = 1,
-                size = selectedSize
-            )
-
-            // 2. Thông báo cho người dùng
-            Toast.makeText(context, "Đã thêm ${product.name} (Size $selectedSize) vào giỏ!", Toast.LENGTH_SHORT).show()
-
-            // 3. Điều hướng (Chọn 1 trong 2 cách dưới)
-            navController.popBackStack() // Cách 1: Quay lại menu để chọn tiếp
-            // navController.navigate("cart") // Cách 2: Đi thẳng tới giỏ hàng
-        }
-    )
-}
-
-/**
- * Phần Giao Diện (Stateless UI)
- * Tách biệt hoàn toàn logic để dễ tái sử dụng và xem Preview
+ * Product Detail Screen với UI cải thiện
+ * - Gradient overlay trên ảnh
+ * - Animation mượt mà
+ * - Size selector với icon cốc coffee
+ * - Section "People also viewed"
+ * - Typography và spacing tốt hơn
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductDetailContent(
-    product: Product,
+fun ProductDetailScreen(
+    title: String,
+    subtitle: String,
     rating: Float,
     ratingCountText: String,
+    description: String,
+    imageUrl: String,
     isFavorite: Boolean,
     availableSizes: List<String>,
     selectedSize: String,
@@ -126,20 +70,17 @@ fun ProductDetailContent(
     Scaffold(
         containerColor = CoffeeBackground,
         bottomBar = {
-            // Thanh Button Add to Cart dính ở dưới đáy
             Surface(
-                shadowElevation = 12.dp, // Đổ bóng đẹp hơn
-                color = Color.White,
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                shadowElevation = 8.dp,
+                color = CoffeeBackground
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
-                        .navigationBarsPadding() // Tránh bị che bởi thanh điều hướng của điện thoại
+                        .padding(horizontal = 20.dp, vertical = 16.dp)
                 ) {
                     BrosButton(
-                        text = "Add to Cart  |  ${formatCurrency(product.price)}", // Hiển thị giá ngay trên nút
+                        text = "Thêm vào giỏ hàng",
                         onClick = onAddToCartClick,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -153,20 +94,17 @@ fun ProductDetailContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. Ảnh Header Full Màn hình
+            // Ảnh Header với gradient overlay đẹp
             ProductImageHeader(
-                imageUrl = product.imageUrl,
-                imageRes = product.imageRes,
+                imageUrl = imageUrl,
                 isFavorite = isFavorite,
                 onBackClick = onBackClick,
                 onFavoriteClick = onFavoriteClick
             )
 
-            // 2. Nội dung chi tiết (Bo góc tròn đẩy lên trên ảnh)
+            // Content section với background bo góc
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = (-24).dp), // Đẩy lên đè nhẹ vào ảnh
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                 color = CoffeeBackground
             ) {
@@ -176,33 +114,42 @@ fun ProductDetailContent(
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    // Tên & Đánh giá
+                    // Title & Rating
                     ProductHeader(
-                        title = product.name,
-                        subtitle = product.category,
+                        title = title,
+                        subtitle = subtitle,
                         rating = rating,
                         ratingCountText = ratingCountText
                     )
 
-                    // Mô tả
-                    DescriptionSection(description = product.description)
+                    // Description
+                    DescriptionSection(description = description)
 
-                    HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    // Chọn Size
+                    // Size Selector
                     SizeSection(
                         sizes = availableSizes,
                         selectedSize = selectedSize,
                         onSizeSelected = onSizeSelected
                     )
 
-                    // Chọn Sữa (Dairy)
+                    // Dairy Choice
                     DairySection(
                         options = availableDairy,
                         selectedOption = selectedDairy,
                         onOptionSelected = onDairySelected
                     )
 
+                    // Related Products (nếu có)
+                    if (relatedProducts.isNotEmpty()) {
+                        RelatedProductsSection(
+                            products = relatedProducts,
+                            onProductClick = onRelatedProductClick
+                        )
+                    }
+
+                    // Spacing cho bottom button
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -210,12 +157,12 @@ fun ProductDetailContent(
     }
 }
 
-// --- CÁC COMPONENT UI CON (HELPER) ---
-
+/**
+ * Header ảnh với gradient overlay và buttons
+ */
 @Composable
 private fun ProductImageHeader(
     imageUrl: String,
-    imageRes: Int?,
     isFavorite: Boolean,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit
@@ -223,13 +170,12 @@ private fun ProductImageHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(380.dp) // Cao hơn chút cho đẹp
+            .height(360.dp)
     ) {
-        // Xử lý hiển thị ảnh: Ưu tiên URL > Resource ID
-        // Dùng Coil để load
+        // Ảnh sản phẩm
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(if (imageUrl.isNotEmpty()) imageUrl else imageRes)
+                .data(imageUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = "Product Image",
@@ -237,114 +183,175 @@ private fun ProductImageHeader(
             contentScale = ContentScale.Crop
         )
 
-        // Gradient đen mờ ở trên cùng (để nút Back dễ nhìn)
+        // Gradient overlay (tối phía trên để button rõ hơn)
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .align(Alignment.TopCenter)
+                .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Black.copy(alpha = 0.4f), Color.Transparent)
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.1f)
+                        )
                     )
                 )
         )
 
-        // Nút Back và Favorite
+        // Top buttons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 48.dp) // Padding cho tai thỏ
-                .align(Alignment.TopCenter),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            SmallIconBtn(
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
-                onClick = onBackClick
-            )
+            // Back button
+            Surface(
+                onClick = onBackClick,
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.9f),
+                shadowElevation = 4.dp
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.padding(14.dp),
+                    tint = CoffeeBrown
+                )
+            }
 
-            SmallIconBtn(
-                icon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            // Favorite button
+            Surface(
                 onClick = onFavoriteClick,
-                tint = if (isFavorite) Color.Red else CoffeeBrown
-            )
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.9f),
+                shadowElevation = 4.dp
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    modifier = Modifier.padding(14.dp),
+                    tint = if (isFavorite) Color.Red else CoffeeBrown
+                )
+            }
         }
     }
 }
 
+/**
+ * Product title, subtitle và rating
+ */
 @Composable
-fun SmallIconBtn(icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit, tint: Color = CoffeeBrown) {
-    Surface(
-        onClick = onClick,
-        shape = CircleShape,
-        color = Color.White.copy(alpha = 0.9f),
-        shadowElevation = 4.dp
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.padding(10.dp),
-            tint = tint
-        )
-    }
-}
-
-@Composable
-private fun ProductHeader(title: String, subtitle: String, rating: Float, ratingCountText: String) {
+private fun ProductHeader(
+    title: String,
+    subtitle: String,
+    rating: Float,
+    ratingCountText: String
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onBackground
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray,
-                modifier = Modifier.weight(1f)
-            )
-            RatingBar(rating = rating, ratingCountText = ratingCountText)
-        }
+
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.Gray
+        )
+
+        // Rating với stars
+        RatingBar(rating = rating, ratingCountText = ratingCountText)
     }
 }
 
+/**
+ * Rating bar với ngôi sao
+ */
 @Composable
-private fun RatingBar(rating: Float, ratingCountText: String) {
+private fun RatingBar(
+    rating: Float,
+    ratingCountText: String
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier.background(Color.White, RoundedCornerShape(8.dp)).padding(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Icon(Icons.Default.Star, contentDescription = null, tint = StarYellow, modifier = Modifier.size(18.dp))
-        Text(text = "$rating", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-        Text(text = ratingCountText, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        for (i in 1..5) {
+            val star = when {
+                rating >= i -> Icons.Default.Star
+                rating >= i - 0.5f -> Icons.Default.StarHalf
+                else -> Icons.Default.StarBorder
+            }
+            Icon(
+                imageVector = star,
+                contentDescription = null,
+                tint = StarYellow,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Text(
+            text = ratingCountText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 4.dp)
+        )
     }
 }
 
+/**
+ * Description section
+ */
 @Composable
 private fun DescriptionSection(description: String) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = "Description", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.Black)
+        Text(
+            text = "Description",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Black.copy(0.7f),
+            color = MaterialTheme.colorScheme.onSurface,
             lineHeight = 22.sp
         )
     }
 }
 
+/**
+ * Size selector với icon cốc coffee
+ */
 @Composable
-private fun SizeSection(sizes: List<String>, selectedSize: String, onSizeSelected: (String) -> Unit) {
+private fun SizeSection(
+    sizes: List<String>,
+    selectedSize: String,
+    onSizeSelected: (String) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(text = "Choose Size", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.Black)
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Choose your size",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             sizes.forEach { size ->
                 SizeChip(
                     text = size,
-                    subtext = when (size) { "S" -> "Small"; "M" -> "Medium"; "L" -> "Large"; else -> "" },
+                    subtext = when (size) {
+                        "Nhỏ" -> "12 Oz"
+                        "Trung bình" -> "16 Oz"
+                        "Lớn" -> "20 Oz"
+                        else -> ""
+                    },
                     isSelected = size == selectedSize,
                     onClick = { onSizeSelected(size) },
                     modifier = Modifier.weight(1f)
@@ -354,45 +361,113 @@ private fun SizeSection(sizes: List<String>, selectedSize: String, onSizeSelecte
     }
 }
 
+/**
+ * Size chip component với coffee cup icon
+ */
 @Composable
-private fun SizeChip(text: String, subtext: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun SizeChip(
+    text: String,
+    subtext: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Surface(
         onClick = onClick,
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         color = if (isSelected) CoffeeBrown else Color.White,
-        border = BorderStroke(width = 1.dp, color = if (isSelected) CoffeeBrown else Color.LightGray),
+        border = BorderStroke(
+            width = if (isSelected) 0.dp else 1.dp,
+            color = Color.Gray.copy(alpha = 0.3f)
+        ),
         shadowElevation = if (isSelected) 4.dp else 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(text = text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else Color.Black)
-            Text(text = subtext, style = MaterialTheme.typography.labelSmall, color = if (isSelected) Color.White.copy(alpha = 0.8f) else Color.Gray)
+            // Coffee cup icon
+            Icon(
+                imageVector = Icons.Default.LocalCafe,
+                contentDescription = null,
+                tint = if (isSelected) Color.White else Color.Gray,
+                modifier = Modifier.size(28.dp)
+            )
+
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = if (isSelected) Color.White else Color.Gray
+            )
+
+            Text(
+                text = subtext,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isSelected) Color.White.copy(alpha = 0.8f) else Color.Gray
+            )
         }
     }
 }
 
+/**
+ * Dairy choice section
+ */
 @Composable
-private fun DairySection(options: List<Pair<String, Double>>, selectedOption: String, onOptionSelected: (String) -> Unit) {
+private fun DairySection(
+    options: List<Pair<String, Double>>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(text = "Dairy Choice", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.Black)
-        Column(
-            modifier = Modifier
-                .background(Color.White, RoundedCornerShape(12.dp))
-                .padding(vertical = 8.dp)
+        Text(
+            text = "Dairy Choice",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White,
+            shadowElevation = 2.dp
         ) {
-            options.forEachIndexed { index, (name, price) ->
-                DairyOption(name = name, price = price, isSelected = name == selectedOption, onClick = { onOptionSelected(name) })
-                if (index < options.size - 1) HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.Gray.copy(alpha = 0.1f))
+            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                options.forEachIndexed { index, (name, price) ->
+                    DairyOption(
+                        name = name,
+                        price = price,
+                        isSelected = name == selectedOption,
+                        onClick = { onOptionSelected(name) }
+                    )
+
+                    if (index < options.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = Color.Gray.copy(alpha = 0.2f)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+/**
+ * Dairy option row
+ */
 @Composable
-private fun DairyOption(name: String, price: Double, isSelected: Boolean, onClick: () -> Unit) {
+private fun DairyOption(
+    name: String,
+    price: Double,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
+    val formattedPrice = formatter.format(price)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -403,24 +478,164 @@ private fun DairyOption(name: String, price: Double, isSelected: Boolean, onClic
         RadioButton(
             selected = isSelected,
             onClick = onClick,
-            colors = RadioButtonDefaults.colors(selectedColor = CoffeeBrown)
+            colors = RadioButtonDefaults.colors(
+                selectedColor = CoffeeBrown
+            )
         )
+
         Text(
             text = name,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f).padding(start = 8.dp),
-            color = Color.Black
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+            color = if (isSelected) CoffeeBrown else Color.Black
         )
-        if(price > 0) {
-            Text(text = "+${formatCurrency(price)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = CoffeeBrown)
+
+        Text(
+            text = formattedPrice,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+/**
+ * Related products section
+ */
+@Composable
+private fun RelatedProductsSection(
+    products: List<RelatedProduct>,
+    onProductClick: (RelatedProduct) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "People also viewed",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(products) { product ->
+                RelatedProductCard(
+                    product = product,
+                    onClick = { onProductClick(product) }
+                )
+            }
         }
     }
 }
 
-// Hàm định dạng tiền tệ VNĐ
-fun formatCurrency(amount: Double): String {
-    return NumberFormat.getCurrencyInstance(Locale("vi", "VN")).format(amount)
+/**
+ * Related product card
+ */
+@Composable
+private fun RelatedProductCard(
+    product: RelatedProduct,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        shadowElevation = 4.dp,
+        modifier = Modifier.width(140.dp)
+    ) {
+        Column {
+            // Image
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(product.imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = product.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp),
+                contentScale = ContentScale.Crop
+            )
+
+            // Info
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    color = CoffeeBrown
+                )
+
+                Text(
+                    text = product.subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    maxLines = 1
+                )
+
+                Text(
+                    text = product.price,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = CoffeeBrown
+                )
+            }
+        }
+    }
 }
 
-// Data Class tạm thời cho Related Product (Nếu chưa có trong Model chính)
-data class RelatedProduct(val id: String, val name: String, val subtitle: String, val price: String, val imageUrl: String)
+// Data class cho related products
+data class RelatedProduct(
+    val id: String,
+    val name: String,
+    val subtitle: String,
+    val price: String,
+    val imageUrl: String
+)
+
+
+@Preview(showBackground = true, name = "Product Detail - Improved")
+@Composable
+fun ImprovedProductDetailPreview() {
+    val fakeSizes = listOf("Nhỏ", "Trung bình", "Lớn")
+    val fakeDairy = listOf(
+        Pair("Whole Milk", 0.57),
+        Pair("Almond Milk", 1.00),
+        Pair("Oat Milk", 1.25)
+    )
+    val fakeRelated = listOf(
+        RelatedProduct("1", "Pumpkin Brew", "150mg · 230 Cal", "45000.0", ""),
+        RelatedProduct("2", "Iced Coffee Cram", "110mg · 130 Cal", "35000.0", ""),
+        RelatedProduct("3", "Cold Brew", "140mg · 120 Cal", "47000.0", "")
+    )
+
+    var isFavorite by remember { mutableStateOf(false) }
+    var selectedSize by remember { mutableStateOf("Small") }
+    var selectedDairy by remember { mutableStateOf("Whole Milk") }
+
+    CustomerMobileTheme {
+        ProductDetailScreen(
+            title = "Cold coffee frapuccino",
+            subtitle = "90mg Caffeine : 100Cal",
+            rating = 3.0f,
+            ratingCountText = "(3.0)",
+            description = "Tasteful and flavorful icecream coffee. Ice cream with whipped cream and caramel syrup.",
+            imageUrl = "",
+            isFavorite = isFavorite,
+            availableSizes = fakeSizes,
+            selectedSize = selectedSize,
+            availableDairy = fakeDairy,
+            selectedDairy = selectedDairy,
+            relatedProducts = fakeRelated,
+            onBackClick = {},
+            onFavoriteClick = { isFavorite = !isFavorite },
+            onSizeSelected = { selectedSize = it },
+            onDairySelected = { selectedDairy = it },
+            onAddToCartClick = {}
+        )
+    }
+}

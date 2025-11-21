@@ -27,10 +27,14 @@ fun FeedbackScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Feedback", fontWeight = FontWeight.Bold) },
+                title = { Text("Phản hồi", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -46,14 +50,14 @@ fun FeedbackScreen(
                 .padding(24.dp)
         ) {
             Text(
-                "We are sorry to hear this",
+                "Chúng tôi rất tiếc khi nghe điều này :<",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Please tell us what went wrong, so we can improve our services.",
+                "Vui lòng cho chúng tôi biết điều gì đã xảy ra để chúng tôi có thể cải thiện dịch vụ của mình.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -68,7 +72,7 @@ fun FeedbackScreen(
                     .fillMaxWidth()
                     .height(200.dp)
                     .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp)),
-                placeholder = { Text("Type your feedback here...", color = MaterialTheme.colorScheme.outline) },
+                placeholder = { Text("Nhập phản hồi của bạn tại đây...", color = MaterialTheme.colorScheme.outline) },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -78,13 +82,13 @@ fun FeedbackScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(50.dp))
 
             // Tích hợp BrosButton
             BrosButton(
-                text = "Submit Feedback",
+                text = "Gửi phản hồi",
                 onClick = onSubmitClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(60.dp)
             )
         }
     }

@@ -75,7 +75,7 @@ fun LoginScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "Login",
+                            "Đăng nhập",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             color = BrosTitle
@@ -84,12 +84,12 @@ fun LoginScreen(
                         // Link Sign Up
                         Row(modifier = Modifier.padding(vertical = 8.dp)) {
                             Text(
-                                "Don't have an account? ",
+                                "Bạn không có tài khoản? ",
                                 color = BrosSubTitle,
                                 fontSize = 16.sp
                             )
                             Text(
-                                "Sign up",
+                                "Đăng ký",
                                 color = BrosBrown,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
@@ -133,10 +133,10 @@ fun LoginScreen(
                                     onCheckedChange = { rememberMe = it },
                                     colors = CheckboxDefaults.colors(checkedColor = BrosBrown)
                                 )
-                                Text("Remember me", fontSize = 12.sp, color = BrosSubTitle)
+                                Text("Luôn ghi nhớ", fontSize = 12.sp, color = BrosSubTitle)
                             }
                             Text(
-                                "Forgot Password?",
+                                "Quên mật khẩu?",
                                 fontSize = 14.sp,
                                 color = BrosBrown,
                                 modifier = Modifier.clickable {
@@ -147,7 +147,7 @@ fun LoginScreen(
 
                         // Nút Log In
                         BrosButton(
-                            text = "Log In",
+                            text = "Đăng nhập",
                             onClick = { isLoginSuccess = true },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -178,7 +178,7 @@ fun LoginScreen(
 
                         // Sign Up Button
                         BrosButton(
-                            text = "Sign up",
+                            text = "Đăng ký",
                             onClick = { navController.navigate(AppRoutes.REGISTER) },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -202,7 +202,7 @@ fun LoginScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                "Continue with Google",
+                                "Tiếp tục với Google",
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold

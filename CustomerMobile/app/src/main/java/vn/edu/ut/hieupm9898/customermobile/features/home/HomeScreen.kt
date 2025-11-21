@@ -21,10 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.rememberNavController
 import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.data.model.Product
-import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
@@ -33,28 +31,48 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
 // Data mẫu
 private val dummyProducts = listOf(
-    Product("1", "Caffe Mocha", "Dark Roast, 120 Cal", 4.53, "link_to_img_1", "Coffee", true),
-    Product("2", "Flat White", "Creamy, High Caffeine", 3.53, "link_to_img_2", "Coffee", false),
+    Product("1", "Cà phê đen", "Dark Roast, 120 Cal", 4.53, "link_to_img_1", "Coffee", true),
+    Product("2", "Cà phê sữa", "Creamy, High Caffeine", 3.53, "link_to_img_2", "Coffee", false),
     Product("3", "Trà Đào", "Iced Peach Tea", 3.00, "link_to_img_3", "Tea", false),
     Product("4", "Bánh Mì", "Traditional Vietnamese Sandwich", 2.50, "link_to_img_4", "Food", true),
     Product("5", "Cappuccino", "Light & Foamy", 4.20, "link_to_img_5", "Coffee", false),
     Product("6", "Matcha Latte", "Sweet & Earthy", 4.80, "link_to_img_6", "Tea", true)
 )
-private val categories = listOf("All", "Coffee", "Tea", "Food", "Dessert")
+
+// Mapping category tiếng Việt sang tiếng Anh (khớp với Product.category)
+private val categoryMap = mapOf(
+    "Tất cả" to "All",
+    "Cà phê" to "Coffee",
+    "Trà" to "Tea",
+    "Đồ ăn" to "Food"
+)
+
+private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đồ ăn")
 
 @Composable
 fun HomeScreen(
-    onProductClick: (Int) -> Unit,
+    onProductClick: (String) -> Unit, // Đổi từ Int sang String để nhận đúng product.id
     onSearchClick: () -> Unit
 ) {
     var searchText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("All") }
+    var selectedCategory by remember { mutableStateOf("Tất cả") } // Mặc định là tiếng Việt
+    var favoriteProducts by remember { mutableStateOf(dummyProducts.map { it.id to it.isFavorite }.toMap()) }
 
-    val filteredProducts = remember(selectedCategory, searchText) {
-        dummyProducts.filter { product ->
-            (selectedCategory == "All" || product.category == selectedCategory) &&
-                    (product.name.contains(searchText, ignoreCase = true) ||
-                            product.description.contains(searchText, ignoreCase = true))
+    // Filter logic sửa lại
+    val filteredProducts = remember(selectedCategory, searchText, favoriteProducts) {
+        dummyProducts.map { product ->
+            product.copy(isFavorite = favoriteProducts[product.id] ?: product.isFavorite)
+        }.filter { product ->
+            // Lọc theo category (map từ tiếng Việt sang tiếng Anh)
+            val categoryFilter = selectedCategory == "Tất cả" ||
+                    product.category == categoryMap[selectedCategory]
+
+            // Lọc theo search text
+            val searchFilter = searchText.isEmpty() ||
+                    product.name.contains(searchText, ignoreCase = true) ||
+                    product.description.contains(searchText, ignoreCase = true)
+
+            categoryFilter && searchFilter
         }
     }
 
@@ -80,19 +98,19 @@ fun HomeScreen(
                             painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Avatar",
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(60.dp)
                                 .clip(CircleShape)
                                 .background(Color.White)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                "Good Morning!",
-                                fontSize = 14.sp,
+                                "Chào buổi sáng!",
+                                fontSize = 20.sp,
                                 color = Color.Gray
                             )
                             Text(
-                                "Hieu Pham",
+                                "Khách hàng",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = BrosTitle
@@ -103,7 +121,8 @@ fun HomeScreen(
                         Icon(
                             Icons.Default.Notifications,
                             contentDescription = "Notifications",
-                            tint = BrosTitle
+                            tint = BrosTitle,
+                            modifier = Modifier.size(28.dp) // Giảm size icon cho hợp lý
                         )
                     }
                 }
@@ -115,7 +134,7 @@ fun HomeScreen(
                 BrosTextField(
                     value = searchText,
                     onValueChange = { searchText = it },
-                    label = "Search coffee...",
+                    label = "Tìm kiếm...",
                     icon = Icons.Default.Search
                 )
                 Spacer(modifier = Modifier.height(24.dp))
@@ -124,7 +143,7 @@ fun HomeScreen(
             // --- 3. CATEGORIES ---
             item {
                 Text(
-                    "Categories",
+                    "Phân loại",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = BrosTitle
@@ -151,7 +170,7 @@ fun HomeScreen(
             // --- 4. PRODUCT TITLE ---
             item {
                 Text(
-                    "Món Ngon Cho Hôm Nay",
+                    "Đồ uống và món ăn đi kèm",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = BrosTitle,
@@ -176,10 +195,15 @@ fun HomeScreen(
                             imageUrl = product.imageUrl,
                             isFavorite = product.isFavorite,
                             onCardClick = {
-                                onProductClick(product.id.toInt())
+                                onProductClick(product.id) // Truyền String ID
                             },
                             onAddClick = { /* TODO: Add to cart */ },
-                            onFavoriteClick = { /* TODO: Toggle favorite */ },
+                            onFavoriteClick = {
+                                // Toggle favorite state
+                                favoriteProducts = favoriteProducts.toMutableMap().apply {
+                                    this[product.id] = !(this[product.id] ?: product.isFavorite)
+                                }
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }

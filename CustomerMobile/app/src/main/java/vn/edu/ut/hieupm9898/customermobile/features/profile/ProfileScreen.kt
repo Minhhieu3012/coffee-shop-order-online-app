@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
@@ -33,18 +34,22 @@ fun ProfileScreen(
     onPaymentClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onNotificationsClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onBackClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Profile",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                title = { Text("Cài đặt", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -73,32 +78,32 @@ fun ProfileScreen(
             ) {
                 ProfileOptionItem(
                     icon = Icons.Default.Person,
-                    title = "Edit Profile",
+                    title = "Chỉnh sửa hồ sơ",
                     onClick = onEditProfileClick
                 )
                 ProfileOptionItem(
                     icon = Icons.Default.LocationOn,
-                    title = "Address",
+                    title = "Địa chỉ",
                     onClick = onAddressClick
                 )
                 ProfileOptionItem(
                     icon = Icons.Default.CreditCard,
-                    title = "Payment Method",
+                    title = "Phương thức thanh toán",
                     onClick = onPaymentClick
                 )
                 ProfileOptionItem(
                     icon = Icons.Default.History,
-                    title = "Order History",
+                    title = "Lịch sử mua hàng",
                     onClick = onHistoryClick
                 )
                 ProfileOptionItem(
                     icon = Icons.Default.Notifications,
-                    title = "Notifications",
+                    title = "Thông báo",
                     onClick = onNotificationsClick // <-- GỌI HÀM NÀY
                 )
                 ProfileOptionItem(
                     icon = Icons.Default.Security,
-                    title = "Security",
+                    title = "Bảo mật",
                     onClick = {}
                 )
             }
@@ -151,7 +156,7 @@ fun UserProfileHeader() {
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface) // Viền giả
+                .background(MaterialTheme.colorScheme.onBackground)
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -170,14 +175,14 @@ fun UserProfileHeader() {
 
         // Tên
         Text(
-            text = "Hieu PM",
+            text = "Khách hàng",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         // Email/Phone
         Text(
-            text = "hieupm9898@ut.edu.vn",
+            text = "customer123@gmail.com",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.secondary
         )

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 // Đảm bảo import đúng Component Card đã tạo
 import vn.edu.ut.hieupm9898.customermobile.ui.components.OrderHistoryCard
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
@@ -22,7 +23,7 @@ fun OrderHistoryScreen(
 ) {
     // State quản lý tab đang chọn (0: Ongoing, 1: History)
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Ongoing", "History")
+    val tabs = listOf("Hiện tại", "Lịch sử")
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background, // Màu nền Theme
@@ -30,9 +31,10 @@ fun OrderHistoryScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "My Orders",
+                        "Đơn hàng của tôi",
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineMedium
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 24.sp
                     )
                 },
                 navigationIcon = {
@@ -40,7 +42,8 @@ fun OrderHistoryScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(60.dp)
                         )
                     }
                 },

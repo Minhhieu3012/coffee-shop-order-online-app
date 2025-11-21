@@ -11,7 +11,7 @@ fun SignUpSuccessDialog(
     BrosSuccessDialog(
         showDialog = showDialog,
         onDismissRequest = onDismiss,
-        title = "Sign up\nSuccessful",
-        message = "Please wait...\nYou will be directed to the homepage soon."
+        title = "Đăng ký\nSuccessful",
+        message = "Chờ một chút...\nBạn sẽ sớm được chuyển hướng tới trang chủ."
     )
 }

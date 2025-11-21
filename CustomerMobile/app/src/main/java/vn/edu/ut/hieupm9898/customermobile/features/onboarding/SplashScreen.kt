@@ -59,15 +59,15 @@ fun SplashScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // 2. Tiêu đề
-                Text(text = "Skip the line", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
+                Text(text = "Ngừng so sánh", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
 
-                Text(text = "Keep the chill", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BrosTitle )
+                Text(text = "Hãy tận hưởng", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BrosTitle )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 3. Mô tả
                 Text(
-                    text = "Order your favorite coffee anytime, anywhere. Just a few taps and your drink is ready to go.",
+                    text = "Đặt ngay cà phê yêu thích của bạn mọi lúc, mọi nơi. Chỉ cần vài thao tác là đồ uống đã sẵn sàng.",
                     fontSize = 18.sp,
                     color = BrosSubTitle,
                     lineHeight = 20.sp,
@@ -86,7 +86,7 @@ fun SplashScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 // SỬA: Dùng Color.White
-                Text(text = "Get Started", fontSize = 30.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(text = "Bắt đầu", fontSize = 30.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
     }

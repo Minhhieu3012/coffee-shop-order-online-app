@@ -33,10 +33,14 @@ fun RewardsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Rewards", fontWeight = FontWeight.Bold) },
+                title = { Text("Phần thưởng", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -71,7 +75,7 @@ fun RewardsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Loyalty Card", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                        Text("Thẻ thành viên", color = Color.White, style = MaterialTheme.typography.titleMedium)
                         Text("8 / 10", color = Color.White, style = MaterialTheme.typography.titleMedium) // Level
                     }
 
@@ -100,9 +104,9 @@ fun RewardsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("History Rewards", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("Lịch sử nhận thưởng", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 TextButton(onClick = {}) {
-                    Text("See All", color = MaterialTheme.colorScheme.primary)
+                    Text("Xem tất cả", color = MaterialTheme.colorScheme.primary)
                 }
             }
 
