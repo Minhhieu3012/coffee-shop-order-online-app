@@ -133,7 +133,13 @@ fun StatusDialogContent(
                 lineHeight = 20.sp
             )
 
-            // ĐÃ BỎ VÒNG LOADING Ở ĐÂY THEO Ý BẠN
+            Spacer(modifier = Modifier.height(12.dp))
+
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = titleColor,
+                strokeWidth = 4.dp
+            )
         }
     }
 }

@@ -39,6 +39,7 @@ fun SplashScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp)
                 .padding(bottom = 100.dp),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.SpaceBetween

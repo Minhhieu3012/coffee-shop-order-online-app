@@ -11,6 +11,7 @@ local.properties
 
 # IDE Folder
 .idea/
+.idea
 
 # Google Services
 google-services.json

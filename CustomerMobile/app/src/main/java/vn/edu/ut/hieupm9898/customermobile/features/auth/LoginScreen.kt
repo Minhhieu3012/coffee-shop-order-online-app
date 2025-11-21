@@ -36,8 +36,8 @@ fun LoginScreen(
     navController: NavHostController,
     onLoginSuccess: () -> Unit
 ) {
-    var email by remember { mutableStateOf("hieupm9898@ut.edu.vn") }
-    var password by remember { mutableStateOf("••••••••") }
+    var email by remember { mutableStateOf("customer123@gmail.com") }
+    var password by remember { mutableStateOf("123456AcB") }
     var rememberMe by remember { mutableStateOf(false) }
     var isLoginSuccess by remember { mutableStateOf(false) }
 
@@ -60,7 +60,7 @@ fun LoginScreen(
                     Image(
                         painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(120.dp)
+                        modifier = Modifier.size(200.dp)
                     )
                 }
 
@@ -68,7 +68,7 @@ fun LoginScreen(
                 Card(
                     shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(horizontal = 30.dp, vertical = 24.dp),
@@ -76,7 +76,7 @@ fun LoginScreen(
                     ) {
                         Text(
                             "Login",
-                            fontSize = 28.sp,
+                            fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             color = BrosTitle
                         )
@@ -86,13 +86,13 @@ fun LoginScreen(
                             Text(
                                 "Don't have an account? ",
                                 color = BrosSubTitle,
-                                fontSize = 14.sp
+                                fontSize = 16.sp
                             )
                             Text(
                                 "Sign up",
                                 color = BrosBrown,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
+                                fontSize = 16.sp,
                                 modifier = Modifier.clickable {
                                     navController.navigate(AppRoutes.REGISTER)
                                 }
@@ -109,7 +109,7 @@ fun LoginScreen(
                             keyboardType = KeyboardType.Email
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(30.dp))
 
                         // Password TextField
                         BrosTextField(
@@ -137,7 +137,7 @@ fun LoginScreen(
                             }
                             Text(
                                 "Forgot Password?",
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 color = BrosBrown,
                                 modifier = Modifier.clickable {
                                     navController.navigate(AppRoutes.FORGOT_PASSWORD)
