@@ -59,21 +59,22 @@ Admin chịu trách nhiệm quản lý toàn bộ hoạt động của hệ th�
 ## 4. Cấu trúc thư mục
 
 ```bash
-broscafe-admin/
-│
-├── index.html          # Trang Dashboard
-├── products.html       # Quản lý sản phẩm
-├── orders.html         # Quản lý đơn hàng
-│
-├── js/
-│   ├── firebase.js     # Kết nối Firebase
-│   ├── products.js     # CRUD sản phẩm
-│   ├── orders.js       # Quản lý đơn hàng
-│   └── charts.js       # Biểu đồ thống kê
+admin-web/
+├── assets/                 # Kho tài nguyên
+│   └── logo.png            # Logo của quán
 │
 ├── css/
-│   └── style.css
+│   ├── admin.css           # Style chính cho giao diện Dashboard
+│   └── base.css            # Các thiết lập gốc (Root variables, Reset CSS)
 │
-└── assets/
-    ├── images/
-    └── icons/
+├── js/
+│   ├── auth.js             # Xử lý Đăng nhập & Authentication
+│   ├── dashboard.js        # Logic thống kê Realtime
+│   ├── firebase-config.js  # Cấu hình kết nối Firebase
+│   ├── orders.js           # Quản lý Đơn hàng
+│   ├── products.js         # Quản lý Sản phẩm
+│   ├── router.js           # Bộ điều hướng & Bảo vệ trang
+│   └── users.js            # Quản lý Khách hàng
+│
+├── admin.html              # Giao diện chính (Dashboard)
+└── login.html              # Trang đăng nhập
