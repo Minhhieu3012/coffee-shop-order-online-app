@@ -18,7 +18,7 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 fun AuthSuccessDialog(
     title: String = "Success!",
     message: String,
-    buttonText: String = "Continue",
+    buttonText: String = "Tiếp tục",
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -51,12 +51,12 @@ fun AuthSuccessDialog(
 
 @Composable
 fun LoginSuccessDialog(onDismiss: () -> Unit = {}) {
-    AuthSuccessDialog(title = "Login Successful", message = "Welcome back! You have successfully logged in.", onDismiss = onDismiss)
+    AuthSuccessDialog(title = "Đăng nhập thành công", message = "Chào mừng bạn trở lại! Bạn đã đăng nhập thành công.", onDismiss = onDismiss)
 }
 
 @Composable
 fun RegisterSuccessDialog(onDismiss: () -> Unit = {}) {
-    AuthSuccessDialog(title = "Account Created", message = "Your account has been created successfully.", onDismiss = onDismiss)
+    AuthSuccessDialog(title = "Tài khoản đã được tạo", message = "Tài khoản của bạn đã được tạo thành công.", onDismiss = onDismiss)
 }
 
 @Preview(showBackground = true, name = "Login Success")

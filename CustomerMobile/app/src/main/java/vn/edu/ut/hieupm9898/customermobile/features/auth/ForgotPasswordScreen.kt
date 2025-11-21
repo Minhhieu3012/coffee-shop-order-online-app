@@ -35,7 +35,12 @@ fun ForgotPasswordScreen(navController: NavHostController) {
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = BrosBrown)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = BrosBrown,
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BrosBackground)
@@ -53,10 +58,10 @@ fun ForgotPasswordScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            Text("Forgot Your Password?", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
+            Text("Quên mật khẩu?", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                "Please enter your registered Phone Number so we can send an OTP Verification code to reset your password.",
+                text = "Vui lòng nhập Email đã đăng ký để chúng tôi có thể gửi Mã xác minh OTP để đặt lại mật khẩu cho bạn.",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -65,12 +70,17 @@ fun ForgotPasswordScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(40.dp))
 
             // Dùng BrosTextField cho nhập SĐT
-            Text("Phone Number", fontWeight = FontWeight.Bold, color = BrosTitle)
+            Text(
+                text = "Email",
+                fontWeight = FontWeight.Bold,
+                color = BrosTitle,
+                fontSize = 20.sp
+            )
             Spacer(modifier = Modifier.height(8.dp))
             BrosTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
-                label = "Enter Phone Number",
+                label = "Nhập email của bạn",
                 icon = Icons.Default.Phone,
                 keyboardType = KeyboardType.Phone
             )
@@ -79,15 +89,15 @@ fun ForgotPasswordScreen(navController: NavHostController) {
 
             // Dùng BrosButton
             BrosButton(
-                text = "Proceed",
+                text = "Tiếp tục",
                 onClick = {
                     // Chuyển sang màn OTP
                     navController.navigate(AppRoutes.OTP_VERIFICATION)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().size(60.dp)
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }

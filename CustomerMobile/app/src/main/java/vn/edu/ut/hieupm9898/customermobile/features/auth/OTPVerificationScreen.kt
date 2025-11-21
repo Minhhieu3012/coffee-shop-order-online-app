@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +55,12 @@ fun OTPVerificationScreen(navController: NavController) {
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = BrosBrown)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = BrosBrown,
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BrosBackground)
@@ -73,11 +77,11 @@ fun OTPVerificationScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            Text("OTP Verification", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
+            Text("Xác minh OTP", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Please Enter the $otpLength digit verification code sent on +84(123)-456-789",
+                text = "Vui lòng nhập mã xác minh chữ số $otpLength được gửi đến số +84(123)-456-789",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -152,9 +156,9 @@ fun OTPVerificationScreen(navController: NavController) {
 
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Text("Didn't receive code? ", color = Color.Gray, fontSize = 14.sp)
+                Text("Chưa nhận được mã?", color = Color.Gray, fontSize = 14.sp)
                 if (timeLeft > 0) {
-                    Text("Resend in 00:${if (timeLeft < 10) "0$timeLeft" else timeLeft}", color = BrosBrown, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Gửi lại trong 00:${if (timeLeft < 10) "0$timeLeft" else timeLeft}", color = BrosBrown, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 } else {
                     Text(
                         "Resend Now",
@@ -169,15 +173,15 @@ fun OTPVerificationScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
 
             BrosButton(
-                text = "Proceed",
+                text = "Tiếp tục",
                 onClick = {
                     navController.navigate(AppRoutes.RESET_PASSWORD)
                 },
                 isEnabled = otpCode.length == otpLength,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().size(60.dp)
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
