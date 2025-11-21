@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
@@ -26,10 +27,14 @@ fun DeleteAccountScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Delete Account", fontWeight = FontWeight.Bold) },
+                title = { Text("Xóa tài khoản", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -45,10 +50,10 @@ fun DeleteAccountScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(100.dp))
 
             Text(
-                "You are going to delete your account!",
+                "Bạn sắp xóa tài khoản của mình!",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.error, // Màu đỏ cảnh báo
@@ -58,19 +63,19 @@ fun DeleteAccountScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                "This action cannot be undone. All your data, including order history, rewards, and personal information will be permanently removed.",
+                "Không thể hoàn tác hành động này. Toàn bộ dữ liệu của bạn, bao gồm lịch sử đơn hàng, phần thưởng và thông tin cá nhân, sẽ bị xóa vĩnh viễn.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.secondary
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(280.dp))
 
             // Nút Xóa
             BrosButton(
                 text = "Delete Account",
                 onClick = onConfirmDelete,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(60.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -78,7 +83,7 @@ fun DeleteAccountScreen(
             // Nút Hủy
             OutlinedButton(
                 onClick = onBackClick,
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier.fillMaxWidth().height(60.dp),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {

@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,19 +31,27 @@ fun NotificationScreen(
 ) {
     // Dữ liệu giả
     val notifications = listOf(
-        NotiItem("Order Arrived!", "Your order #1234 has been delivered successfully.", "10:00 AM", Icons.Default.LocalShipping, true),
-        NotiItem("50% OFF Promo", "Get 50% discount for all espresso based drinks.", "Yesterday", Icons.Default.Discount, false),
-        NotiItem("New Arrival", "Try our new Pumpkin Spice Latte now!", "2 days ago", Icons.Default.Notifications, false)
+        NotiItem("Đơn hàng đã đến!", "Đơn hàng số 1234 của bạn đã được giao thành công.", "10:00 AM", Icons.Default.LocalShipping, true),
+        NotiItem("Khuyến mãi giảm giá 50%", "Nhận giảm giá 50% cho tất cả các loại đồ uống pha từ espresso.", "Yesterday", Icons.Default.Discount, false),
+        NotiItem("Hàng mới về", "Hãy thử ngay Pumpkin Spice Latte mới của chúng tôi!", "2 days ago", Icons.Default.Notifications, false)
     )
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Notifications", fontWeight = FontWeight.Bold) },
+                title = { Text(
+                    "Thông báo",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 30.sp
+                ) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -54,7 +63,7 @@ fun NotificationScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(22.dp)
         ) {
             items(notifications) { item ->
                 NotificationItemView(item)
@@ -95,7 +104,7 @@ fun NotificationItemView(item: NotiItem) {
                 Text(item.time, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(item.body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
+            Text(item.body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
         }
 
         if (item.isNew) {

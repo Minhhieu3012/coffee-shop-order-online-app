@@ -33,10 +33,14 @@ fun PaymentMethodScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Payment Methods", fontWeight = FontWeight.Bold) },
+                title = { Text("Phương thức thanh toán", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -44,8 +48,9 @@ fun PaymentMethodScreen(
         },
         bottomBar = {
             Box(modifier = Modifier.padding(24.dp)) {
-                BrosButton(text = "Add New Card", onClick = { /* Add Logic */ }, modifier = Modifier.fillMaxWidth())
+                BrosButton(text = "Thêm thẻ", onClick = { /* Add Logic */ }, modifier = Modifier.fillMaxWidth().height(60.dp))
             }
+            Spacer(modifier = Modifier.height(200.dp))
         }
     ) { paddingValues ->
         Column(
@@ -61,12 +66,12 @@ fun PaymentMethodScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // List Methods
-            Text("Other Methods", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Phương thức khác", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, fontSize = 22.sp)
             Spacer(modifier = Modifier.height(16.dp))
 
-            PaymentMethodItem(name = "MoMo E-Wallet", isSelected = true)
+            PaymentMethodItem(name = "Ví điện tử MoMo", isSelected = true)
             Spacer(modifier = Modifier.height(12.dp))
-            PaymentMethodItem(name = "Cash on Delivery", isSelected = false)
+            PaymentMethodItem(name = "Thanh toán khi nhận hàng", isSelected = false)
         }
     }
 }
@@ -88,7 +93,7 @@ fun CreditCardView() {
     ) {
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Credit Card", color = Color.White.copy(alpha = 0.8f))
+                Text("Thẻ tín dụng", color = Color.White.copy(alpha = 0.8f))
                 Icon(Icons.Default.CreditCard, contentDescription = null, tint = Color.White)
             }
 
@@ -101,11 +106,11 @@ fun CreditCardView() {
 
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Column {
-                    Text("Card Holder", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp)
-                    Text("Hieu PM", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Người giữ thẻ", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp)
+                    Text("Khách hàng", color = Color.White, fontWeight = FontWeight.Bold)
                 }
                 Column {
-                    Text("Expiry Date", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp)
+                    Text("Ngày hết hạn", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp)
                     Text("09/28", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
@@ -129,7 +134,7 @@ fun PaymentMethodItem(name: String, isSelected: Boolean) {
         // Radio Button giả
         RadioButton(selected = isSelected, onClick = { /* Select logic */ })
         Spacer(modifier = Modifier.width(8.dp))
-        Text(name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+        Text(name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, fontSize = 18.sp)
         Spacer(modifier = Modifier.weight(1f))
         if(!isSelected) {
             Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Gray)

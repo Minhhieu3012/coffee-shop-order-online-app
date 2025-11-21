@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
@@ -39,10 +40,18 @@ fun EditProfileScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Edit Profile", fontWeight = FontWeight.Bold) },
+                title = { Text(
+                    "Chỉnh sửa hồ sơ",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 30.sp
+                ) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -53,7 +62,7 @@ fun EditProfileScreen(
         bottomBar = {
             // Nút Save ở dưới cùng
             Box(modifier = Modifier.padding(24.dp)) {
-                BrosButton(text = "Save Changes", onClick = onSaveClick, modifier = Modifier.fillMaxWidth())
+                BrosButton(text = "Lưu thay đổi", onClick = onSaveClick, modifier = Modifier.fillMaxWidth())
             }
         }
     ) { paddingValues ->

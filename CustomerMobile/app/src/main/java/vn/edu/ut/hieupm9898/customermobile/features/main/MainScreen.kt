@@ -144,29 +144,45 @@ fun MainScreen() {
 
                     // 🟢 ĐÃ SỬA ĐOẠN NÀY: Product Detail
                     composable(
-                        route = AppRoutes.DETAIL, // Đảm bảo route này là "detail/{id}"
-                        arguments = listOf(navArgument("id") { type = NavType.StringType }) // Đổi sang String
+                        route = AppRoutes.DETAIL,
+                        arguments = listOf(navArgument("id") { type = NavType.StringType })
                     ) { backStackEntry ->
-                        // Lấy ID từ đường dẫn
+
                         val productId = backStackEntry.arguments?.getString("id") ?: ""
 
-                        // Tạo sản phẩm tạm thời để hiển thị (Mock Data)
-                        // ViewModel bên trong ProductDetailScreen sẽ lo phần logic thêm giỏ hàng
-                        val productPassed = Product(
-                            id = productId,
-                            name = "Sản phẩm đang tải...", // Tên tạm
-                            description = "Chi tiết sản phẩm sẽ hiển thị ở đây.",
-                            price = 45000.0,
-                            category = "Coffee",
-                            imageUrl = "", // Link ảnh trống
-                            imageRes = null
-                        )
-
+                        // Mock dữ liệu tạm hiển thị
                         ProductDetailScreen(
-                            navController = navController,
-                            product = productPassed
+                            title = "Cold Coffee",
+                            subtitle = "100mg Caffeine · 120 Cal",
+                            rating = 4.5f,
+                            ratingCountText = "(4.5)",
+                            description = "Mô tả sản phẩm đang được tải...",
+                            imageUrl = "",
+                            isFavorite = false,
+
+                            availableSizes = listOf("Nhỏ", "Trung bình", "Lớn"),
+                            selectedSize = "Trung bình",
+
+                            availableDairy = listOf(
+                                "Whole Milk" to 0.0,
+                                "Almond Milk" to 1.0,
+                                "Oat Milk" to 1.5
+                            ),
+                            selectedDairy = "Whole Milk",
+
+                            relatedProducts = emptyList(),          // Tuỳ bạn có hiển thị hay không
+
+                            onBackClick = { navController.popBackStack() },
+                            onFavoriteClick = { /* TODO: xử lý yêu thích */ },
+                            onSizeSelected = { /* TODO: xử lý chọn size */ },
+                            onDairySelected = { /* TODO: xử lý chọn topping */ },
+                            onAddToCartClick = { /* TODO: thêm vào giỏ hàng */ },
+                            onRelatedProductClick = { product ->
+                                navController.navigate("${AppRoutes.DETAIL_BASE}/${product.id}")
+                            }
                         )
                     }
+
 
                     composable(AppRoutes.SEARCH) {
                         SearchScreen(onBackClick = { navController.popBackStack() })
