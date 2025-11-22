@@ -1,8 +1,2 @@
 package vn.edu.ut.hieupm9898.customermobile.data.model
 
-data class UserProfile(
-    val name: String,
-    val phone: String,
-    val email: String,
-
-)

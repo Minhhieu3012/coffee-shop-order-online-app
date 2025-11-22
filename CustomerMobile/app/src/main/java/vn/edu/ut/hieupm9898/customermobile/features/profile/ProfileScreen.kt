@@ -13,8 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -33,23 +30,19 @@ import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
-// [CHỈNH SỬA TẠI ĐÂY]: Dán URL logo mặc định của bạn vào giữa cặp dấu ngoặc kép dưới đây
-private const val CUSTOM_DEFAULT_AVATAR_URL = "DÁN_URL_LOGO_MẶC_ĐỊNH_CỦA_BẠN_VÀO_ĐÂY"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    navController: NavController,
+    navController: NavController, // [QUAN TRỌNG] Thêm cái này để điều hướng
     onEditProfileClick: () -> Unit,
     onAddressClick: () -> Unit,
     onPaymentClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onNotificationsClick: () -> Unit,
-    onBackClick: () -> Unit = {},
-    viewModel: ProfileViewModel = viewModel()
+    // onLogoutClick: () -> Unit, <-- Đã xóa dòng này vì ta xử lý trực tiếp bên dưới
+    onBackClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current // Lấy context để xóa bộ nhớ máy
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -58,10 +51,16 @@ fun ProfileScreen(
                 title = { Text("Cài đặt", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(60.dp))
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { paddingValues ->
@@ -76,30 +75,52 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // 1. User Info Section
-            UserProfileHeader(
-                name = uiState.user.name,
-                email = uiState.user.email,
-                // Logic: Nếu avatarUrl có dữ liệu, dùng nó. Nếu null, dùng mặc định (CUSTOM_DEFAULT_AVATAR_URL)
-                avatarUrl = uiState.user.avatarUrl ?: CUSTOM_DEFAULT_AVATAR_URL
-            )
+            UserProfileHeader()
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // 2. Menu Options List
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                ProfileOptionItem(icon = Icons.Default.Person, title = "Chỉnh sửa hồ sơ", onClick = onEditProfileClick)
-                ProfileOptionItem(icon = Icons.Default.LocationOn, title = "Địa chỉ", onClick = onAddressClick)
-                ProfileOptionItem(icon = Icons.Default.CreditCard, title = "Phương thức thanh toán", onClick = onPaymentClick)
-                ProfileOptionItem(icon = Icons.Default.History, title = "Lịch sử mua hàng", onClick = onHistoryClick)
-                ProfileOptionItem(icon = Icons.Default.Notifications, title = "Thông báo", onClick = onNotificationsClick)
-                ProfileOptionItem(icon = Icons.Default.Security, title = "Bảo mật", onClick = {})
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ProfileOptionItem(
+                    icon = Icons.Default.Person,
+                    title = "Chỉnh sửa hồ sơ",
+                    onClick = onEditProfileClick
+                )
+                ProfileOptionItem(
+                    icon = Icons.Default.LocationOn,
+                    title = "Địa chỉ",
+                    onClick = onAddressClick
+                )
+                ProfileOptionItem(
+                    icon = Icons.Default.CreditCard,
+                    title = "Phương thức thanh toán",
+                    onClick = onPaymentClick
+                )
+                ProfileOptionItem(
+                    icon = Icons.Default.History,
+                    title = "Lịch sử mua hàng",
+                    onClick = onHistoryClick
+                )
+                ProfileOptionItem(
+                    icon = Icons.Default.Notifications,
+                    title = "Thông báo",
+                    onClick = onNotificationsClick
+                )
+                ProfileOptionItem(
+                    icon = Icons.Default.Security,
+                    title = "Bảo mật",
+                    onClick = {}
+                )
             }
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 3. Logout Button
+            // 3. Logout Button (XỬ LÝ TRỰC TIẾP TẠI ĐÂY)
             Surface(
                 onClick = {
+                    // BƯỚC 1: Xóa trạng thái đăng nhập ("Quên người dùng")
                     val sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                     with(sharedPreferences.edit()) {
                         putBoolean("IS_LOGGED_IN", false)
@@ -107,6 +128,8 @@ fun ProfileScreen(
                         apply()
                     }
 
+                    // BƯỚC 2: Đá về màn hình Đăng nhập (AUTH_GRAPH)
+                    // Và xóa sạch lịch sử để không bấm Back quay lại được
                     navController.navigate(AppRoutes.AUTH_GRAPH) {
                         popUpTo(AppRoutes.MAIN_APP_GRAPH) { inclusive = true }
                     }
@@ -120,9 +143,18 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Đăng xuất", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Đăng xuất",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -131,14 +163,13 @@ fun ProfileScreen(
     }
 }
 
-// --- CÁC COMPOSABLE CON ---
+// --- CÁC COMPOSABLE CON GIỮ NGUYÊN ---
 
 @Composable
-fun UserProfileHeader(name: String, email: String, avatarUrl: String) {
+fun UserProfileHeader() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // [UI AVATAR]
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -148,7 +179,7 @@ fun UserProfileHeader(name: String, email: String, avatarUrl: String) {
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(avatarUrl) // DÙNG URL ĐỘNG TỪ VIEWMODEL HOẶC MẶC ĐỊNH
+                    .data("https://img.freepik.com/free-photo/portrait-handsome-smiling-young-man-model-wearing-casual-summer-pink-clothes-fashion-stylish-man-posing_158538-5350.jpg")
                     .crossfade(true)
                     .build(),
                 contentDescription = "User Avatar",
@@ -161,16 +192,14 @@ fun UserProfileHeader(name: String, email: String, avatarUrl: String) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tên
         Text(
-            text = name,
+            text = "Khách hàng",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
-        // Email
         Text(
-            text = email,
+            text = "customer123@gmail.com",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.secondary
         )

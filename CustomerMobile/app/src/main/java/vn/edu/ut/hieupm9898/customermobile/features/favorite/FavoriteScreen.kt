@@ -10,17 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard // Yêu cầu component này
-import vn.edu.ut.hieupm9898.customermobile.ui.components.EmptyStateScreen // Yêu cầu component này
+import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
+import vn.edu.ut.hieupm9898.customermobile.ui.components.EmptyStateScreen
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoriteScreen(
-    onProductClick: (String) -> Unit = {}, // Chữ ký hàm phải là String
+    onProductClick: (Int) -> Unit = {},
     onGoHomeClick: () -> Unit = {}
 ) {
-    // Dữ liệu giả: Bỏ comment để thấy dữ liệu, để emptyList() để test trạng thái rỗng
+    // Dữ liệu giả: Đổi thành emptyList() để test giao diện rỗng
     val favoriteProducts = remember {
         listOf(
             FavoriteProduct(1, "Cappuccino", "With Chocolate", 45000.0, "https://img.freepik.com/free-photo/cup-coffee-with-heart-drawn-foam_1286-70.jpg"),
@@ -52,9 +52,8 @@ fun FavoriteScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp)
         ) {
-            // --- LOGIC XỬ LÝ TRẠNG THÁI ---
             if (favoriteProducts.isEmpty()) {
-                // TRƯỜNG HỢP 1: RỖNG
+                // --- TRƯỜNG HỢP RỖNG (Sử dụng EmptyStateScreen đã làm) ---
                 EmptyStateScreen(
                     title = "No favorite drinks yet!",
                     message = "Start exploring and mark your loved drinks.",
@@ -62,7 +61,7 @@ fun FavoriteScreen(
                     onClick = onGoHomeClick
                 )
             } else {
-                // TRƯỜNG HỢP 2: CÓ DỮ LIỆU
+                // --- TRƯỜNG HỢP CÓ DỮ LIỆU ---
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -75,11 +74,8 @@ fun FavoriteScreen(
                             subtitle = product.subtitle,
                             price = product.price,
                             imageUrl = product.imageUrl,
-                            isFavorite = true,
-                            onCardClick = {
-                                // [FIX] Chuyển ID (Int) thành chuỗi (String) để điều hướng
-                                onProductClick(product.id.toString())
-                            },
+                            isFavorite = true, // Luôn là true ở màn hình này
+                            onCardClick = { onProductClick(product.id) },
                             onFavoriteClick = { /* Logic bỏ thích */ },
                             onAddClick = { /* Logic thêm vào giỏ */ }
                         )
@@ -90,7 +86,6 @@ fun FavoriteScreen(
     }
 }
 
-// Data Class cần thiết để code compile
 data class FavoriteProduct(val id: Int, val title: String, val subtitle: String, val price: Double, val imageUrl: String)
 
 @Preview(showBackground = true)
