@@ -17,12 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.R
@@ -34,7 +36,7 @@ fun DeliveryScreen(
 ) {
     // Box chứa toàn bộ màn hình
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Bản đồ nền (Giả lập bằng ảnh)
+        // 1. Bản đồ nền (Giả lập bằng ảnh R.drawable.map)
         Image(
             painter = painterResource(id = R.drawable.map),
             contentDescription = "Map",
@@ -46,7 +48,7 @@ fun DeliveryScreen(
         DeliveryTopControls(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .statusBarsPadding(), // Tránh bị tai thỏ che
+                .statusBarsPadding(),
             onBackClick = onBackClick
         )
 
@@ -56,6 +58,10 @@ fun DeliveryScreen(
         )
     }
 }
+
+// =================================================================
+// CÁC HÀM CON HỖ TRỢ
+// =================================================================
 
 @Composable
 fun DeliveryTopControls(
@@ -68,7 +74,6 @@ fun DeliveryTopControls(
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Nút Back (Sử dụng Surface để có bóng đổ chuẩn Material)
         Surface(
             onClick = onBackClick,
             shape = RoundedCornerShape(14.dp),
@@ -86,7 +91,6 @@ fun DeliveryTopControls(
             }
         }
 
-        // Nút GPS
         Surface(
             onClick = { /* Center Map logic */ },
             shape = RoundedCornerShape(14.dp),
@@ -110,14 +114,13 @@ fun DeliveryBottomSheet(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-        color = MaterialTheme.colorScheme.background, // Nền màu Be/Trắng từ Theme
+        color = MaterialTheme.colorScheme.background,
         shadowElevation = 16.dp
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Handle bar (thanh ngang để kéo)
             Box(
                 modifier = Modifier
                     .width(40.dp)
@@ -128,28 +131,20 @@ fun DeliveryBottomSheet(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Thời gian dự kiến
-            Text(
-                text = "Còn 10 phút",
-                style = MaterialTheme.typography.headlineSmall, // Font to đậm
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+
 
             Text(
-                text = "Giao hàng đến UTH",
+                text = "Tính Năng này đang phát triển",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(46.dp))
 
-            // Thanh tiến trình (Progress Bar)
             DeliveryProgressBar()
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Card thông tin tài xế
             DriverInfoCard()
         }
     }
@@ -162,15 +157,11 @@ fun DeliveryProgressBar() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Logic: 4 bước, 3 đường nối
-        // Bước 1, 2, 3: Active
         DeliveryStep(active = true)
         DeliveryLine(active = true)
         DeliveryStep(active = true)
         DeliveryLine(active = true)
         DeliveryStep(active = true)
-
-        // Bước 4: Inactive
         DeliveryLine(active = false)
         DeliveryStep(active = false)
     }
@@ -178,7 +169,6 @@ fun DeliveryProgressBar() {
 
 @Composable
 fun DeliveryStep(active: Boolean) {
-    // Sử dụng màu Primary (Nâu) nếu Active, màu Outline nếu Inactive
     val color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     Box(
         modifier = Modifier
@@ -193,15 +183,14 @@ fun DeliveryLine(active: Boolean) {
     val color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     Box(
         modifier = Modifier
-            .width(40.dp) // Độ dài đường nối
-            .height(2.dp) // Độ dày
+            .width(40.dp)
+            .height(2.dp)
             .background(color)
     )
 }
 
 @Composable
 fun DriverInfoCard() {
-    // Card chứa thông tin tài xế, có viền bao quanh
     Surface(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
@@ -212,10 +201,9 @@ fun DriverInfoCard() {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar Tài xế
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data("https://img.freepik.com/free-photo/portrait-handsome-smiling-young-man-model-wearing-casual-summer-pink-clothes-fashion-stylish-man-posing_158538-5350.jpg") // Ảnh mẫu
+                    .data("https://img.freepik.com/free-photo/portrait-handsome-smiling-young-man-model-wearing-casual-summer-pink-clothes-fashion-stylish-man-posing_158538-5350.jpg")
                     .crossfade(true)
                     .build(),
                 contentDescription = "Driver Avatar",
@@ -228,7 +216,6 @@ fun DriverInfoCard() {
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // Tên & Chức vụ
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Ronaldo",
@@ -243,7 +230,6 @@ fun DriverInfoCard() {
                 )
             }
 
-            // Nút Gọi điện
             IconButton(
                 onClick = { /* Call Driver */ },
                 modifier = Modifier
@@ -253,13 +239,12 @@ fun DriverInfoCard() {
                 Icon(
                     imageVector = Icons.Default.Call,
                     contentDescription = "Call Driver",
-                    tint = MaterialTheme.colorScheme.primary // Icon màu Nâu chủ đạo
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
 }
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DeliveryScreenPreviewIntegrated() {

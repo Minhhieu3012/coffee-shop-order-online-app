@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.ut.hieupm9898.customermobile.R
-import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
+import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton // Cần đảm bảo component này tồn tại
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @Composable
@@ -31,7 +31,7 @@ fun OrderSuccessScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Ảnh minh họa thành công
+        // Ảnh minh họa thành công (Giả sử bạn đã có R.drawable.payment_success)
         Image(
             painter = painterResource(id = R.drawable.payment_success),
             contentDescription = "Success",
