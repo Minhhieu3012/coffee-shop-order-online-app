@@ -69,14 +69,14 @@ fun AppNavigation(navController: NavHostController) {
         )
 
         // --- 4. LUỒNG ỨNG DỤNG CHÍNH (MAIN APP) ---
-        // Đây là "ngôi nhà chung" sau khi đăng nhập thành công
         navigation(
             route = AppRoutes.MAIN_APP_GRAPH,
             startDestination = AppRoutes.HOME
         ) {
-            // Màn hình chứa Bottom Bar (Trang chủ, Giỏ hàng...)
+            // Màn hình chính chứa Bottom Bar (Trang chủ, Giỏ hàng...)
             composable(AppRoutes.HOME) {
-                MainScreen()
+                // [QUAN TRỌNG] Truyền navController cha vào đây để nút Đăng xuất hoạt động
+                MainScreen(rootNavController = navController)
             }
 
             // Màn hình Chi tiết sản phẩm
@@ -90,14 +90,13 @@ fun AppNavigation(navController: NavHostController) {
             ) { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
                 // TODO: Gọi màn hình ProductDetailScreen(productId = productId) tại đây
+                // Ví dụ: ProductDetailScreen(navController = navController, productId = productId)
             }
         }
     }
 }
 
-/**
- * Hàm phụ trợ: Chuyển đến luồng Đăng nhập
- */
+
 private fun navigateToAuthFlow(navController: NavHostController) {
     navController.navigate(AppRoutes.AUTH_GRAPH) {
         popUpTo(AppRoutes.SPLASH) { inclusive = true }

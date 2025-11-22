@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile.features.profile
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,8 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp // Cần thư viện extended
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos // Cần thư viện extended
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,21 +23,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    navController: NavController, // [QUAN TRỌNG] Thêm cái này để điều hướng
     onEditProfileClick: () -> Unit,
     onAddressClick: () -> Unit,
     onPaymentClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onNotificationsClick: () -> Unit,
-    onLogoutClick: () -> Unit,
+    // onLogoutClick: () -> Unit, <-- Đã xóa dòng này vì ta xử lý trực tiếp bên dưới
     onBackClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current // Lấy context để xóa bộ nhớ máy
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -99,7 +106,7 @@ fun ProfileScreen(
                 ProfileOptionItem(
                     icon = Icons.Default.Notifications,
                     title = "Thông báo",
-                    onClick = onNotificationsClick // <-- GỌI HÀM NÀY
+                    onClick = onNotificationsClick
                 )
                 ProfileOptionItem(
                     icon = Icons.Default.Security,
@@ -110,9 +117,23 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 3. Logout Button
+            // 3. Logout Button (XỬ LÝ TRỰC TIẾP TẠI ĐÂY)
             Surface(
-                onClick = onLogoutClick,
+                onClick = {
+                    // BƯỚC 1: Xóa trạng thái đăng nhập ("Quên người dùng")
+                    val sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                    with(sharedPreferences.edit()) {
+                        putBoolean("IS_LOGGED_IN", false)
+                        putString("USER_EMAIL", "")
+                        apply()
+                    }
+
+                    // BƯỚC 2: Đá về màn hình Đăng nhập (AUTH_GRAPH)
+                    // Và xóa sạch lịch sử để không bấm Back quay lại được
+                    navController.navigate(AppRoutes.AUTH_GRAPH) {
+                        popUpTo(AppRoutes.MAIN_APP_GRAPH) { inclusive = true }
+                    }
+                },
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.errorContainer,
                 modifier = Modifier.fillMaxWidth().height(56.dp)
@@ -122,7 +143,6 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    // Lưu ý: Nếu chưa có icon ExitToApp, dùng tạm Icons.Default.Close
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = null,
@@ -143,14 +163,13 @@ fun ProfileScreen(
     }
 }
 
-// ... (Các hàm UserProfileHeader và ProfileOptionItem giữ nguyên như cũ) ...
-// (Bạn nhớ giữ lại phần Preview và các hàm con ở dưới nhé!)
+// --- CÁC COMPOSABLE CON GIỮ NGUYÊN ---
+
 @Composable
 fun UserProfileHeader() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Avatar với viền
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -166,21 +185,19 @@ fun UserProfileHeader() {
                 contentDescription = "User Avatar",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(110.dp) // Ảnh nhỏ hơn box để lòi viền ra
+                    .size(110.dp)
                     .clip(CircleShape)
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tên
         Text(
             text = "Khách hàng",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
-        // Email/Phone
         Text(
             text = "customer123@gmail.com",
             style = MaterialTheme.typography.bodyMedium,
@@ -198,8 +215,8 @@ fun ProfileOptionItem(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface, // Màu nền Header/Card
-        shadowElevation = 2.dp, // Đổ bóng nhẹ
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 2.dp,
         modifier = Modifier.fillMaxWidth().height(60.dp)
     ) {
         Row(
@@ -208,7 +225,6 @@ fun ProfileOptionItem(
                 .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon bên trái (có nền tròn nhạt)
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -219,14 +235,13 @@ fun ProfileOptionItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary, // Màu nâu chủ đạo
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Title
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
@@ -234,7 +249,6 @@ fun ProfileOptionItem(
                 modifier = Modifier.weight(1f)
             )
 
-            // Mũi tên bên phải
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = null,
@@ -250,12 +264,12 @@ fun ProfileOptionItem(
 fun ProfileScreenPreview() {
     CustomerMobileTheme {
         ProfileScreen(
+            navController = rememberNavController(),
             onEditProfileClick = {},
             onAddressClick = {},
             onPaymentClick = {},
             onHistoryClick = {},
-            onNotificationsClick = {},
-            onLogoutClick = {}
+            onNotificationsClick = {}
         )
     }
 }

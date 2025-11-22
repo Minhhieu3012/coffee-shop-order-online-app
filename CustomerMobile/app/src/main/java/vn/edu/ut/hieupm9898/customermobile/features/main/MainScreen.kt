@@ -6,13 +6,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController // Import này
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.navigation.navigation
 
 // --- IMPORT ---
 import vn.edu.ut.hieupm9898.customermobile.features.cart.*
@@ -25,7 +25,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosBottomNavBar
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    // [QUAN TRỌNG] Nhận rootNavController để điều hướng Đăng xuất
+    rootNavController: NavHostController? = null
+) {
     // NavController này chỉ quản lý các tab con (Home, Cart, Profile...)
     val mainNavController = rememberNavController()
 
@@ -55,7 +58,6 @@ fun MainScreen() {
 
             NavHost(
                 navController = mainNavController,
-                // [QUAN TRỌNG] Bắt đầu ngay từ HOME, không qua Splash nữa
                 startDestination = AppRoutes.HOME,
                 modifier = Modifier.padding(paddingValues)
             ) {
@@ -89,18 +91,18 @@ fun MainScreen() {
                 }
 
                 composable(AppRoutes.PROFILE) {
+                    // [QUAN TRỌNG] Truyền rootNavController vào Profile để nó Đăng xuất được
+                    // Nếu rootNavController null (khi preview), dùng tạm mainNavController để không crash
+                    val controllerToUse = rootNavController ?: mainNavController
+
                     ProfileScreen(
+                        navController = controllerToUse,
                         onEditProfileClick = { mainNavController.navigate(AppRoutes.EDIT_PROFILE) },
                         onAddressClick = { mainNavController.navigate(AppRoutes.ADDRESS_LIST) },
                         onPaymentClick = { mainNavController.navigate(AppRoutes.PAYMENT_METHODS) },
                         onHistoryClick = { mainNavController.navigate(AppRoutes.ORDER_HISTORY) },
-                        onNotificationsClick = { mainNavController.navigate(AppRoutes.NOTIFICATIONS) },
-
-                        // [LƯU Ý] Logic Đăng xuất sẽ cần gọi lên AppNavigation (Parent)
-                        // Hiện tại tạm thời để trống hoặc navigate về Auth nếu cùng Graph
-                        onLogoutClick = {
-                            // TODO: Cần xử lý đăng xuất ở cấp cao hơn (AppNavigation)
-                        }
+                        onNotificationsClick = { mainNavController.navigate(AppRoutes.NOTIFICATIONS) }
+                        // Đã xóa onLogoutClick vì ProfileScreen tự xử lý bên trong
                     )
                 }
 
@@ -205,7 +207,6 @@ fun MainScreen() {
                     )
                 }
 
-                // [ĐÃ THÊM] Màn hình Payment Methods còn thiếu
                 composable(AppRoutes.PAYMENT_METHODS) {
                     // PaymentMethodsScreen(onBackClick = { mainNavController.popBackStack() })
                 }
