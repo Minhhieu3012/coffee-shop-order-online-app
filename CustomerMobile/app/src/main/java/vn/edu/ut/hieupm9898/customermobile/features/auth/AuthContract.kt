@@ -1,5 +1,3 @@
-// features/auth/AuthContract.kt
-
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
 // --- CÁC DATA CLASS CHO DỮ LIỆU FORM ---

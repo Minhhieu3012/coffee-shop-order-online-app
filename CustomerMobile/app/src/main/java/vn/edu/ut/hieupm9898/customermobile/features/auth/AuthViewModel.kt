@@ -83,4 +83,19 @@ class AuthViewModel @Inject constructor(
             _navEvent.emit(AuthNavEvent.NavigateToOtp(OtpTargets.RESET_PASSWORD))
         }
     }
+
+
+    fun onGoogleSignInClicked(idToken: String) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        val success = authRepository.signInWithGoogle(idToken)
+
+        _uiState.update { it.copy(isLoading = false) }
+
+        if (success) {
+            _navEvent.emit(AuthNavEvent.NavigateToHome)
+        } else {
+            _uiState.update { it.copy(errorMessage = "Đăng nhập Google thất bại") }
+        }
+    }
 }

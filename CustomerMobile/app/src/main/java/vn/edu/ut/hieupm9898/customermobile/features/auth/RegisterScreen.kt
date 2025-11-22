@@ -53,11 +53,16 @@ fun RegisterScreen(navController: NavController) {
 
     val context = LocalContext.current
 
+    // --- LOGIC ĐIỀU HƯỚNG: SAU KHI ĐĂNG KÝ THÀNH CÔNG ---
     LaunchedEffect(showSuccessDialog) {
         if (showSuccessDialog) {
-            delay(2000)
+            delay(2000) // Đợi 2 giây để người dùng đọc thông báo
             showSuccessDialog = false
-            navController.navigate(AppRoutes.PROFILE) {
+
+            // 👇 ĐÃ SỬA: Chuyển hướng về màn hình LOGIN
+            navController.navigate(AppRoutes.LOGIN) {
+                // Xóa màn hình Register khỏi ngăn xếp (Back Stack)
+                // Để khi người dùng bấm nút Back ở màn hình Login, nó không quay lại màn hình Đăng ký này nữa
                 popUpTo(AppRoutes.REGISTER) { inclusive = true }
             }
         }

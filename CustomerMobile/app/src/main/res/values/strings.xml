@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Customer Mobile</string>
+    <!-- Thêm dòng này - lấy từ google-services.json -->
+<!--    <string name="default_web_client_id">743926532574-6ar5micotqfruud2abjrcabhme52nart.apps.googleusercontent.com</string>-->
 </resources>

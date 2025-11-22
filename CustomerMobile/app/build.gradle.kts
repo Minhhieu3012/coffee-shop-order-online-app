@@ -108,7 +108,13 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
-    // implementation("com.google.firebase:firebase-messaging-ktx") // Bỏ comment nếu dùng thông báo
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    // Activity Result API
+    implementation("androidx.activity:activity-compose:1.8.2")
 
     // --- Room Database ---
     val roomVersion = "2.6.1"
