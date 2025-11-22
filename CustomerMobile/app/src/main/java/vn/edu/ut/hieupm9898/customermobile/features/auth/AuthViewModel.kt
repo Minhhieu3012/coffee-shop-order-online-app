@@ -3,19 +3,15 @@ package vn.edu.ut.hieupm9898.customermobile.features.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import vn.edu.ut.hieupm9898.customermobile.data.repository.AuthRepository // <-- IMPORT QUAN TRỌNG
+import vn.edu.ut.hieupm9898.customermobile.data.model.User
+import vn.edu.ut.hieupm9898.customermobile.data.repository.AuthRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository // Sử dụng class thật, không phải interface giả
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -24,7 +20,9 @@ class AuthViewModel @Inject constructor(
     private val _navEvent = MutableSharedFlow<AuthNavEvent>()
     val navEvent = _navEvent.asSharedFlow()
 
-    // --- 1. CẬP NHẬT DỮ LIỆU NHẬP VÀO ---
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser = _currentUser.asStateFlow()
+
     fun updateField(field: String, value: String) {
         _uiState.update { currentState ->
             when (field) {
@@ -39,9 +37,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // --- 2. LOGIC ĐĂNG NHẬP ---
+    // ĐĂNG NHẬP
     fun onLoginClicked() = viewModelScope.launch {
-        val email = _uiState.value.email
+        val email = _uiState.value.email.trim()
         val password = _uiState.value.password
 
         if (email.isBlank() || password.isBlank()) {
@@ -51,51 +49,138 @@ class AuthViewModel @Inject constructor(
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        // Gọi xuống Repository thật (Firebase)
-        val success = authRepository.login(email, password)
+        try {
+            val result = authRepository.login(email, password)
 
-        _uiState.update { it.copy(isLoading = false) }
+            _uiState.update { it.copy(isLoading = false) }
 
-        if (success) {
-            _navEvent.emit(AuthNavEvent.NavigateToHome)
-        } else {
-            _uiState.update { it.copy(errorMessage = "Đăng nhập thất bại. Kiểm tra lại email/mật khẩu.") }
+            result.fold(
+                onSuccess = { user ->
+                    _currentUser.value = user
+
+                    if (user.isProfileCompleted) {
+                        _navEvent.emit(AuthNavEvent.NavigateToHome)
+                    } else {
+                        _navEvent.emit(AuthNavEvent.NavigateToCreateProfile)
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            errorMessage = when {
+                                error.message?.contains("network") == true ->
+                                    "Không có kết nối internet"
+                                error.message?.contains("password") == true ->
+                                    "Email hoặc mật khẩu không đúng"
+                                error.message?.contains("user-not-found") == true ->
+                                    "Tài khoản không tồn tại"
+                                else ->
+                                    "Đăng nhập thất bại: ${error.message}"
+                            }
+                        )
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    errorMessage = "Lỗi hệ thống: ${e.message}"
+                )
+            }
         }
     }
 
-    // --- 3. LOGIC ĐĂNG KÝ (Giả lập) ---
-    fun onSignUpClicked() = viewModelScope.launch {
-        // Trong thực tế, bạn gọi authRepository.register(...) ở đây
-        _navEvent.emit(AuthNavEvent.NavigateToOtp(OtpTargets.COMPLETE_REGISTRATION))
+    // ĐĂNG NHẬP GOOGLE
+    fun onGoogleSignInClicked(idToken: String) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        val result = authRepository.signInWithGoogle(idToken)
+
+        _uiState.update { it.copy(isLoading = false) }
+
+        result.fold(
+            onSuccess = { user ->
+                _currentUser.value = user
+
+                if (user.isProfileCompleted) {
+                    _navEvent.emit(AuthNavEvent.NavigateToHome)
+                } else {
+                    _navEvent.emit(AuthNavEvent.NavigateToCreateProfile)
+                }
+            },
+            onFailure = { error ->
+                _uiState.update {
+                    it.copy(errorMessage = "Đăng nhập Google thất bại: ${error.message}")
+                }
+            }
+        )
     }
 
-    // --- 4. LOGIC QUÊN MẬT KHẨU ---
+    // ĐĂNG KÝ
+    fun onRegisterClicked(
+        email: String,
+        password: String,
+        referralCode: String = ""
+    ) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        val result = authRepository.register(email, password, referralCode)
+
+        _uiState.update { it.copy(isLoading = false) }
+
+        result.fold(
+            onSuccess = {
+                _navEvent.emit(AuthNavEvent.NavigateToLogin)
+            },
+            onFailure = { error ->
+                _uiState.update {
+                    it.copy(errorMessage = "Đăng ký thất bại: ${error.message}")
+                }
+            }
+        )
+    }
+
+    // CẬP NHẬT PROFILE
+    fun onCompleteProfile(
+        displayName: String,
+        phoneNumber: String,
+        dateOfBirth: String,
+        avatarUrl: String = ""
+    ) = viewModelScope.launch {
+        val uid = _currentUser.value?.uid ?: return@launch
+
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        val result = authRepository.updateProfile(
+            uid, displayName, phoneNumber, dateOfBirth, avatarUrl
+        )
+
+        _uiState.update { it.copy(isLoading = false) }
+
+        result.fold(
+            onSuccess = {
+                _navEvent.emit(AuthNavEvent.NavigateToHome)
+            },
+            onFailure = { error ->
+                _uiState.update {
+                    it.copy(errorMessage = "Cập nhật profile thất bại: ${error.message}")
+                }
+            }
+        )
+    }
+
+    // CÁC HÀM KHÁC (GIỮ NGUYÊN NẾU BẠN CÓ)
     fun onProceedForgotPassword() = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
-        delay(1000) // Giả lập mạng
+        kotlinx.coroutines.delay(1000)
 
-        // Logic gửi OTP (hoặc gửi email reset)
         val sent = authRepository.sendOtp(_uiState.value.phoneNumber)
 
         _uiState.update { it.copy(isLoading = false) }
 
         if (sent) {
             _navEvent.emit(AuthNavEvent.NavigateToOtp(OtpTargets.RESET_PASSWORD))
-        }
-    }
-
-
-    fun onGoogleSignInClicked(idToken: String) = viewModelScope.launch {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-        val success = authRepository.signInWithGoogle(idToken)
-
-        _uiState.update { it.copy(isLoading = false) }
-
-        if (success) {
-            _navEvent.emit(AuthNavEvent.NavigateToHome)
-        } else {
-            _uiState.update { it.copy(errorMessage = "Đăng nhập Google thất bại") }
         }
     }
 }

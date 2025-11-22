@@ -58,6 +58,8 @@ object AppRoutes {
     const val FEEDBACK = "feedback"
     const val DELETE_ACCOUNT = "delete_account"
 
+    const val CREATE_PROFILE = "create_profile"
+
     // Helper functions
     fun createProductDetailRoute(productId: String): String {
         return "product_detail/$productId"

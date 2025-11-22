@@ -110,6 +110,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 

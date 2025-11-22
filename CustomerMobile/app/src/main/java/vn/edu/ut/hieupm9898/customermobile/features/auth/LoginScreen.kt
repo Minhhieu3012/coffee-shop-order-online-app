@@ -91,10 +91,20 @@ fun LoginScreen(
     }
 
     // Lắng nghe sự kiện từ ViewModel (để biết khi nào đăng nhập thành công)
+
     LaunchedEffect(Unit) {
         viewModel.navEvent.collect { event ->
-            if (event is AuthNavEvent.NavigateToHome) {
-                isLoginSuccess = true
+            when (event) {
+                is AuthNavEvent.NavigateToHome -> {
+                    isLoginSuccess = true
+                }
+                is AuthNavEvent.NavigateToCreateProfile -> {
+                    // 👈 XỬ LÝ CHUYỂN ĐẾN TẠO PROFILE
+                    navController.navigate(AppRoutes.CREATE_PROFILE) {
+                        popUpTo(AppRoutes.LOGIN) { inclusive = true }
+                    }
+                }
+                else -> {}
             }
         }
     }

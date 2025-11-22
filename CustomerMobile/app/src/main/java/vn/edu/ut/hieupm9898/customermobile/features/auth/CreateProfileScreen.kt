@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
@@ -38,11 +41,27 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateProfileScreen(navController: NavController) {
+fun CreateProfileScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
     var fullName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
     var isSuccess by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    // Lắng nghe sự kiện từ ViewModel
+    LaunchedEffect(Unit) {
+        viewModel.navEvent.collect { event ->
+            if (event is AuthNavEvent.NavigateToHome) {
+                isSuccess = true
+                kotlinx.coroutines.delay(2000)
+                isSuccess = false
+                navController.navigate(AppRoutes.HOME) {
+                    popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
+                }
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -202,9 +221,26 @@ fun CreateProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(40.dp))
 
             // --- NÚT SIGN UP ---
+            // Thay đổi nút "Đăng ký":
             BrosButton(
                 text = "Đăng ký",
-                onClick = { isSuccess = true },
+                onClick = {
+                    if (fullName.isBlank() || phoneNumber.isBlank() || dateOfBirth.isBlank()) {
+                        Toast.makeText(
+                            context,
+                            "Vui lòng điền đầy đủ thông tin!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        // ✅ GỌI VIEWMODEL
+                        viewModel.onCompleteProfile(
+                            displayName = fullName,
+                            phoneNumber = phoneNumber,
+                            dateOfBirth = dateOfBirth,
+                            avatarUrl = ""
+                        )
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
@@ -214,6 +250,7 @@ fun CreateProfileScreen(navController: NavController) {
         }
 
         // --- STATUS SCREEN (THÀNH CÔNG) ---
+        // Status Screen
         if (isSuccess) {
             val greenColor = Color(0xFF4CAF50)
             val lightGreenColor = Color(0xFF81C784)
@@ -226,12 +263,7 @@ fun CreateProfileScreen(navController: NavController) {
                 iconBackgroundColor = greenColor,
                 titleColor = greenColor,
                 decorativeDotsColor = lightGreenColor,
-                onTimeout = {
-                    isSuccess = false
-                    navController.navigate(AppRoutes.HOME) {
-                        popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
-                    }
-                }
+                onTimeout = {}
             )
         }
     }

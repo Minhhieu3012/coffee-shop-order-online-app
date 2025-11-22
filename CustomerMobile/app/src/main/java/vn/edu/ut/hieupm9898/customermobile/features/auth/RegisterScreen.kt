@@ -28,6 +28,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
@@ -39,7 +40,7 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.*
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel() ) {
     var userName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -210,6 +211,8 @@ fun RegisterScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // --- NÚT TIẾP TỤC (VALIDATION NÂNG CAO) ---
+                // Tìm đến phần nút "Tiếp tục", thay thế logic cũ:
+
                 BrosButton(
                     text = "Tiếp tục",
                     enabled = !showSuccessDialog,
@@ -219,39 +222,37 @@ fun RegisterScreen(navController: NavController) {
                         val cleanPhone = phone.trim()
                         val cleanPass = password.trim()
 
-                        // REGEX VN PHONE: Bắt đầu số 0, theo sau là 9 chữ số
                         val vietnamPhoneRegex = Regex("^0\\d{9}$")
 
-                        // 1. Kiểm tra Tên
+                        // Validate các trường
                         if (cleanName.isEmpty()) {
                             Toast.makeText(context, "Vui lòng nhập tên người dùng!", Toast.LENGTH_SHORT).show()
                         }
-                        // 2. Kiểm tra Email trống
                         else if (cleanEmail.isEmpty()) {
                             Toast.makeText(context, "Vui lòng nhập Email!", Toast.LENGTH_SHORT).show()
                         }
-                        // 3. Kiểm tra Định dạng Email (abc@xyz.com)
                         else if (!Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches()) {
-                            Toast.makeText(context, "Email không hợp lệ! Vui lòng kiểm tra lại.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Email không hợp lệ!", Toast.LENGTH_SHORT).show()
                         }
-                        // 4. Kiểm tra SĐT trống
                         else if (cleanPhone.isEmpty()) {
                             Toast.makeText(context, "Vui lòng nhập số điện thoại!", Toast.LENGTH_SHORT).show()
                         }
-                        // 5. Kiểm tra Định dạng SĐT VN (10 số, bắt đầu bằng 0)
                         else if (!cleanPhone.matches(vietnamPhoneRegex)) {
-                            Toast.makeText(context, "Số điện thoại không hợp lệ (Phải là 10 số, bắt đầu bằng 0)", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Số điện thoại không hợp lệ", Toast.LENGTH_LONG).show()
                         }
-                        // 6. Kiểm tra Mật khẩu
                         else if (cleanPass.isEmpty()) {
                             Toast.makeText(context, "Vui lòng nhập mật khẩu!", Toast.LENGTH_SHORT).show()
                         }
-                        // 7. Kiểm tra Điều khoản
                         else if (!isTermAccepted) {
-                            Toast.makeText(context, "Bạn cần chấp nhận Điều khoản & Điều kiện!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Bạn cần chấp nhận Điều khoản!", Toast.LENGTH_SHORT).show()
                         }
                         else {
-                            // Tất cả hợp lệ -> OK
+                            // ✅ GỌI VIEWMODEL ĐỂ ĐĂNG KÝ
+                            viewModel.onRegisterClicked(
+                                email = cleanEmail,
+                                password = cleanPass,
+                                referralCode = referralCode.trim()
+                            )
                             showSuccessDialog = true
                         }
                     },
