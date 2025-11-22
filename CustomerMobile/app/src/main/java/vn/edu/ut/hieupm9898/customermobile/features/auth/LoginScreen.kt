@@ -46,8 +46,8 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var email by remember { mutableStateOf("customer123@gmail.com") }
-    var password by remember { mutableStateOf("123456AcB") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
     var isLoginSuccess by remember { mutableStateOf(false) }
 
