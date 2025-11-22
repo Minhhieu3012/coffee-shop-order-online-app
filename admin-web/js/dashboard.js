@@ -2,44 +2,32 @@
 import { db } from "./firebase-config.js";
 import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Biến toàn cục để lưu dữ liệu mới nhất (Dùng để tính toán chéo)
 let allProducts = [];
 let allOrders = [];
 
-// ===================================================
-// 1. KHỞI ĐỘNG CÁC BỘ LẮNG NGHE (REALTIME LISTENERS)
-// ===================================================
+// 1. KHỞI ĐỘNG CÁC BỘ LẮNG NGHE
 function initRealtimeDashboard() {
   
-  // --- LẮNG NGHE SẢN PHẨM (Products) ---
+  // Lắng nghe Sản phẩm
   onSnapshot(collection(db, "products"), (snapshot) => {
-    // 1. Cập nhật biến toàn cục
     allProducts = snapshot.docs.map(doc => doc.data());
-    
-    // 2. Cập nhật số lượng trên thẻ
     updateStat("statProducts", snapshot.size);
-
-    // 3. Tính toán lại Best Seller (Vì nhỡ đâu vừa sửa ảnh/tên món)
     if (allOrders.length > 0) calculateAndRenderBestSellers(allOrders, allProducts);
   });
 
-  // --- LẮNG NGHE NGƯỜI DÙNG (Users) ---
+  // Lắng nghe Users
   onSnapshot(collection(db, "users"), (snapshot) => {
     const users = snapshot.docs.map(doc => doc.data());
-    // Chỉ đếm khách hàng
     const totalCustomers = users.filter(u => u.role !== 'admin').length;
     updateStat("statCustomers", totalCustomers);
   });
 
-  // --- LẮNG NGHE ĐƠN HÀNG (Orders) - QUAN TRỌNG NHẤT ---
+  // Lắng nghe Orders
   onSnapshot(collection(db, "orders"), (snapshot) => {
-    // 1. Cập nhật biến toàn cục
     allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // 2. Cập nhật Tổng đơn hàng
     updateStat("statOrders", snapshot.size);
 
-    // 3. Tính Tổng doanh thu (Chỉ tính đơn completed)
     const totalRevenue = allOrders.reduce((sum, order) => {
       if (order.status === 'completed') {
         return sum + Number(order.totalPrice || 0);
@@ -48,36 +36,29 @@ function initRealtimeDashboard() {
     }, 0);
     updateStat("statRevenue", new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue));
 
-    // 4. Cập nhật 2 bảng dữ liệu bên dưới
     renderRecentOrders(allOrders);
-    // Cần cả data sản phẩm để hiển thị ảnh trong Best Seller
     if (allProducts.length > 0) calculateAndRenderBestSellers(allOrders, allProducts);
   });
 }
 
-// Hàm phụ cập nhật text
 function updateStat(id, value) {
   const el = document.getElementById(id);
   if (el) el.innerText = value;
 }
 
-// ===================================================
-// 2. BẢNG ĐƠN HÀNG GẦN ĐÂY
-// ===================================================
+// 2. BẢNG ĐƠN HÀNG GẦN ĐÂY (Có Thời gian thật)
 function renderRecentOrders(orders) {
   const tableBody = document.getElementById("recentOrdersBody");
   if (!tableBody) return;
 
   tableBody.innerHTML = "";
 
-  // Sắp xếp mới nhất lên đầu
   const sortedOrders = [...orders].sort((a, b) => {
     const timeA = a.createdAt || "";
     const timeB = b.createdAt || "";
     return timeB.localeCompare(timeA); 
   });
 
-  // Lấy 5 đơn
   const recentOrders = sortedOrders.slice(0, 5);
 
   if (recentOrders.length === 0) {
@@ -93,9 +74,13 @@ function renderRecentOrders(orders) {
     if (order.status === 'completed') statusBadge = `<span class="badge badge-success">Xong</span>`;
     if (order.status === 'cancelled') statusBadge = `<span class="badge badge-danger">Hủy</span>`;
 
+    // Lấy thời gian từ Firebase (createdAt)
+    // Nếu chưa có thì hiện "Vừa xong"
+    const timeDisplay = order.createdAt || "Vừa xong";
+
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><b>...${order.id.slice(-5)}</b></td>
+      <td><b>...${order.id.slice(-5)}</b><br><span style="font-size:0.75rem; color:#888;">${timeDisplay}</span></td>
       <td>${order.customerName || "Khách lẻ"}</td>
       <td style="font-weight:600;">${price}</td>
       <td>${statusBadge}</td>
@@ -104,9 +89,7 @@ function renderRecentOrders(orders) {
   });
 }
 
-// ===================================================
-// 3. BẢNG TOP BÁN CHẠY (BEST SELLER)
-// ===================================================
+// 3. TOP BÁN CHẠY (Đã bỏ chữ "ly")
 function calculateAndRenderBestSellers(orders, products) {
   const listContainer = document.getElementById("bestSellerList");
   if (!listContainer) return;
@@ -116,7 +99,6 @@ function calculateAndRenderBestSellers(orders, products) {
   const salesMap = {};
 
   orders.forEach(order => {
-    // Chỉ tính đơn đã hoàn thành
     if (order.status === 'completed' && Array.isArray(order.items)) {
       order.items.forEach(item => {
         const name = item.name;
@@ -138,7 +120,6 @@ function calculateAndRenderBestSellers(orders, products) {
   }
 
   top5.forEach((item, index) => {
-    // Tìm ảnh sản phẩm
     const productInfo = products.find(p => p.name === item.name);
     const imgUrl = productInfo ? productInfo.imageUrl : 'assets/logo.png';
     const rankClass = index === 0 ? "rank-1" : (index === 1 ? "rank-2" : (index === 2 ? "rank-3" : ""));
@@ -150,13 +131,11 @@ function calculateAndRenderBestSellers(orders, products) {
       <img src="${imgUrl}" class="user-avatar" style="border-radius: 8px; width: 45px; height: 45px;" onerror="this.src='assets/logo.png'">
       <div class="item-info">
         <span class="item-name">${item.name}</span>
-        <span class="item-price" style="color: #6b7280; font-size: 0.85rem;">Đã bán: ${item.qty} ly</span>
-      </div>
+        <span class="item-price" style="color: #6b7280; font-size: 0.85rem;">Đã bán: ${item.qty}</span> </div>
       <div class="sold-count" style="background: #f3f4f6; color: #374151;">Top ${index+1}</div>
     `;
     listContainer.appendChild(div);
   });
 }
 
-// Kích hoạt chế độ Realtime
 initRealtimeDashboard();

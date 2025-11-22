@@ -51,13 +51,12 @@
     <main class="admin-main">
       <header class="admin-topbar">
         <h1 class="page-title">Dashboard</h1>
-        </header>
+      </header>
 
       <section id="page-dashboard" class="page active">
         <div class="page-header">
           <h2 class="section-title">Tổng quan</h2>
         </div>
-        
         <div class="dashboard-cards">
           <div class="stat-card">
             <div class="stat-icon bg-green"><i class="fa-solid fa-sack-dollar"></i></div>
@@ -76,7 +75,6 @@
             <div class="stat-info"><h4>Sản phẩm</h4><p id="statProducts">0</p></div>
           </div>
         </div>
-
         <div class="dashboard-grid">
           <div class="card">
             <div class="card-header">
@@ -93,18 +91,15 @@
                     <th>Trạng thái</th>
                   </tr>
                 </thead>
-                <tbody id="recentOrdersBody">
-                  </tbody>
+                <tbody id="recentOrdersBody"></tbody>
               </table>
             </div>
           </div>
-
           <div class="card">
             <div class="card-header">
               <div class="card-title">Top bán chạy 🔥</div>
             </div>
-            <div class="best-seller-list" id="bestSellerList">
-              </div>
+            <div class="best-seller-list" id="bestSellerList"></div>
           </div>
         </div>
       </section>
@@ -129,8 +124,7 @@
                 <th style="width: 100px; text-align: center;">Hành động</th>
               </tr>
             </thead>
-            <tbody id="userTableBody">
-              </tbody>
+            <tbody id="userTableBody"></tbody>
           </table>
         </div>
       </section>
@@ -157,8 +151,7 @@
                 <th>Hành động</th>
               </tr>
             </thead>
-            <tbody id="orderTableBody">
-              </tbody>
+            <tbody id="orderTableBody"></tbody>
           </table>
         </div>
       </section>
@@ -188,8 +181,7 @@
                 <th>Hành động</th>
               </tr>
             </thead>
-            <tbody id="productTableBody">
-              </tbody>
+            <tbody id="productTableBody"></tbody>
           </table>
         </div>
       </section>
@@ -202,15 +194,12 @@
         <h3 id="modalTitle">Thêm món mới</h3>
         <span class="close-modal">&times;</span>
       </div>
-      
       <form id="productForm">
         <input type="hidden" id="prodId">
-
         <div class="form-group">
           <label for="prodName">Tên món</label>
           <input type="text" id="prodName" required placeholder="VD: Cà phê sữa đá">
         </div>
-  
         <div class="form-row">
           <div class="form-group">
             <label for="prodCategory">Danh mục</label>
@@ -226,20 +215,17 @@
             <input type="number" id="prodPrice" required placeholder="VD: 25000">
           </div>
         </div>
-  
         <div class="form-group">
           <label for="prodImage">Link ảnh (URL)</label>
           <input type="url" id="prodImage" placeholder="https://...">
           <small style="color: #666; font-size: 0.8rem;">Copy link ảnh trên mạng dán vào đây</small>
         </div>
-  
         <div class="form-group">
           <label class="checkbox-label">
             <input type="checkbox" id="prodStatus" checked>
             Đang kinh doanh (Còn hàng)
           </label>
         </div>
-  
         <div class="modal-footer">
           <button type="button" class="btn-secondary close-modal-btn">Hủy</button>
           <button type="submit" class="btn-primary">Lưu sản phẩm</button>
@@ -247,6 +233,7 @@
       </form>
     </div>
   </div>
+
   <div id="orderModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -258,7 +245,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Khách hàng</label>
-            <input type="text" id="ordModalCustomer" readonly style="background: #f9fafb;">
+            <input type="text" id="ordModalCustomer" readonly style="background: #f9fafb; font-weight: 600;">
           </div>
           <div class="form-group">
             <label>Thời gian đặt</label>
@@ -283,7 +270,6 @@
   
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/auth.js"></script>
-  
   <script type="module" src="js/dashboard.js"></script>
   <script type="module" src="js/users.js"></script>
   <script type="module" src="js/orders.js"></script>
