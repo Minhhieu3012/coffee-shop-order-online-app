@@ -146,7 +146,7 @@ fun OTPVerificationScreen(navController: NavController) {
 
             if (otpState != OtpState.IDLE) {
                 Text(
-                    text = if (otpState == OtpState.ERROR) "The OTP you entered is incorrect, please check or resend it now." else "The OTP you entered is correct, please proceed to reset your account.",
+                    text = if (otpState == OtpState.ERROR) "Mã OTP không chính xác, vui lòng kiểm tra lại." else "Mã OTP chính xác, đang chuyển hướng...",
                     color = if (otpState == OtpState.ERROR) Color.Red else Color(0xFF4CAF50),
                     fontSize = 14.sp
                 )
@@ -161,7 +161,7 @@ fun OTPVerificationScreen(navController: NavController) {
                     Text("Gửi lại trong 00:${if (timeLeft < 10) "0$timeLeft" else timeLeft}", color = BrosBrown, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 } else {
                     Text(
-                        "Resend Now",
+                        " Gửi lại ngay",
                         color = BrosBrown,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
@@ -172,12 +172,16 @@ fun OTPVerificationScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // --- ĐÃ SỬA LẠI NÚT BẤM CHO KHỚP ---
             BrosButton(
                 text = "Tiếp tục",
                 onClick = {
-                    navController.navigate(AppRoutes.RESET_PASSWORD)
+                    if (otpState == OtpState.SUCCESS) {
+                        navController.navigate(AppRoutes.RESET_PASSWORD)
+                    }
                 },
-                isEnabled = otpCode.length == otpLength,
+                // [SỬA LỖI] Đổi isEnabled -> enabled
+                enabled = otpCode.length == otpLength,
                 modifier = Modifier.fillMaxWidth().size(60.dp)
             )
 

@@ -20,15 +20,12 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = AppRoutes.SPLASH
     ) {
-        // --- SPLASH SCREEN ---
+        // --- 1. MÀN HÌNH CHỜ (SPLASH) ---
         composable(AppRoutes.SPLASH) {
             SplashScreen(
+                navController = navController, // Truyền vào để nó tự check đăng nhập
                 onGetStartedClick = {
-                    navController.navigate(AppRoutes.ONBOARDING_1) {
-                        popUpTo(AppRoutes.SPLASH) { inclusive = true }
-                    }
-                },
-                onTimeout = {
+                    // Nếu bấm Bắt đầu -> Vào Onboarding
                     navController.navigate(AppRoutes.ONBOARDING_1) {
                         popUpTo(AppRoutes.SPLASH) { inclusive = true }
                     }
@@ -36,7 +33,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // --- ONBOARDING FLOW ---
+        // --- 2. LUỒNG ONBOARDING ---
         composable(AppRoutes.ONBOARDING_1) {
             Onboarding1Screen(
                 onSkip = { navigateToAuthFlow(navController) },
@@ -61,44 +58,48 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // --- AUTH FLOW (Direct call without extra nesting) ---
-        // ✅ FIX: Gọi trực tiếp authNavGraph không cần nested navigation
+        // --- 3. LUỒNG XÁC THỰC (LOGIN/REGISTER) ---
         authNavGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(AppRoutes.HOME) {
-                    popUpTo(AppRoutes.LOGIN) { inclusive = true }
+                navController.navigate(AppRoutes.MAIN_APP_GRAPH) {
+                    popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
                 }
             }
         )
 
-        // --- MAIN APP FLOW ---
-        composable(AppRoutes.HOME) {
-            MainScreen()
-        }
+        // --- 4. LUỒNG ỨNG DỤNG CHÍNH (MAIN APP) ---
+        // Đây là "ngôi nhà chung" sau khi đăng nhập thành công
+        navigation(
+            route = AppRoutes.MAIN_APP_GRAPH,
+            startDestination = AppRoutes.HOME
+        ) {
+            // Màn hình chứa Bottom Bar (Trang chủ, Giỏ hàng...)
+            composable(AppRoutes.HOME) {
+                MainScreen()
+            }
 
-        // --- PRODUCT DETAIL ---
-        composable(
-            route = AppRoutes.PRODUCT_DETAIL,
-            arguments = listOf(
-                navArgument(AppRoutes.PRODUCT_DETAIL_ID) {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
-            // TODO: Implement ProductDetailScreen(navController, productId)
-            // ProductDetailScreen(navController = navController, productId = productId ?: "")
+            // Màn hình Chi tiết sản phẩm
+            composable(
+                route = AppRoutes.PRODUCT_DETAIL,
+                arguments = listOf(
+                    navArgument(AppRoutes.PRODUCT_DETAIL_ID) {
+                        type = NavType.StringType
+                    }
+                )
+            ) { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
+                // TODO: Gọi màn hình ProductDetailScreen(productId = productId) tại đây
+            }
         }
     }
 }
 
 /**
- * Helper function để navigate tới Auth Flow
+ * Hàm phụ trợ: Chuyển đến luồng Đăng nhập
  */
 private fun navigateToAuthFlow(navController: NavHostController) {
-    // ✅ FIX: Navigate đến LOGIN trực tiếp thay vì "auth"
-    navController.navigate(AppRoutes.LOGIN) {
+    navController.navigate(AppRoutes.AUTH_GRAPH) {
         popUpTo(AppRoutes.SPLASH) { inclusive = true }
     }
 }

@@ -1,5 +1,8 @@
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
+import android.content.Context
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -14,13 +17,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
@@ -34,66 +37,65 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.*
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("customer123@gmail.com") }
-    var password by remember { mutableStateOf("123456AcB") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
     var isLoginSuccess by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
     Box(modifier = Modifier.fillMaxSize()) {
-        // --- LỚP 1: FORM LOGIN ---
+        // Nền màu nâu nhạt
         Surface(color = BrosBackground, modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState()), // Cho phép cuộn nếu màn hình nhỏ
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo
+                // 1. LOGO (Chiếm khoảng 30% màn hình phía trên)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .height(220.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(200.dp)
+                        modifier = Modifier.size(180.dp)
                     )
                 }
 
-                // Form Card
+                // 2. KHỐI FORM TRẮNG (Bo tròn góc trên)
                 Card(
                     shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
+                    modifier = Modifier.fillMaxSize() // Lấp đầy phần còn lại
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 30.dp, vertical = 24.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 30.dp, vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            "Đăng nhập",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrosTitle
-                        )
+                        Text("Đăng nhập", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
 
-                        // Link Sign Up
-                        Row(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(
-                                "Bạn không có tài khoản? ",
-                                color = BrosSubTitle,
-                                fontSize = 16.sp
-                            )
+                        // Link Đăng ký (Ở ngay dưới tiêu đề)
+                        Row(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Bạn không có tài khoản? ", color = BrosSubTitle, fontSize = 16.sp)
                             Text(
                                 "Đăng ký",
                                 color = BrosBrown,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 modifier = Modifier.clickable {
+                                    // [FIX] Điều hướng sang Đăng ký
                                     navController.navigate(AppRoutes.REGISTER)
                                 }
                             )
@@ -101,7 +103,7 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Email TextField
+                        // Ô nhập Email
                         BrosTextField(
                             value = email,
                             onValueChange = { email = it },
@@ -109,9 +111,9 @@ fun LoginScreen(
                             keyboardType = KeyboardType.Email
                         )
 
-                        Spacer(modifier = Modifier.height(30.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        // Password TextField
+                        // Ô nhập Password
                         BrosTextField(
                             value = password,
                             onValueChange = { password = it },
@@ -119,11 +121,11 @@ fun LoginScreen(
                             isPassword = true
                         )
 
-                        // Remember Me & Forgot Password
+                        // Checkbox & Quên mật khẩu
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp, bottom = 24.dp),
+                                .padding(vertical = 12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -133,111 +135,103 @@ fun LoginScreen(
                                     onCheckedChange = { rememberMe = it },
                                     colors = CheckboxDefaults.colors(checkedColor = BrosBrown)
                                 )
-                                Text("Luôn ghi nhớ", fontSize = 12.sp, color = BrosSubTitle)
+                                Text("Lưu đăng nhập", fontSize = 14.sp, color = BrosSubTitle)
                             }
                             Text(
                                 "Quên mật khẩu?",
                                 fontSize = 14.sp,
                                 color = BrosBrown,
+                                fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.clickable {
+                                    // [FIX] Điều hướng sang Quên mật khẩu
                                     navController.navigate(AppRoutes.FORGOT_PASSWORD)
                                 }
                             )
                         }
 
-                        // Nút Log In
-                        BrosButton(
-                            text = "Đăng nhập",
-                            onClick = { isLoginSuccess = true },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Divider
+                        // NÚT ĐĂNG NHẬP CHÍNH
+                        BrosButton(
+                            text = "Đăng nhập",
+                            enabled = !isLoginSuccess,
+                            onClick = {
+                                val cleanEmail = email.trim()
+                                val cleanPass = password.trim()
+
+                                if (cleanEmail.isEmpty()) {
+                                    Toast.makeText(context, "Vui lòng nhập Email!", Toast.LENGTH_SHORT).show()
+                                } else if (!Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches()) {
+                                    Toast.makeText(context, "Email không hợp lệ!", Toast.LENGTH_SHORT).show()
+                                } else if (cleanPass.isEmpty()) {
+                                    Toast.makeText(context, "Vui lòng nhập Mật khẩu!", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    isLoginSuccess = true
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // --- PHẦN CUỐI: HOẶC ĐĂNG NHẬP VỚI ---
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            HorizontalDivider(
-                                modifier = Modifier.weight(1f),
-                                color = Color.LightGray.copy(alpha = 0.7f)
-                            )
-                            Text(
-                                "Or",
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = BrosSubTitle
-                            )
-                            HorizontalDivider(
-                                modifier = Modifier.weight(1f),
-                                color = Color.LightGray.copy(alpha = 0.7f)
-                            )
+                            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                            Text(" HOẶC ", modifier = Modifier.padding(horizontal = 8.dp), color = BrosSubTitle, fontSize = 12.sp)
+                            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                        // Sign Up Button
-                        BrosButton(
-                            text = "Đăng ký",
-                            onClick = { navController.navigate(AppRoutes.REGISTER) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Google Button
+                        // Nút Google
                         Button(
-                            onClick = { /* TBD */ },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
+                            onClick = { /* TODO: Google Login */ },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, BrosSubTitle)
+                            border = BorderStroke(1.dp, Color.LightGray)
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.google),
-                                contentDescription = "Google Sign-in",
+                                contentDescription = "Google",
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                "Tiếp tục với Google",
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Text("Tiếp tục với Google", color = Color.Black, fontSize = 16.sp)
                         }
 
-                        Spacer(modifier = Modifier.height(40.dp))
+                        // Khoảng trống cuối cùng để không bị sát đáy màn hình
+                        Spacer(modifier = Modifier.height(50.dp))
                     }
                 }
             }
         }
 
-        // --- LỚP 2: STATUS SCREEN ---
+        // --- LOGIC CHUYỂN TRANG KHI THÀNH CÔNG ---
         if (isLoginSuccess) {
             StatusScreen(
                 icon = Icons.Default.Person,
                 title = "Đăng nhập",
                 statusText = "thành công !",
-                subtitle = "Vui lòng chờ...\nBạn sẽ được chuyển hướng đến trang chủ.",
+                subtitle = "Đang chuyển hướng...",
                 onTimeout = {
-                    isLoginSuccess = false
-                    navController.navigate(AppRoutes.HOME) {
-                        popUpTo(AppRoutes.LOGIN) { inclusive = true }
+                    // 1. Lưu trạng thái đăng nhập
+                    val prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+                    prefs.edit().putBoolean("IS_LOGGED_IN", true).apply()
+
+                    // 2. Chuyển sang Main, xóa sạch lịch sử Splash
+                    try {
+                        navController.navigate(AppRoutes.MAIN_APP_GRAPH) {
+                            popUpTo(AppRoutes.SPLASH) { inclusive = true }
+                        }
+                    } catch (e: Exception) {
+                        navController.navigate(AppRoutes.HOME)
                     }
                 }
             )
         }
     }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-private fun LoginScreenPreview() {
-    LoginScreen(
-        navController = rememberNavController(),
-        onLoginSuccess = {}
-    )
 }

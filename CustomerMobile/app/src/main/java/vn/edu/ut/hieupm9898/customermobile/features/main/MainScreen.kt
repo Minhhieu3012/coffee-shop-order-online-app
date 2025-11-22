@@ -13,13 +13,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-// --- IMPORT CÁC FEATURE ---
-import vn.edu.ut.hieupm9898.customermobile.data.model.Product // Import Product Model
-import vn.edu.ut.hieupm9898.customermobile.features.auth.*
+
+// --- IMPORT ---
 import vn.edu.ut.hieupm9898.customermobile.features.cart.*
 import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
 import vn.edu.ut.hieupm9898.customermobile.features.home.*
-import vn.edu.ut.hieupm9898.customermobile.features.onboarding.*
 import vn.edu.ut.hieupm9898.customermobile.features.product_detail.ProductDetailScreen
 import vn.edu.ut.hieupm9898.customermobile.features.profile.*
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
@@ -28,9 +26,10 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @Composable
 fun MainScreen() {
-    val navController = rememberNavController()
+    // NavController này chỉ quản lý các tab con (Home, Cart, Profile...)
+    val mainNavController = rememberNavController()
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val bottomBarRoutes = listOf(AppRoutes.HOME, AppRoutes.FAVORITE, AppRoutes.CART, AppRoutes.PROFILE)
@@ -38,12 +37,13 @@ fun MainScreen() {
     CustomerMobileTheme {
         Scaffold(
             bottomBar = {
+                // Chỉ hiện BottomBar ở 4 màn hình chính
                 if (currentRoute in bottomBarRoutes) {
                     BrosBottomNavBar(
                         currentRoute = currentRoute ?: AppRoutes.HOME,
                         onNavigate = { route ->
-                            navController.navigate(route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            mainNavController.navigate(route) {
+                                popUpTo(mainNavController.graph.findStartDestination().id) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -54,204 +54,160 @@ fun MainScreen() {
         ) { paddingValues ->
 
             NavHost(
-                navController = navController,
-                startDestination = AppRoutes.SPLASH,
+                navController = mainNavController,
+                // [QUAN TRỌNG] Bắt đầu ngay từ HOME, không qua Splash nữa
+                startDestination = AppRoutes.HOME,
                 modifier = Modifier.padding(paddingValues)
             ) {
 
-                // 1. ONBOARDING & SPLASH GRAPH
-                composable(AppRoutes.SPLASH) {
-                    SplashScreen(
-                        onGetStartedClick = {
-                            navController.navigate(AppRoutes.AUTH_GRAPH) {
-                                popUpTo(AppRoutes.SPLASH) { inclusive = true }
-                            }
+                // --- 1. CÁC TAB CHÍNH (MAIN TABS) ---
+                composable(AppRoutes.HOME) {
+                    HomeScreen(
+                        onProductClick = { id -> mainNavController.navigate("${AppRoutes.DETAIL_BASE}/$id") },
+                        onSearchClick = { mainNavController.navigate(AppRoutes.SEARCH) }
+                    )
+                }
+
+                composable(AppRoutes.FAVORITE) {
+                    FavoriteScreen(
+                        onProductClick = { id ->
+                            mainNavController.navigate("${AppRoutes.DETAIL_BASE}/$id")
                         },
-                        onTimeout = {
-                            navController.navigate(AppRoutes.ONBOARDING)
-                        }
-                    )
-                }
-
-                composable(AppRoutes.ONBOARDING) {
-                    OnboardingPagerScreen(
-                        onGetStartedClick = {
-                            navController.navigate(AppRoutes.AUTH_GRAPH) {
-                                popUpTo(AppRoutes.SPLASH) { inclusive = true }
+                        onGoHomeClick = {
+                            mainNavController.navigate(AppRoutes.HOME) {
+                                popUpTo(AppRoutes.HOME) { inclusive = false }
                             }
                         }
                     )
                 }
 
-                // 2. AUTH GRAPH
-                authNavGraph(
-                    navController = navController,
-                    onLoginSuccess = {
-                        navController.navigate(AppRoutes.MAIN_APP_GRAPH) {
-                            popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
+                composable(AppRoutes.CART) {
+                    OrderScreen(
+                        onBackClick = { mainNavController.popBackStack() },
+                        onOrderClick = { mainNavController.navigate(AppRoutes.PAYMENT_QR) }
+                    )
+                }
+
+                composable(AppRoutes.PROFILE) {
+                    ProfileScreen(
+                        onEditProfileClick = { mainNavController.navigate(AppRoutes.EDIT_PROFILE) },
+                        onAddressClick = { mainNavController.navigate(AppRoutes.ADDRESS_LIST) },
+                        onPaymentClick = { mainNavController.navigate(AppRoutes.PAYMENT_METHODS) },
+                        onHistoryClick = { mainNavController.navigate(AppRoutes.ORDER_HISTORY) },
+                        onNotificationsClick = { mainNavController.navigate(AppRoutes.NOTIFICATIONS) },
+
+                        // [LƯU Ý] Logic Đăng xuất sẽ cần gọi lên AppNavigation (Parent)
+                        // Hiện tại tạm thời để trống hoặc navigate về Auth nếu cùng Graph
+                        onLogoutClick = {
+                            // TODO: Cần xử lý đăng xuất ở cấp cao hơn (AppNavigation)
                         }
-                    }
-                )
+                    )
+                }
 
-                // 3. MAIN APP GRAPH
-                navigation(startDestination = AppRoutes.HOME, route = AppRoutes.MAIN_APP_GRAPH) {
+                // --- 2. CHI TIẾT SẢN PHẨM ---
+                composable(
+                    route = AppRoutes.DETAIL,
+                    arguments = listOf(navArgument("id") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val productId = backStackEntry.arguments?.getString("id") ?: ""
 
-                    // --- MAIN TABS ---
-                    composable(AppRoutes.HOME) {
-                        HomeScreen(
-                            // Sửa logic click: Truyền ID sản phẩm vào route
-                            onProductClick = { id -> navController.navigate("${AppRoutes.DETAIL_BASE}/$id") },
-                            onSearchClick = { navController.navigate(AppRoutes.SEARCH) }
-                        )
-                    }
+                    ProductDetailScreen(
+                        title = "Cold Coffee", // Mock data
+                        subtitle = "100mg Caffeine · 120 Cal",
+                        rating = 4.5f,
+                        ratingCountText = "(4.5)",
+                        description = "Mô tả sản phẩm...",
+                        imageUrl = "",
+                        isFavorite = false,
+                        availableSizes = listOf("Nhỏ", "Trung bình", "Lớn"),
+                        selectedSize = "Trung bình",
+                        availableDairy = listOf("Whole Milk" to 0.0, "Almond Milk" to 1.0),
+                        selectedDairy = "Whole Milk",
+                        relatedProducts = emptyList(),
+                        onBackClick = { mainNavController.popBackStack() },
+                        onFavoriteClick = { },
+                        onSizeSelected = { },
+                        onDairySelected = { },
+                        onAddToCartClick = { },
+                        onRelatedProductClick = { product ->
+                            mainNavController.navigate("${AppRoutes.DETAIL_BASE}/${product.id}")
+                        }
+                    )
+                }
 
-                    composable(AppRoutes.FAVORITE) {
-                        FavoriteScreen(
-                            onProductClick = { id ->
-                                navController.navigate("${AppRoutes.DETAIL_BASE}/$id")
-                            },
-                            onGoHomeClick = {
-                                navController.navigate(AppRoutes.HOME) {
-                                    popUpTo(AppRoutes.HOME) { inclusive = false }
-                                }
-                            }
-                        )
-                    }
+                // --- 3. CÁC MÀN HÌNH CON KHÁC ---
+                composable(AppRoutes.SEARCH) {
+                    SearchScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                    composable(AppRoutes.CART) {
-                        OrderScreen(
-                            onBackClick = { navController.popBackStack() },
-                            onOrderClick = { navController.navigate(AppRoutes.PAYMENT_QR) }
-                        )
-                    }
+                composable(AppRoutes.EDIT_PROFILE) {
+                    EditProfileScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                    composable(AppRoutes.PROFILE) {
-                        ProfileScreen(
-                            onEditProfileClick = { navController.navigate(AppRoutes.EDIT_PROFILE) },
-                            onAddressClick = { navController.navigate(AppRoutes.ADDRESS_LIST) },
-                            onPaymentClick = { navController.navigate(AppRoutes.PAYMENT_METHODS) },
-                            onHistoryClick = { navController.navigate(AppRoutes.ORDER_HISTORY) },
-                            onNotificationsClick = { navController.navigate(AppRoutes.NOTIFICATIONS) },
-                            onLogoutClick = {
-                                navController.navigate(AppRoutes.AUTH_GRAPH) {
-                                    popUpTo(AppRoutes.MAIN_APP_GRAPH) { inclusive = true }
-                                }
-                            }
-                        )
-                    }
+                composable(AppRoutes.ADDRESS_LIST) {
+                    AddressScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                    // --- SUB SCREENS ---
+                composable(AppRoutes.ADD_ADDRESS) {
+                    AddAddressScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                    // 🟢 ĐÃ SỬA ĐOẠN NÀY: Product Detail
-                    composable(
-                        route = AppRoutes.DETAIL,
-                        arguments = listOf(navArgument("id") { type = NavType.StringType })
-                    ) { backStackEntry ->
+                composable(AppRoutes.CHANGE_PASS) {
+                    ChangePasswordScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                        val productId = backStackEntry.arguments?.getString("id") ?: ""
+                composable(AppRoutes.CONTACT) {
+                    ContactUsScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                        // Mock dữ liệu tạm hiển thị
-                        ProductDetailScreen(
-                            title = "Cold Coffee",
-                            subtitle = "100mg Caffeine · 120 Cal",
-                            rating = 4.5f,
-                            ratingCountText = "(4.5)",
-                            description = "Mô tả sản phẩm đang được tải...",
-                            imageUrl = "",
-                            isFavorite = false,
+                composable(AppRoutes.NOTIFICATIONS) {
+                    NotificationScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                            availableSizes = listOf("Nhỏ", "Trung bình", "Lớn"),
-                            selectedSize = "Trung bình",
+                composable(AppRoutes.ORDER_HISTORY) {
+                    OrderHistoryScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                            availableDairy = listOf(
-                                "Whole Milk" to 0.0,
-                                "Almond Milk" to 1.0,
-                                "Oat Milk" to 1.5
-                            ),
-                            selectedDairy = "Whole Milk",
+                composable(AppRoutes.REWARDS) {
+                    RewardsScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                            relatedProducts = emptyList(),          // Tuỳ bạn có hiển thị hay không
+                composable(AppRoutes.SETTINGS) {
+                    SettingsScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                            onBackClick = { navController.popBackStack() },
-                            onFavoriteClick = { /* TODO: xử lý yêu thích */ },
-                            onSizeSelected = { /* TODO: xử lý chọn size */ },
-                            onDairySelected = { /* TODO: xử lý chọn topping */ },
-                            onAddToCartClick = { /* TODO: thêm vào giỏ hàng */ },
-                            onRelatedProductClick = { product ->
-                                navController.navigate("${AppRoutes.DETAIL_BASE}/${product.id}")
-                            }
-                        )
-                    }
+                composable(AppRoutes.FEEDBACK) {
+                    FeedbackScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
+                composable(AppRoutes.DELETE_ACCOUNT) {
+                    DeleteAccountScreen(onBackClick = { mainNavController.popBackStack() })
+                }
 
-                    composable(AppRoutes.SEARCH) {
-                        SearchScreen(onBackClick = { navController.popBackStack() })
-                    }
+                // --- 4. CART FLOW ---
+                composable(AppRoutes.PAYMENT_QR) {
+                    PaymentQRScreen(
+                        onBackClick = { mainNavController.popBackStack() },
+                        onPaymentSuccess = { mainNavController.navigate(AppRoutes.ORDER_SUCCESS) }
+                    )
+                }
 
-                    composable(AppRoutes.EDIT_PROFILE) {
-                        EditProfileScreen(onBackClick = { navController.popBackStack() })
-                    }
+                composable(AppRoutes.ORDER_SUCCESS) {
+                    OrderSuccessScreen(
+                        onTrackOrderClick = { mainNavController.navigate(AppRoutes.DELIVERY) },
+                        onHomeClick = { mainNavController.navigate(AppRoutes.HOME) }
+                    )
+                }
 
-                    composable(AppRoutes.ADDRESS_LIST) {
-                        AddressScreen(onBackClick = { navController.popBackStack() })
-                    }
+                composable(AppRoutes.DELIVERY) {
+                    DeliveryScreen(
+                        onBackClick = { mainNavController.navigate(AppRoutes.ORDER_HISTORY) }
+                    )
+                }
 
-                    composable(AppRoutes.ADD_ADDRESS) {
-                        AddAddressScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.CHANGE_PASS) {
-                        ChangePasswordScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.CONTACT) {
-                        ContactUsScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.NOTIFICATIONS) {
-                        NotificationScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.ORDER_HISTORY) {
-                        OrderHistoryScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.REWARDS) {
-                        RewardsScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.SETTINGS) {
-                        SettingsScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.FEEDBACK) {
-                        FeedbackScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    composable(AppRoutes.DELETE_ACCOUNT) {
-                        DeleteAccountScreen(onBackClick = { navController.popBackStack() })
-                    }
-
-                    // --- CART FLOW ---
-                    composable(AppRoutes.PAYMENT_QR) {
-                        PaymentQRScreen(
-                            onBackClick = { navController.popBackStack() },
-                            onPaymentSuccess = { navController.navigate(AppRoutes.ORDER_SUCCESS) }
-                        )
-                    }
-
-                    composable(AppRoutes.ORDER_SUCCESS) {
-                        OrderSuccessScreen(
-                            onTrackOrderClick = { navController.navigate(AppRoutes.DELIVERY) },
-                            onHomeClick = { navController.navigate(AppRoutes.HOME) }
-                        )
-                    }
-
-                    composable(AppRoutes.DELIVERY) {
-                        DeliveryScreen(
-                            onBackClick = { navController.navigate(AppRoutes.ORDER_HISTORY) }
-                        )
-                    }
+                // [ĐÃ THÊM] Màn hình Payment Methods còn thiếu
+                composable(AppRoutes.PAYMENT_METHODS) {
+                    // PaymentMethodsScreen(onBackClick = { mainNavController.popBackStack() })
                 }
             }
         }

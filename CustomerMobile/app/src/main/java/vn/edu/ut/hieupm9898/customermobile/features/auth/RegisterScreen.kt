@@ -1,5 +1,7 @@
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
+import android.util.Patterns // [QUAN TRỌNG] Thư viện kiểm tra Email
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -42,8 +45,13 @@ fun RegisterScreen(navController: NavController) {
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var referralCode by remember { mutableStateOf("") }
+
+    // Checkbox điều khoản
     var isTermAccepted by remember { mutableStateOf(false) }
+
     var showSuccessDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
     LaunchedEffect(showSuccessDialog) {
         if (showSuccessDialog) {
@@ -68,11 +76,9 @@ fun RegisterScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- TOP BAR với nút Back và Logo ---
+            // --- TOP BAR ---
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp, start = 8.dp, end = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 8.dp, end = 8.dp)
             ) {
                 IconButton(
                     onClick = { navController.popBackStack() },
@@ -85,44 +91,26 @@ fun RegisterScreen(navController: NavController) {
                         modifier = Modifier.size(60.dp)
                     )
                 }
-
-                // Logo Bros Café ở giữa
                 Image(
                     painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Bros Café Logo",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .height(60.dp)
+                    contentDescription = "Logo",
+                    modifier = Modifier.align(Alignment.Center).height(60.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- TIÊU ĐỀ ---
-            Text(
-                text = "Đăng ký",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = BrosTitle
-            )
+            Text("Đăng ký", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- FORM NHẬP LIỆU ---
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                // 1. User Name
-                Text(
-                    text = "Tên người dùng",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BrosTitle,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                // 1. Tên người dùng
+                Text("Tên người dùng", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = BrosTitle, modifier = Modifier.padding(bottom = 8.dp))
                 BrosTextField(
                     value = userName,
                     onValueChange = { userName = it },
@@ -133,13 +121,7 @@ fun RegisterScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 2. Email
-                Text(
-                    text = "Email",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BrosTitle,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                Text("Email", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = BrosTitle, modifier = Modifier.padding(bottom = 8.dp))
                 BrosTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -150,17 +132,16 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 3. Phone Number
-                Text(
-                    text = "Số điện thoại",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BrosTitle,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                // 3. Số điện thoại (Chỉ cho nhập số)
+                Text("Số điện thoại", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = BrosTitle, modifier = Modifier.padding(bottom = 8.dp))
                 BrosTextField(
                     value = phone,
-                    onValueChange = { phone = it },
+                    onValueChange = { input ->
+                        // Chỉ cho phép nhập ký tự số
+                        if (input.all { char -> char.isDigit() }) {
+                            phone = input
+                        }
+                    },
                     label = "Nhập số điện thoại",
                     icon = Icons.Default.Phone,
                     keyboardType = KeyboardType.Phone
@@ -168,14 +149,8 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. Password
-                Text(
-                    text = "Mật khẩu",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BrosTitle,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                // 4. Mật khẩu
+                Text("Mật khẩu", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = BrosTitle, modifier = Modifier.padding(bottom = 8.dp))
                 BrosTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -186,14 +161,8 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 5. Referral Code (optional)
-                Text(
-                    text = "Mã giới thiệu (tùy chọn)",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BrosTitle,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                // 5. Mã giới thiệu
+                Text("Mã giới thiệu (tùy chọn)", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = BrosTitle, modifier = Modifier.padding(bottom = 8.dp))
                 BrosTextField(
                     value = referralCode,
                     onValueChange = { referralCode = it },
@@ -203,7 +172,7 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // --- Checkbox Terms & Condition ---
+                // --- CHECKBOX ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -211,10 +180,7 @@ fun RegisterScreen(navController: NavController) {
                     Checkbox(
                         checked = isTermAccepted,
                         onCheckedChange = { isTermAccepted = it },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = BrosBrown,
-                            uncheckedColor = BrosSubTitle
-                        )
+                        colors = CheckboxDefaults.colors(checkedColor = BrosBrown, uncheckedColor = BrosSubTitle)
                     )
                     Text(
                         text = buildAnnotatedString {
@@ -230,33 +196,60 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // --- Link đến Login ---
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Nếu bạn có tài khoản!",
-                        fontSize = 14.sp,
-                        color = BrosSubTitle
-                    )
-                    Text(
-                        text = " Đăng nhập ngay",
-                        fontSize = 14.sp,
-                        color = BrosTitle,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable {
-                            navController.popBackStack()
-                        }
-                    )
+                // Link Login
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Text("Nếu bạn có tài khoản! ", fontSize = 14.sp, color = BrosSubTitle)
+                    Text("Đăng nhập ngay", fontSize = 14.sp, color = BrosTitle, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { navController.popBackStack() })
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- NÚT PROCEED ---
+                // --- NÚT TIẾP TỤC (VALIDATION NÂNG CAO) ---
                 BrosButton(
                     text = "Tiếp tục",
-                    onClick = { showSuccessDialog = true },
+                    enabled = !showSuccessDialog,
+                    onClick = {
+                        val cleanName = userName.trim()
+                        val cleanEmail = email.trim()
+                        val cleanPhone = phone.trim()
+                        val cleanPass = password.trim()
+
+                        // REGEX VN PHONE: Bắt đầu số 0, theo sau là 9 chữ số
+                        val vietnamPhoneRegex = Regex("^0\\d{9}$")
+
+                        // 1. Kiểm tra Tên
+                        if (cleanName.isEmpty()) {
+                            Toast.makeText(context, "Vui lòng nhập tên người dùng!", Toast.LENGTH_SHORT).show()
+                        }
+                        // 2. Kiểm tra Email trống
+                        else if (cleanEmail.isEmpty()) {
+                            Toast.makeText(context, "Vui lòng nhập Email!", Toast.LENGTH_SHORT).show()
+                        }
+                        // 3. Kiểm tra Định dạng Email (abc@xyz.com)
+                        else if (!Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches()) {
+                            Toast.makeText(context, "Email không hợp lệ! Vui lòng kiểm tra lại.", Toast.LENGTH_SHORT).show()
+                        }
+                        // 4. Kiểm tra SĐT trống
+                        else if (cleanPhone.isEmpty()) {
+                            Toast.makeText(context, "Vui lòng nhập số điện thoại!", Toast.LENGTH_SHORT).show()
+                        }
+                        // 5. Kiểm tra Định dạng SĐT VN (10 số, bắt đầu bằng 0)
+                        else if (!cleanPhone.matches(vietnamPhoneRegex)) {
+                            Toast.makeText(context, "Số điện thoại không hợp lệ (Phải là 10 số, bắt đầu bằng 0)", Toast.LENGTH_LONG).show()
+                        }
+                        // 6. Kiểm tra Mật khẩu
+                        else if (cleanPass.isEmpty()) {
+                            Toast.makeText(context, "Vui lòng nhập mật khẩu!", Toast.LENGTH_SHORT).show()
+                        }
+                        // 7. Kiểm tra Điều khoản
+                        else if (!isTermAccepted) {
+                            Toast.makeText(context, "Bạn cần chấp nhận Điều khoản & Điều kiện!", Toast.LENGTH_SHORT).show()
+                        }
+                        else {
+                            // Tất cả hợp lệ -> OK
+                            showSuccessDialog = true
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
 
