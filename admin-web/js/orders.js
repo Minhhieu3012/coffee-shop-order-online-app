@@ -4,16 +4,31 @@ import { collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/
 
 let ordersData = [];
 
+// --- HÀM HỖ TRỢ CHUẨN HÓA SIZE ---
+// Chuyển đổi S/M/L -> Nhỏ/Trung bình/Lớn
+function translateSize(sizeKey) {
+  if (!sizeKey) return "";
+  const map = {
+    'S': 'Nhỏ',
+    'M': 'Trung bình',
+    'L': 'Lớn',
+    'small': 'Nhỏ',
+    'medium': 'Trung bình',
+    'large': 'Lớn'
+  };
+  // Nếu tìm thấy trong map thì trả về tiếng Việt, không thì trả về nguyên gốc
+  return map[sizeKey] || sizeKey;
+}
+
 // --- 1. LẮNG NGHE DỮ LIỆU REALTIME TỪ FIREBASE ---
 function listenOrders() {
-  // Lắng nghe thay đổi ở collection 'orders'
   onSnapshot(collection(db, "orders"), (snapshot) => {
     ordersData = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    // Sắp xếp đơn mới nhất lên đầu (Dựa vào chuỗi createdAt)
+    // Sắp xếp đơn mới nhất lên đầu
     ordersData.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
     
     renderOrderTable(ordersData);
@@ -26,7 +41,7 @@ function listenOrders() {
 async function updateOrderStatusOnDB(id, newStatus) {
   try {
     const btn = document.querySelector(`button[onclick*='${id}']`);
-    if(btn) btn.disabled = true; // Chặn bấm liên tục
+    if(btn) btn.disabled = true; 
 
     await updateDoc(doc(db, "orders", id), { status: newStatus });
     
@@ -58,13 +73,12 @@ function renderOrderTable(data = ordersData) {
     const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice || 0);
     let statusBadge = getStatusBadge(order.status);
     
-    // Xử lý danh sách món (Lấy từ mảng 'items' trên Firebase)
     const itemsList = order.items || [];
     
-    // Tóm tắt món ăn: "1x Cafe Đen (M), 2x Trà Đào"
-    // Phần hiển thị Size ở đây: nếu có size thì hiện (S, M, L), không có thì thôi
+    // Tóm tắt món ăn
     const itemsSummary = itemsList.map(i => {
-        const sizeStr = i.size ? `(${i.size})` : ""; 
+        const sizeText = translateSize(i.size);
+        const sizeStr = sizeText ? `(${sizeText})` : ""; 
         return `${i.quantity}x ${i.name} ${sizeStr}`;
     }).join(", ");
 
@@ -123,7 +137,6 @@ window.viewOrder = (id) => {
   document.getElementById("ordModalId").innerText = "#" + (order.id.length > 8 ? "..." + order.id.slice(-5) : order.id);
   document.getElementById("ordModalCustomer").value = order.customerName || "";
   
-  // Hiển thị thời gian vào modal
   if(document.getElementById("ordModalDate")) {
       document.getElementById("ordModalDate").value = order.createdAt || ""; 
   }
@@ -138,16 +151,33 @@ window.viewOrder = (id) => {
   if (itemsList.length > 0) {
     itemsList.forEach(item => {
       const itemTotal = (item.price || 0) * (item.quantity || 1);
-      // Hiển thị size trong Popup
-      const sizeDisplay = item.size ? `<span style="background:#eee; padding:2px 6px; border-radius:4px; font-size:0.8rem; margin-left:5px; font-weight:bold; color:#555;">Size: ${item.size}</span>` : "";
+      
+      // Xử lý hiển thị Size đẹp (style mobile)
+      const sizeText = translateSize(item.size);
+      let sizeDisplay = "";
+      if(sizeText) {
+         // Style badge màu nâu/xám nhạt giống trong ảnh
+         sizeDisplay = `<span style="
+            background: #e7e5e4; 
+            color: #444; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            margin-left: 8px;
+            display: inline-block;
+            border: 1px solid #d6d3d1;
+         "><i class="fa-solid fa-mug-hot" style="font-size:0.7rem; margin-right:3px;"></i> ${sizeText}</span>`;
+      }
       
       itemsHtml += `
-        <div class="order-item-row">
-          <span>
-            <b>${item.quantity}x</b> ${item.name} 
-            ${sizeDisplay} 
-          </span>
-          <span>${new Intl.NumberFormat('vi-VN').format(itemTotal)} đ</span>
+        <div class="order-item-row" style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px dashed #eee;">
+          <div style="display:flex; align-items:center;">
+            <b style="margin-right: 8px; color: #6a4616;">${item.quantity}x</b> 
+            <span>${item.name}</span>
+            ${sizeDisplay}
+          </div>
+          <span style="font-weight:500;">${new Intl.NumberFormat('vi-VN').format(itemTotal)} đ</span>
         </div>`;
     });
   } else {
@@ -155,13 +185,13 @@ window.viewOrder = (id) => {
   }
   
   itemsHtml += `
-    <div class="order-total-row">
+    <div class="order-total-row" style="margin-top: 15px; padding-top: 10px; border-top: 2px solid #eee; display:flex; justify-content:space-between; font-size: 1.1rem; font-weight: bold; color: #6a4616;">
       <span>Tổng cộng:</span>
       <span>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice || 0)}</span>
     </div>`;
   itemsContainer.innerHTML = itemsHtml;
 
-  // Nút bấm Footer
+  // Footer Buttons
   const footer = document.getElementById("ordModalFooter");
   let buttonsHtml = `<button type="button" class="btn-secondary close-modal-btn" onclick="document.getElementById('orderModal').classList.remove('show')">Đóng</button>`;
 
@@ -182,7 +212,6 @@ window.viewOrder = (id) => {
   if (orderModal) orderModal.classList.add("show");
 };
 
-// Hàm xử lý nút bấm trong Modal
 window.processOrder = async (id, newStatus) => {
   if(confirm("Bạn chắc chắn muốn cập nhật trạng thái đơn này?")) {
       await updateOrderStatusOnDB(id, newStatus);
@@ -208,5 +237,4 @@ if (searchInput) {
   });
 }
 
-// Khởi chạy
 listenOrders();

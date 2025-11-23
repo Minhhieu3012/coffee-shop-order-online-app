@@ -75,7 +75,10 @@ function renderTable(data = productsData) {
 
     row.innerHTML = `
       <td><img src="${imgUrl}" class="product-img" onerror="this.src='assets/logo.png'"></td>
-      <td><div style="font-weight: 500;">${product.name}</div><small style="color: #888;">ID: ...${product.id.slice(-5)}</small></td>
+      <td>
+        <div style="font-weight: 500;">${product.name}</div>
+        <small style="color: #888;">ID: ...${product.id.slice(-5)}</small>
+      </td>
       <td>${product.category}</td>
       <td>${formattedPrice}</td>
       <td>${statusBadge}</td>
@@ -109,6 +112,7 @@ if (btnAdd) {
   btnAdd.addEventListener("click", () => {
     if (productForm) productForm.reset();
     document.getElementById("prodId").value = "";
+    document.getElementById("prodDesc").value = ""; // Reset mô tả
     modalTitle.innerText = "Thêm món mới";
     if (modal) modal.classList.add("show");
   });
@@ -121,6 +125,7 @@ window.editProduct = (id) => {
     document.getElementById("prodName").value = product.name;
     document.getElementById("prodCategory").value = product.category;
     document.getElementById("prodPrice").value = product.price;
+    document.getElementById("prodDesc").value = product.description || ""; // Load mô tả cũ
     document.getElementById("prodImage").value = product.imageUrl;
     document.getElementById("prodStatus").checked = product.isAvailable;
     modalTitle.innerText = "Cập nhật sản phẩm";
@@ -135,10 +140,12 @@ if (productForm) {
   productForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("prodId").value;
+    
     const productObj = {
       name: document.getElementById("prodName").value,
       category: document.getElementById("prodCategory").value,
       price: Number(document.getElementById("prodPrice").value),
+      description: document.getElementById("prodDesc").value, // Lưu mô tả
       imageUrl: document.getElementById("prodImage").value,
       isAvailable: document.getElementById("prodStatus").checked
     };

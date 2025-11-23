@@ -14,7 +14,6 @@
   <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body>
-  <!-- 🔒 ADMIN GUARD - KIỂM TRA QUYỀN TRUY CẬP -->
   <script type="module">
     import { checkAdminAccess } from './js/admin-guard.js';
     
@@ -229,6 +228,12 @@
             <input type="number" id="prodPrice" required placeholder="VD: 25000">
           </div>
         </div>
+
+        <div class="form-group">
+            <label for="prodDesc">Mô tả sản phẩm</label>
+            <textarea id="prodDesc" rows="3" placeholder="Mô tả chi tiết về món ăn (thành phần, hương vị)..." style="width: 100%; resize: vertical; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+        </div>
+
         <div class="form-group">
           <label for="prodImage">Link ảnh (URL)</label>
           <input type="url" id="prodImage" placeholder="https://...">
@@ -282,7 +287,6 @@
     </div>
   </div>
   
-  <!-- Scripts -->
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/dashboard.js"></script>
