@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
@@ -45,52 +46,44 @@ fun HomeScreen(
     val uiState by homeViewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    // ✅ SNACKBAR STATE
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Load user info
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUser()
     }
 
-    // Load products
     LaunchedEffect(Unit) {
         homeViewModel.loadProducts()
     }
 
-    // Debug log
-    LaunchedEffect(currentUser) {
-        Log.d("HomeScreen", "👤 Current user: ${currentUser?.displayName}")
-    }
-
-    // ✅ HANDLE ADD TO CART NOTIFICATION
+    // ✅ THÔNG BÁO TÙY CHỈNH THỜI GIAN (1.2 giây)
     LaunchedEffect(uiState.addToCartMessage) {
         if (uiState.addToCartMessage != null) {
-            val result = snackbarHostState.showSnackbar(
-                message = uiState.addToCartMessage!!,
-                actionLabel = if (uiState.addToCartSuccess) "Xem giỏ" else null,
-                duration = SnackbarDuration.Short
-            )
-
-            // Nếu user nhấn "Xem giỏ" -> Navigate to Cart
-            if (result == SnackbarResult.ActionPerformed && uiState.addToCartSuccess) {
-                onNavigateToCart()
+            // 1. Tạo job hiển thị snackbar chế độ Indefinite (vô hạn)
+            val job = launch {
+                snackbarHostState.showSnackbar(
+                    message = uiState.addToCartMessage!!,
+                    duration = SnackbarDuration.Indefinite
+                )
             }
+            // 2. Đợi 1.2 giây
+            delay(1200)
+            // 3. Tắt snackbar và hủy job
+            snackbarHostState.currentSnackbarData?.dismiss()
+            job.cancel()
 
-            // Reset notification state
+            // 4. Reset state
             homeViewModel.resetCartNotification()
         }
     }
 
-    // ✅ HANDLE ERROR MESSAGE
     LaunchedEffect(uiState.errorMessage) {
         if (uiState.errorMessage != null && !uiState.errorMessage!!.contains("giỏ hàng")) {
-            delay(3000) // Auto dismiss sau 3s
+            delay(3000)
             homeViewModel.clearError()
         }
     }
 
-    // Get filtered products
     val filteredProducts = remember(
         uiState.allProducts,
         uiState.selectedCategory,
@@ -101,11 +94,10 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = BrosBackground,
-        // ✅ SNACKBAR HOST
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
-                modifier = Modifier.padding(bottom = 80.dp) // Tránh bị BottomBar che
+                modifier = Modifier.padding(bottom = 80.dp)
             ) { snackbarData ->
                 Snackbar(
                     snackbarData = snackbarData,
@@ -133,9 +125,9 @@ fun HomeScreen(
                         .fillMaxSize()
                         .padding(paddingValues)
                         .padding(horizontal = 24.dp),
-                    contentPadding = PaddingValues(bottom = 100.dp) // ✅ Đủ chỗ cho Bottom Nav
+                    contentPadding = PaddingValues(bottom = 100.dp)
                 ) {
-                    // --- 1. HEADER ---
+                    // HEADER
                     item {
                         Spacer(modifier = Modifier.height(20.dp))
                         Row(
@@ -179,7 +171,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // --- 2. SEARCH BAR WITH SUGGESTIONS ---
+                    // SEARCH
                     item {
                         SearchBarWithSuggestions(
                             query = uiState.searchQuery,
@@ -196,7 +188,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // --- 3. CATEGORIES ---
+                    // CATEGORY
                     item {
                         Text(
                             "Phân loại",
@@ -218,7 +210,7 @@ fun HomeScreen(
                                     isSelected = category == uiState.selectedCategory,
                                     onClick = { homeViewModel.filterByCategory(category) },
                                     count = if (category == "Đá xay") {
-                                        null // ✅ Không hiển thị số đếm cho "Đá xay"
+                                        null
                                     } else {
                                         homeViewModel.getProductCountByCategory(category)
                                     }
@@ -228,7 +220,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // --- 4. PRODUCT TITLE ---
+                    // TITLE
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -253,7 +245,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // --- 5. PRODUCT GRID ---
+                    // GRID
                     if (filteredProducts.isEmpty()) {
                         item {
                             Box(
@@ -262,9 +254,7 @@ fun HomeScreen(
                                     .padding(vertical = 40.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.Default.Notifications,
                                         contentDescription = null,
@@ -298,16 +288,13 @@ fun HomeScreen(
                                         price = product.price,
                                         imageUrl = product.imageUrl,
                                         isFavorite = product.isFavorite,
-                                        isOutOfStock = product.isOutOfStock(), // ✅ THÊM DÒNG NÀY
+                                        isOutOfStock = product.isOutOfStock(),
                                         onCardClick = {
-                                            // ✅ Chỉ cho click vào nếu còn hàng
                                             if (!product.isOutOfStock()) {
                                                 onProductClick(product.id)
                                             }
                                         },
-                                        // ✅ THÊM VÀO GIỎ HÀNG NHANH
                                         onAddClick = {
-                                            Log.d("HomeScreen", "🛒 Add to cart clicked: ${product.name}")
                                             homeViewModel.quickAddToCart(product)
                                         },
                                         onFavoriteClick = { homeViewModel.toggleFavorite(product.id) },
@@ -323,7 +310,6 @@ fun HomeScreen(
                 }
             }
 
-            // ✅ ERROR MESSAGE (Fallback nếu không dùng Snackbar cho error giỏ hàng)
             if (uiState.errorMessage != null && !uiState.errorMessage!!.contains("giỏ hàng")) {
                 Snackbar(
                     modifier = Modifier

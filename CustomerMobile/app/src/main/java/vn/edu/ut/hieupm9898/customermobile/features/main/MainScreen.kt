@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -25,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // --- IMPORT FEATURES ---
@@ -43,13 +45,11 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 fun MainScreen(
     rootNavController: NavHostController
 ) {
-    // NavController này chỉ quản lý các tab con (Home, Cart, Profile...)
     val mainNavController = rememberNavController()
 
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // ✅ CÁC ROUTE HIỂN THỊ BOTTOM NAV BAR
     val bottomBarRoutes = listOf(
         AppRoutes.HOME,
         AppRoutes.FAVORITE,
@@ -57,27 +57,23 @@ fun MainScreen(
         AppRoutes.PROFILE
     )
 
-    // ✅ KHỞI TẠO SNACKBAR HOST STATE
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     CustomerMobileTheme {
         Scaffold(
-            // ✅ SNACKBAR HOST
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackbarHostState,
-                    modifier = Modifier.padding(bottom = 80.dp) // Tránh bị BottomBar che
+                    modifier = Modifier.padding(bottom = 80.dp)
                 )
             },
-            // ✅ BOTTOM NAV BAR - LUÔN HIỂN THỊ Ở CÁC TAB CHÍNH
             bottomBar = {
                 if (currentRoute in bottomBarRoutes) {
                     BrosBottomNavBar(
                         currentRoute = currentRoute ?: AppRoutes.HOME,
                         onNavigate = { route ->
                             mainNavController.navigate(route) {
-                                // ✅ ĐẢM BẢO NAVIGATE MƯỢT MÀ, KHÔNG BỊ DUPLICATE
                                 popUpTo(mainNavController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
@@ -96,11 +92,7 @@ fun MainScreen(
                 modifier = Modifier.padding(paddingValues)
             ) {
 
-                // ========================================
-                // 1. CÁC TAB CHÍNH (MAIN TABS)
-                // ========================================
-
-                // ✅ HOME SCREEN
+                // HOME
                 composable(AppRoutes.HOME) {
                     HomeScreen(
                         onProductClick = { id ->
@@ -117,7 +109,7 @@ fun MainScreen(
                     )
                 }
 
-                // ✅ FAVORITE SCREEN
+                // FAVORITE
                 composable(AppRoutes.FAVORITE) {
                     FavoriteScreen(
                         onProductClick = { id ->
@@ -137,14 +129,14 @@ fun MainScreen(
                     )
                 }
 
-                // ✅ CART SCREEN - LUÔN CHO PHÉP NAVIGATE RA NGOÀI
+                // CART
                 composable(AppRoutes.CART) {
                     CartScreen(
                         navController = mainNavController
                     )
                 }
 
-                // ✅ PROFILE SCREEN
+                // PROFILE
                 composable(AppRoutes.PROFILE) {
                     ProfileScreen(
                         navController = rootNavController,
@@ -153,30 +145,24 @@ fun MainScreen(
                         onPaymentClick = { rootNavController.navigate(AppRoutes.PAYMENT_METHODS) },
                         onHistoryClick = { rootNavController.navigate(AppRoutes.ORDER_HISTORY) },
                         onNotificationsClick = { rootNavController.navigate(AppRoutes.NOTIFICATIONS) },
-                        onBackClick = { } // Profile không có nút back
+                        onBackClick = { }
                     )
                 }
 
-                // ========================================
-                // 2. CHI TIẾT SẢN PHẨM
-                // ========================================
-
+                // ========== CHI TIẾT SẢN PHẨM ==========
                 composable(
                     route = AppRoutes.DETAIL,
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val productId = backStackEntry.arguments?.getString("id") ?: ""
 
-                    // ViewModel
                     val viewModel: ProductDetailViewModel = hiltViewModel()
                     val uiState by viewModel.uiState.collectAsState()
 
-                    // Load product khi vào màn hình
                     LaunchedEffect(productId) {
                         viewModel.loadProduct(productId)
                     }
 
-                    // Hiển thị loading hoặc error
                     when {
                         uiState.isLoading -> {
                             Box(
@@ -205,7 +191,6 @@ fun MainScreen(
                         uiState.product != null -> {
                             val product = uiState.product!!
 
-                            // Convert related products sang RelatedProduct
                             val relatedProducts = uiState.relatedProducts.map { p ->
                                 RelatedProduct(
                                     id = p.id,
@@ -240,19 +225,17 @@ fun MainScreen(
                                 onAddToCartClick = {
                                     viewModel.addToCart()
 
+                                    // ✅ TỰ ĐỘNG TẮT SAU 1.2s
                                     coroutineScope.launch {
-                                        val result = snackbarHostState.showSnackbar(
-                                            message = "✅ Đã thêm ${product.name} vào giỏ hàng",
-                                            actionLabel = "Xem giỏ"
-                                        )
-
-                                        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
-                                            mainNavController.navigate(AppRoutes.CART) {
-                                                launchSingleTop = true
-                                            }
-                                        } else {
-                                            mainNavController.popBackStack()
+                                        val job = launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Đã thêm ${product.name} vào giỏ hàng",
+                                                duration = SnackbarDuration.Indefinite
+                                            )
                                         }
+                                        delay(1200)
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        job.cancel()
                                     }
                                 },
                                 onRelatedProductClick = { relatedProduct ->
@@ -263,18 +246,12 @@ fun MainScreen(
                     }
                 }
 
-                // ========================================
-                // 3. CÁC MÀN HÌNH PHỤ
-                // ========================================
-
+                // SEARCH
                 composable(AppRoutes.SEARCH) {
                     SearchScreen(onBackClick = { mainNavController.popBackStack() })
                 }
 
-                // ========================================
-                // 4. CART FLOW
-                // ========================================
-
+                // CART FLOW
                 composable(AppRoutes.PAYMENT_QR) {
                     PaymentQRScreen(
                         onBackClick = { mainNavController.popBackStack() },

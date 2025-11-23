@@ -12,6 +12,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
 import vn.edu.ut.hieupm9898.customermobile.ui.components.EmptyStateScreen
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
@@ -32,17 +34,18 @@ fun FavoriteScreen(
         viewModel.loadFavoriteProducts()
     }
 
-    // Handle add to cart notification
+    // ✅ THÔNG BÁO TÙY CHỈNH THỜI GIAN (1.2 giây)
     LaunchedEffect(uiState.addToCartMessage) {
-        if (uiState.addToCartMessage != null) {
-            val result = snackbarHostState.showSnackbar(
-                message = uiState.addToCartMessage!!,
-                actionLabel = if (uiState.addToCartSuccess) "Xem giỏ" else null,
-                duration = SnackbarDuration.Short
-            )
-            if (result == SnackbarResult.ActionPerformed && uiState.addToCartSuccess) {
-                onNavigateToCart()
+        uiState.addToCartMessage?.let { msg ->
+            val job = launch {
+                snackbarHostState.showSnackbar(
+                    message = msg,
+                    duration = SnackbarDuration.Indefinite
+                )
             }
+            delay(1200)
+            snackbarHostState.currentSnackbarData?.dismiss()
+            job.cancel()
             viewModel.resetCartNotification()
         }
     }
@@ -83,7 +86,8 @@ fun FavoriteScreen(
             ) { snackbarData ->
                 Snackbar(
                     snackbarData = snackbarData,
-                    containerColor = if (uiState.addToCartSuccess) BrosBrown else MaterialTheme.colorScheme.error,
+                    containerColor = if (uiState.addToCartSuccess) BrosBrown
+                    else MaterialTheme.colorScheme.error,
                     contentColor = Color.White,
                     actionColor = Color.White
                 )
@@ -121,7 +125,6 @@ fun FavoriteScreen(
                     ) {
                         items(items = uiState.favoriteProducts, key = { it.id }) { product ->
 
-                            // ✅ Tính toán trạng thái hết hàng
                             val isOutOfStock = product.isOutOfStock()
 
                             CoffeeCard(
@@ -130,14 +133,11 @@ fun FavoriteScreen(
                                 price = product.price,
                                 imageUrl = product.imageUrl,
                                 isFavorite = true,
-                                // ✅ Truyền trạng thái Hết hàng vào UI
                                 isOutOfStock = isOutOfStock,
                                 onCardClick = {
-                                    // ✅ Chỉ cho click nếu còn hàng
                                     if (!isOutOfStock) onProductClick(product.id)
                                 },
                                 onFavoriteClick = { viewModel.toggleFavorite(product.id) },
-                                // ✅ Thêm vào giỏ (Logic VM đã check OOS)
                                 onAddClick = { viewModel.quickAddToCart(product) }
                             )
                         }

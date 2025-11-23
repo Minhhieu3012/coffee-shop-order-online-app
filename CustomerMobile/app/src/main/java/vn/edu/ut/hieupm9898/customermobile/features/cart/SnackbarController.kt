@@ -49,7 +49,7 @@ object SnackbarController {
             message = "❌ $message",
             actionLabel = actionLabel,
             onActionClick = onActionClick,
-            duration = SnackbarDuration.Long
+            duration = SnackbarDuration.Short
         )
     }
 
