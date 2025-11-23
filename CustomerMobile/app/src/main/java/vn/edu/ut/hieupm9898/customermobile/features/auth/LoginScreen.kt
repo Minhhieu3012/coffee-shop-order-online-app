@@ -32,7 +32,6 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.StatusScreen
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.*
 
-// IMPORT CHO GOOGLE SIGN IN (Nếu chưa có thì thêm vào)
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -54,7 +53,6 @@ fun LoginScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
-    // --- CẤU HÌNH GOOGLE SIGN IN ---
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -71,14 +69,12 @@ fun LoginScreen(
 
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            // 👇 THAY ID WEB CLIENT MỚI CỦA BẠN VÀO ĐÂY 👇
             .requestIdToken("743926532574-tg8hnq21k7qfdcgicftqh03c76gutc02.apps.googleusercontent.com")
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
     }
 
-    // --- LOGIC CHUYỂN TRANG TỰ ĐỘNG ---
     LaunchedEffect(key1 = isLoginSuccess) {
         if (isLoginSuccess) {
             delay(2000)
@@ -89,8 +85,6 @@ fun LoginScreen(
             onLoginSuccess()
         }
     }
-
-    // Lắng nghe sự kiện từ ViewModel (để biết khi nào đăng nhập thành công)
 
     LaunchedEffect(Unit) {
         viewModel.navEvent.collect { event ->
@@ -105,18 +99,15 @@ fun LoginScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // --- GIAO DIỆN CHÍNH ---
-        // Sử dụng Column bao ngoài cùng để cuộn toàn bộ màn hình
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BrosBackground) // Màu nền chính
-                .verticalScroll(rememberScrollState()) // <--- CHO PHÉP CUỘN Ở ĐÂY
-                .imePadding(), // Tránh bàn phím che mất
+                .background(BrosBackground)
+                .verticalScroll(rememberScrollState())
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // 1. LOGO (Chiếm 200dp chiều cao)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -130,13 +121,11 @@ fun LoginScreen(
                 )
             }
 
-            // 2. FORM CARD (Phần màu trắng)
             Card(
                 shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 modifier = Modifier
-                    .fillMaxWidth() // Chỉ lấy chiều ngang tối đa
-                    // ⛔️ QUAN TRỌNG: KHÔNG DÙNG fillMaxSize() Ở ĐÂY NỮA
+                    .fillMaxWidth()
                     .padding(horizontal = 0.dp)
             ) {
                 Column(
@@ -145,7 +134,6 @@ fun LoginScreen(
                 ) {
                     Text("Đăng nhập", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = BrosTitle)
 
-                    // Link Sign Up
                     Row(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text("Bạn không có tài khoản? ", color = BrosSubTitle, fontSize = 16.sp)
                         Text(
@@ -156,7 +144,6 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Input Email
                     BrosTextField(
                         value = email, onValueChange = { email = it },
                         label = "Email", keyboardType = KeyboardType.Email
@@ -164,13 +151,11 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Input Password
                     BrosTextField(
                         value = password, onValueChange = { password = it },
                         label = "Password", isPassword = true
                     )
 
-                    // Remember & Forgot Pass
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 24.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -189,25 +174,22 @@ fun LoginScreen(
                         )
                     }
 
-                    // Error Message (nếu có)
                     uiState.errorMessage?.let {
                         Text(text = it, color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
                     }
 
-                    // BUTTON LOGIN
                     BrosButton(
                         text = if (uiState.isLoading) "Đang xử lý..." else "Đăng nhập",
                         onClick = {
                             viewModel.updateField("email", email)
                             viewModel.updateField("password", password)
-                            viewModel.onLoginClicked()
+                            viewModel.onLoginClicked(isRememberMe = rememberMe)
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Divider
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         HorizontalDivider(Modifier.weight(1f), color = Color.LightGray)
                         Text(" Hoặc ", modifier = Modifier.padding(horizontal = 8.dp), color = BrosSubTitle)
@@ -216,7 +198,6 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // BUTTON ĐĂNG KÝ
                     BrosButton(
                         text = "Đăng ký",
                         onClick = { navController.navigate(AppRoutes.REGISTER) },
@@ -225,7 +206,6 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // BUTTON GOOGLE
                     Button(
                         onClick = {
                             googleSignInLauncher.launch(googleSignInClient.signInIntent)
@@ -243,20 +223,17 @@ fun LoginScreen(
                         Text("Tiếp tục với Google", fontSize = 16.sp, color = Color.Black, fontWeight = FontWeight.SemiBold)
                     }
 
-                    // Spacer cuối cùng để đảm bảo nút Google không bị sát đáy màn hình quá
                     Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
 
-        // Loading Overlay
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)).clickable(enabled = false){}, contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
 
-        // Status Screen (Success)
         if (isLoginSuccess) {
             StatusScreen(
                 icon = Icons.Default.Person,

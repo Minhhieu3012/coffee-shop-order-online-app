@@ -38,9 +38,14 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // ĐĂNG NHẬP
-    // ĐĂNG NHẬP
-    fun onLoginClicked() = viewModelScope.launch {
+    /**
+     * 🔥 KIỂM TRA XEM USER ĐÃ ĐĂNG NHẬP VÀ CHỌN "GHI NHỚ" CHƯA
+     */
+    fun isUserLoggedIn(): Boolean {
+        return authRepository.isUserLoggedIn()
+    }
+
+    fun onLoginClicked(isRememberMe: Boolean) = viewModelScope.launch {
         val email = _uiState.value.email.trim()
         val password = _uiState.value.password
 
@@ -58,8 +63,9 @@ class AuthViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { user ->
+                    // 🔥 LƯU TRẠNG THÁI "GHI NHỚ"
+                    authRepository.saveRememberMeState(isRememberMe)
                     _currentUser.value = user
-
                     _navEvent.emit(AuthNavEvent.NavigateToHome)
                 },
                 onFailure = { error ->
@@ -89,7 +95,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // ĐĂNG NHẬP GOOGLE
     fun onGoogleSignInClicked(idToken: String) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
@@ -99,9 +104,9 @@ class AuthViewModel @Inject constructor(
 
         result.fold(
             onSuccess = { user ->
+                // 🔥 TỰ ĐỘNG LƯU TRẠNG THÁI "GHI NHỚ" KHI ĐĂNG NHẬP GOOGLE
+                authRepository.saveRememberMeState(true)
                 _currentUser.value = user
-
-                // 👇 ĐI THẲNG VÀO HOME, KHÔNG CHECK isProfileCompleted NỮA
                 _navEvent.emit(AuthNavEvent.NavigateToHome)
             },
             onFailure = { error ->
@@ -112,12 +117,10 @@ class AuthViewModel @Inject constructor(
         )
     }
 
-    // ĐĂNG KÝ
-    // ĐĂNG KÝ
     fun onRegisterClicked(
-        userName: String,      // 👈 PHẢI CÓ
+        userName: String,
         email: String,
-        phoneNumber: String,   // 👈 PHẢI CÓ
+        phoneNumber: String,
         password: String,
         referralCode: String = ""
     ) = viewModelScope.launch {
@@ -126,9 +129,9 @@ class AuthViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         val result = authRepository.register(
-            userName = userName,           // 👈 TRUYỀN TÊN
+            userName = userName,
             email = email,
-            phoneNumber = phoneNumber,     // 👈 TRUYỀN SĐT
+            phoneNumber = phoneNumber,
             password = password,
             referralCode = referralCode
         )
@@ -149,7 +152,6 @@ class AuthViewModel @Inject constructor(
         )
     }
 
-    // Thêm vào AuthViewModel
     fun loadCurrentUser() = viewModelScope.launch {
         val result = authRepository.getCurrentUser()
 
@@ -165,7 +167,15 @@ class AuthViewModel @Inject constructor(
         )
     }
 
-    // CÁC HÀM KHÁC (GIỮ NGUYÊN NẾU BẠN CÓ)
+    /**
+     * 🔥 ĐĂNG XUẤT - XÓA TRẠNG THÁI GHI NHỚ VÀ FIREBASE AUTH
+     */
+    fun logout() {
+        authRepository.logout() // Xóa SharedPreferences và Firebase signOut
+        _currentUser.value = null
+        _uiState.value = AuthUiState()
+    }
+
     fun onProceedForgotPassword() = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
         kotlinx.coroutines.delay(1000)

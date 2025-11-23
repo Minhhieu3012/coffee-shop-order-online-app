@@ -1,6 +1,7 @@
 package vn.edu.ut.hieupm9898.customermobile.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import vn.edu.ut.hieupm9898.customermobile.data.local.AppDatabase
 import vn.edu.ut.hieupm9898.customermobile.data.local.CartDao
+import vn.edu.ut.hieupm9898.customermobile.data.local.UserPreferencesManager
 import vn.edu.ut.hieupm9898.customermobile.data.remote.FirebaseDataSource
 import vn.edu.ut.hieupm9898.customermobile.data.repository.CartRepository
 import vn.edu.ut.hieupm9898.customermobile.data.repository.ProductRepository
@@ -26,27 +28,20 @@ object AppModule {
     // FIREBASE PROVIDERS
     // =============================================
 
-    /**
-     * Provide Firebase Authentication instance
-     */
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
     }
 
-    /**
-     * Provide Firebase Firestore instance với cấu hình tối ưu
-     */
     @Provides
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore {
         val firestore = FirebaseFirestore.getInstance()
 
-        // Cấu hình Firestore settings
         val settings = FirebaseFirestoreSettings.Builder()
-            .setPersistenceEnabled(true) // Bật cache offline
-            .setCacheSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED) // Cache không giới hạn
+            .setPersistenceEnabled(true)
+            .setCacheSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
             .build()
 
         firestore.firestoreSettings = settings
@@ -54,18 +49,12 @@ object AppModule {
         return firestore
     }
 
-    /**
-     * Provide Firebase Storage instance (dùng để upload/download ảnh)
-     */
     @Provides
     @Singleton
     fun provideFirebaseStorage(): FirebaseStorage {
         return FirebaseStorage.getInstance()
     }
 
-    /**
-     * Provide FirebaseDataSource
-     */
     @Provides
     @Singleton
     fun provideFirebaseDataSource(
@@ -78,24 +67,18 @@ object AppModule {
     // ROOM DATABASE PROVIDERS
     // =============================================
 
-    /**
-     * Provide Room Database instance
-     */
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "bros_coffee_database" // Tên database
+            "bros_coffee_database"
         )
-            .fallbackToDestructiveMigration() // Xóa DB cũ khi upgrade (chỉ dùng trong dev)
+            .fallbackToDestructiveMigration()
             .build()
     }
 
-    /**
-     * Provide CartDao
-     */
     @Provides
     @Singleton
     fun provideCartDao(database: AppDatabase): CartDao {
@@ -106,9 +89,6 @@ object AppModule {
     // REPOSITORY PROVIDERS
     // =============================================
 
-    /**
-     * Provide ProductRepository
-     */
     @Provides
     @Singleton
     fun provideProductRepository(
@@ -117,10 +97,6 @@ object AppModule {
         return ProductRepository(firebaseDataSource)
     }
 
-    /**
-     * Provide CartRepository
-     * TODO: Tích hợp với Room Database sau
-     */
     @Provides
     @Singleton
     fun provideCartRepository(): CartRepository {
@@ -128,14 +104,18 @@ object AppModule {
     }
 
     // =============================================
-    // SHARED PREFERENCES (Optional)
+    // SHARED PREFERENCES & USER MANAGER
     // =============================================
 
-    /**
-     * Provide SharedPreferences để lưu settings, theme, language...
-     */
     @Provides
     @Singleton
-    fun provideSharedPreferences(@ApplicationContext context: Context) =
-        context.getSharedPreferences("bros_coffee_prefs", Context.MODE_PRIVATE)
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return context.getSharedPreferences("bros_coffee_prefs", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserPreferencesManager(sharedPreferences: SharedPreferences): UserPreferencesManager {
+        return UserPreferencesManager(sharedPreferences)
+    }
 }

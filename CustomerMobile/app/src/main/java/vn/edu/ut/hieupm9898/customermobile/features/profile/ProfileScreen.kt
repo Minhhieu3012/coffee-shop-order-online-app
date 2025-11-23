@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.data.model.User
+import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,18 +43,19 @@ fun ProfileScreen(
     onHistoryClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     onBackClick: () -> Unit = {},
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel() // 🔥 THÊM AuthViewModel
 ) {
     val context = LocalContext.current
     val currentUser by viewModel.currentUser.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // 👇 THÊM LIFECYCLE OBSERVER ĐỂ REFRESH KHI QUAY LẠI
+    // Lifecycle observer để refresh khi quay lại
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                // Refresh user data mỗi khi màn hình được resume
                 viewModel.refreshUser()
             }
         }
@@ -61,6 +63,48 @@ fun ProfileScreen(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
+    }
+
+    // 🔥 DIALOG XÁC NHẬN ĐĂNG XUẤT
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = {
+                Text(
+                    "Xác nhận đăng xuất",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text("Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+
+                        // 🔥 GỌI LOGOUT TỪ AuthViewModel ĐỂ XÓA SharedPreferences
+                        authViewModel.logout()
+
+                        // Chuyển về màn hình đăng nhập
+                        navController.navigate(AppRoutes.AUTH_GRAPH) {
+                            popUpTo(AppRoutes.MAIN_APP_GRAPH) { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text(
+                        "Đăng xuất",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Hủy")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -156,20 +200,9 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Logout Button
+            // 🔥 NÚT ĐĂNG XUẤT - SỬA LẠI
             Surface(
-                onClick = {
-                    val sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-                    with(sharedPreferences.edit()) {
-                        putBoolean("IS_LOGGED_IN", false)
-                        putString("USER_EMAIL", "")
-                        apply()
-                    }
-
-                    navController.navigate(AppRoutes.AUTH_GRAPH) {
-                        popUpTo(AppRoutes.MAIN_APP_GRAPH) { inclusive = true }
-                    }
-                },
+                onClick = { showLogoutDialog = true }, // Hiển thị dialog thay vì logout trực tiếp
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.errorContainer,
                 modifier = Modifier.fillMaxWidth().height(56.dp)

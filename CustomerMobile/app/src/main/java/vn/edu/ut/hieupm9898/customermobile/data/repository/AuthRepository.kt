@@ -9,14 +9,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import vn.edu.ut.hieupm9898.customermobile.data.model.User
+import vn.edu.ut.hieupm9898.customermobile.data.local.UserPreferencesManager
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val userPreferencesManager: UserPreferencesManager
 ) {
 
     // ============================================
-    // 1. ĐĂNG KÝ - TẠO TÀI KHOẢN + LƯU FIRESTORE
+    // 1. ĐĂNG KÝ
     // ============================================
     suspend fun register(
         userName: String,
@@ -232,11 +234,8 @@ class AuthRepository @Inject constructor(
             val email = user.email
                 ?: return Result.failure(Exception("Không tìm thấy email"))
 
-            // Re-authenticate trước khi đổi mật khẩu
             val credential = EmailAuthProvider.getCredential(email, oldPassword)
             user.reauthenticate(credential).await()
-
-            // Đổi mật khẩu
             user.updatePassword(newPassword).await()
 
             Result.success(Unit)
@@ -263,13 +262,11 @@ class AuthRepository @Inject constructor(
 
             val uid = user.uid
 
-            // Xóa document trên Firestore
             firestore.collection("users")
                 .document(uid)
                 .delete()
                 .await()
 
-            // Xóa tài khoản Firebase Auth
             user.delete().await()
 
             Result.success(Unit)
@@ -280,10 +277,22 @@ class AuthRepository @Inject constructor(
     }
 
     // ============================================
-    // 8. ĐĂNG XUẤT
+    // 8. ĐĂNG XUẤT (CẬP NHẬT)
     // ============================================
     fun logout() {
         firebaseAuth.signOut()
+        userPreferencesManager.clear()
+    }
+
+    // ============================================
+    // 9. CÁC HÀM HỖ TRỢ REMEMBER ME (MỚI)
+    // ============================================
+    fun saveRememberMeState(isChecked: Boolean) {
+        userPreferencesManager.saveRememberMe(isChecked)
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return firebaseAuth.currentUser != null && userPreferencesManager.getRememberMe()
     }
 
     // ============================================
