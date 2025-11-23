@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import vn.edu.ut.hieupm9898.customermobile.features.auth.authNavGraph
+import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph // 👈 THÊM
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.SplashScreen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding1Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding2Screen
@@ -23,9 +24,8 @@ fun AppNavigation(navController: NavHostController) {
         // --- 1. MÀN HÌNH CHỜ (SPLASH) ---
         composable(AppRoutes.SPLASH) {
             SplashScreen(
-                navController = navController, // Truyền vào để nó tự check đăng nhập
+                navController = navController,
                 onGetStartedClick = {
-                    // Nếu bấm Bắt đầu -> Vào Onboarding
                     navController.navigate(AppRoutes.ONBOARDING_1) {
                         popUpTo(AppRoutes.SPLASH) { inclusive = true }
                     }
@@ -73,11 +73,13 @@ fun AppNavigation(navController: NavHostController) {
             route = AppRoutes.MAIN_APP_GRAPH,
             startDestination = AppRoutes.HOME
         ) {
-            // Màn hình chính chứa Bottom Bar (Trang chủ, Giỏ hàng...)
+            // Màn hình chính chứa Bottom Bar
             composable(AppRoutes.HOME) {
-                // [QUAN TRỌNG] Truyền navController cha vào đây để nút Đăng xuất hoạt động
                 MainScreen(rootNavController = navController)
             }
+
+            // 👇 THÊM TẤT CẢ PROFILE ROUTES
+            profileNavGraph(navController)
 
             // Màn hình Chi tiết sản phẩm
             composable(
@@ -89,13 +91,11 @@ fun AppNavigation(navController: NavHostController) {
                 )
             ) { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
-                // TODO: Gọi màn hình ProductDetailScreen(productId = productId) tại đây
-                // Ví dụ: ProductDetailScreen(navController = navController, productId = productId)
+                // TODO: ProductDetailScreen
             }
         }
     }
 }
-
 
 private fun navigateToAuthFlow(navController: NavHostController) {
     navController.navigate(AppRoutes.AUTH_GRAPH) {

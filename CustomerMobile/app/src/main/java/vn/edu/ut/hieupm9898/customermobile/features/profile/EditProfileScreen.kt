@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,35 +17,66 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     onBackClick: () -> Unit = {},
-    onSaveClick: () -> Unit = {}
+    viewModel: EditProfileViewModel = hiltViewModel()
 ) {
-    var name by remember { mutableStateOf("Hieu PM") }
-    var phone by remember { mutableStateOf("0989 123 456") }
-    var email by remember { mutableStateOf("hieupm9898@ut.edu.vn") }
-    var address by remember { mutableStateOf("KTX Khu B") }
+    val currentUser by viewModel.currentUser.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val isSuccess by viewModel.isSuccess.collectAsState()
+
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var dateOfBirth by remember { mutableStateOf("") }
+
+    // Load user data khi có
+    LaunchedEffect(currentUser) {
+        currentUser?.let { user ->
+            name = user.displayName
+            phone = user.phoneNumber
+            email = user.email
+            dateOfBirth = user.dateOfBirth
+        }
+    }
+
+    // Hiển thị thông báo lỗi
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            // Có thể show Snackbar ở đây
+        }
+    }
+
+    // Khi update thành công
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
+            viewModel.clearSuccess()
+            onBackClick() // Quay lại màn trước
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(
-                    "Chỉnh sửa hồ sơ",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp
-                ) },
+                title = {
+                    Text(
+                        "Chỉnh sửa hồ sơ",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -60,85 +92,140 @@ fun EditProfileScreen(
             )
         },
         bottomBar = {
-            // Nút Save ở dưới cùng
             Box(modifier = Modifier.padding(24.dp)) {
-                BrosButton(text = "Lưu thay đổi", onClick = onSaveClick, modifier = Modifier.fillMaxWidth())
+                BrosButton(
+                    text = if (isLoading) "Đang lưu..." else "Lưu thay đổi",
+                    onClick = {
+                        viewModel.updateProfile(
+                            displayName = name,
+                            phoneNumber = phone,
+                            dateOfBirth = dateOfBirth,
+                            avatarUrl = currentUser?.avatarUrl ?: ""
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
+        if (isLoading && currentUser == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // 1. Avatar with Edit Icon
-            Box(contentAlignment = Alignment.BottomEnd) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data("https://img.freepik.com/free-photo/portrait-handsome-smiling-young-man-model-wearing-casual-summer-pink-clothes-fashion-stylish-man-posing_158538-5350.jpg")
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Avatar",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
+                // Avatar
+                Box(contentAlignment = Alignment.BottomEnd) {
+                    if (currentUser?.avatarUrl.isNullOrEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Avatar",
+                                modifier = Modifier.size(60.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(currentUser?.avatarUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                        )
+                    }
 
-                // Nút Camera nhỏ
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    IconButton(onClick = { /* Pick Image */ }) {
-                        Icon(Icons.Default.CameraAlt, contentDescription = "Edit", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        IconButton(onClick = { /* TODO: Pick Image */ }) {
+                            Icon(
+                                Icons.Default.CameraAlt,
+                                contentDescription = "Edit",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Error Message
+                if (errorMessage != null) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = errorMessage ?: "",
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // Form Fields
+                BrosTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = "Họ và tên"
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                BrosTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = "Số điện thoại",
+                    keyboardType = KeyboardType.Phone
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                BrosTextField(
+                    value = email,
+                    onValueChange = { }, // Email không cho sửa
+                    label = "Email",
+                    keyboardType = KeyboardType.Email,
+                    enabled = false
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                BrosTextField(
+                    value = dateOfBirth,
+                    onValueChange = { dateOfBirth = it },
+                    label = "Ngày sinh (DD/MM/YYYY)"
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 2. Form Fields (Sử dụng BrosTextField)
-            BrosTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = "Full Name"
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            BrosTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = "Phone Number",
-                keyboardType = KeyboardType.Phone
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            BrosTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = "Email",
-                keyboardType = KeyboardType.Email
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            BrosTextField(
-                value = address,
-                onValueChange = { address = it },
-                label = "Address"
-            )
         }
     }
-}
-
-@Preview
-@Composable
-fun EditProfilePreview() {
-    CustomerMobileTheme { EditProfileScreen() }
 }

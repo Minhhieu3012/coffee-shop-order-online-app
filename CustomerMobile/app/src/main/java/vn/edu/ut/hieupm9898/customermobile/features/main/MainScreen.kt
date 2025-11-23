@@ -4,9 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController // Import này
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,8 +25,7 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @Composable
 fun MainScreen(
-    // [QUAN TRỌNG] Nhận rootNavController để điều hướng Đăng xuất
-    rootNavController: NavHostController? = null
+    rootNavController: NavHostController
 ) {
     // NavController này chỉ quản lý các tab con (Home, Cart, Profile...)
     val mainNavController = rememberNavController()
@@ -40,7 +38,6 @@ fun MainScreen(
     CustomerMobileTheme {
         Scaffold(
             bottomBar = {
-                // Chỉ hiện BottomBar ở 4 màn hình chính
                 if (currentRoute in bottomBarRoutes) {
                     BrosBottomNavBar(
                         currentRoute = currentRoute ?: AppRoutes.HOME,
@@ -91,18 +88,15 @@ fun MainScreen(
                 }
 
                 composable(AppRoutes.PROFILE) {
-                    // [QUAN TRỌNG] Truyền rootNavController vào Profile để nó Đăng xuất được
-                    // Nếu rootNavController null (khi preview), dùng tạm mainNavController để không crash
-                    val controllerToUse = rootNavController ?: mainNavController
-
+                    // 👇 TRUYỀN rootNavController VÀO ĐỂ NAVIGATE ĐẾN CÁC PROFILE SUB-SCREENS
                     ProfileScreen(
-                        navController = controllerToUse,
-                        onEditProfileClick = { mainNavController.navigate(AppRoutes.EDIT_PROFILE) },
-                        onAddressClick = { mainNavController.navigate(AppRoutes.ADDRESS_LIST) },
-                        onPaymentClick = { mainNavController.navigate(AppRoutes.PAYMENT_METHODS) },
-                        onHistoryClick = { mainNavController.navigate(AppRoutes.ORDER_HISTORY) },
-                        onNotificationsClick = { mainNavController.navigate(AppRoutes.NOTIFICATIONS) }
-                        // Đã xóa onLogoutClick vì ProfileScreen tự xử lý bên trong
+                        navController = rootNavController,
+                        onEditProfileClick = { rootNavController.navigate(AppRoutes.EDIT_PROFILE) },
+                        onAddressClick = { rootNavController.navigate(AppRoutes.ADDRESS_LIST) },
+                        onPaymentClick = { rootNavController.navigate(AppRoutes.PAYMENT_METHODS) },
+                        onHistoryClick = { rootNavController.navigate(AppRoutes.ORDER_HISTORY) },
+                        onNotificationsClick = { rootNavController.navigate(AppRoutes.NOTIFICATIONS) },
+                        onBackClick = { } // Profile không có nút back
                     )
                 }
 
@@ -114,7 +108,7 @@ fun MainScreen(
                     val productId = backStackEntry.arguments?.getString("id") ?: ""
 
                     ProductDetailScreen(
-                        title = "Cold Coffee", // Mock data
+                        title = "Cold Coffee",
                         subtitle = "100mg Caffeine · 120 Cal",
                         rating = 4.5f,
                         ratingCountText = "(4.5)",
@@ -142,49 +136,8 @@ fun MainScreen(
                     SearchScreen(onBackClick = { mainNavController.popBackStack() })
                 }
 
-                composable(AppRoutes.EDIT_PROFILE) {
-                    EditProfileScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.ADDRESS_LIST) {
-                    AddressScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.ADD_ADDRESS) {
-                    AddAddressScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.CHANGE_PASS) {
-                    ChangePasswordScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.CONTACT) {
-                    ContactUsScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.NOTIFICATIONS) {
-                    NotificationScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.ORDER_HISTORY) {
-                    OrderHistoryScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.REWARDS) {
-                    RewardsScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.SETTINGS) {
-                    SettingsScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.FEEDBACK) {
-                    FeedbackScreen(onBackClick = { mainNavController.popBackStack() })
-                }
-
-                composable(AppRoutes.DELETE_ACCOUNT) {
-                    DeleteAccountScreen(onBackClick = { mainNavController.popBackStack() })
-                }
+                // 👇 XÓA TẤT CẢ CÁC PROFILE SUB-SCREENS Ở ĐÂY
+                // Vì chúng đã được khai báo trong ProfileNavGraph
 
                 // --- 4. CART FLOW ---
                 composable(AppRoutes.PAYMENT_QR) {
@@ -206,19 +159,7 @@ fun MainScreen(
                         onBackClick = { mainNavController.navigate(AppRoutes.ORDER_HISTORY) }
                     )
                 }
-
-                composable(AppRoutes.PAYMENT_METHODS) {
-                    // PaymentMethodsScreen(onBackClick = { mainNavController.popBackStack() })
-                }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    CustomerMobileTheme {
-        MainScreen()
     }
 }

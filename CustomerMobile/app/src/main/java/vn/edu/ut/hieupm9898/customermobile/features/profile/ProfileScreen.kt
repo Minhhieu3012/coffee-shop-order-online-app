@@ -128,7 +128,7 @@ fun ProfileScreen(
                 ProfileOptionItem(
                     icon = Icons.Default.Security,
                     title = "Bảo mật",
-                    onClick = {}
+                    onClick = { navController.navigate(AppRoutes.SETTINGS) } // 👈 THÊM NAVIGATION
                 )
 
                 // 👇 THÊM PHẦN HIỂN THỊ ĐIỂM THƯỞNG
