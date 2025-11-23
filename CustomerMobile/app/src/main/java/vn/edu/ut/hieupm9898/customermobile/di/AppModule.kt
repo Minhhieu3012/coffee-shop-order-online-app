@@ -86,7 +86,7 @@ object AppModule {
     }
 
     // =============================================
-    // REPOSITORY PROVIDERS
+    // REPOSITORY PROVIDERS (✅ UPDATED)
     // =============================================
 
     @Provides
@@ -97,10 +97,14 @@ object AppModule {
         return ProductRepository(firebaseDataSource)
     }
 
+    // ✅ CẬP NHẬT: Inject CartDao và FirebaseAuth vào CartRepository
     @Provides
     @Singleton
-    fun provideCartRepository(): CartRepository {
-        return CartRepository()
+    fun provideCartRepository(
+        cartDao: CartDao,
+        firebaseAuth: FirebaseAuth
+    ): CartRepository {
+        return CartRepository(cartDao, firebaseAuth)
     }
 
     // =============================================

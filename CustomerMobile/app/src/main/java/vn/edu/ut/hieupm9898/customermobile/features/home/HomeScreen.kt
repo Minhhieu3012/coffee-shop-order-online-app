@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.delay
 import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
@@ -28,6 +29,7 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
 import vn.edu.ut.hieupm9898.customermobile.ui.components.SearchBarWithSuggestions
 import vn.edu.ut.hieupm9898.customermobile.ui.components.skeleton.HomeScreenSkeleton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
+import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
 private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đá xay")
@@ -37,10 +39,14 @@ fun HomeScreen(
     onProductClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     authViewModel: AuthViewModel = hiltViewModel(),
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToCart: () -> Unit
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
+
+    // ✅ SNACKBAR STATE
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Load user info
     LaunchedEffect(Unit) {
@@ -57,6 +63,33 @@ fun HomeScreen(
         Log.d("HomeScreen", "👤 Current user: ${currentUser?.displayName}")
     }
 
+    // ✅ HANDLE ADD TO CART NOTIFICATION
+    LaunchedEffect(uiState.addToCartMessage) {
+        if (uiState.addToCartMessage != null) {
+            val result = snackbarHostState.showSnackbar(
+                message = uiState.addToCartMessage!!,
+                actionLabel = if (uiState.addToCartSuccess) "Xem giỏ" else null,
+                duration = SnackbarDuration.Short
+            )
+
+            // Nếu user nhấn "Xem giỏ" -> Navigate to Cart
+            if (result == SnackbarResult.ActionPerformed && uiState.addToCartSuccess) {
+                onNavigateToCart()
+            }
+
+            // Reset notification state
+            homeViewModel.resetCartNotification()
+        }
+    }
+
+    // ✅ HANDLE ERROR MESSAGE
+    LaunchedEffect(uiState.errorMessage) {
+        if (uiState.errorMessage != null && !uiState.errorMessage!!.contains("giỏ hàng")) {
+            delay(3000) // Auto dismiss sau 3s
+            homeViewModel.clearError()
+        }
+    }
+
     // Get filtered products
     val filteredProducts = remember(
         uiState.allProducts,
@@ -67,7 +100,25 @@ fun HomeScreen(
     }
 
     Scaffold(
-        containerColor = BrosBackground
+        containerColor = BrosBackground,
+        // ✅ SNACKBAR HOST
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 80.dp) // Tránh bị BottomBar che
+            ) { snackbarData ->
+                Snackbar(
+                    snackbarData = snackbarData,
+                    containerColor = if (uiState.addToCartSuccess) {
+                        BrosBrown
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                    contentColor = Color.White,
+                    actionColor = Color.White
+                )
+            }
+        }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
             if (uiState.isLoading) {
@@ -82,7 +133,7 @@ fun HomeScreen(
                         .fillMaxSize()
                         .padding(paddingValues)
                         .padding(horizontal = 24.dp),
-                    contentPadding = PaddingValues(bottom = 100.dp)
+                    contentPadding = PaddingValues(bottom = 100.dp) // ✅ Đủ chỗ cho Bottom Nav
                 ) {
                     // --- 1. HEADER ---
                     item {
@@ -167,7 +218,7 @@ fun HomeScreen(
                                     isSelected = category == uiState.selectedCategory,
                                     onClick = { homeViewModel.filterByCategory(category) },
                                     count = if (category == "Đá xay") {
-                                        null
+                                        null // ✅ Không hiển thị số đếm cho "Đá xay"
                                     } else {
                                         homeViewModel.getProductCountByCategory(category)
                                     }
@@ -254,7 +305,11 @@ fun HomeScreen(
                                                 onProductClick(product.id)
                                             }
                                         },
-                                        onAddClick = { /* TODO: Add to cart */ },
+                                        // ✅ THÊM VÀO GIỎ HÀNG NHANH
+                                        onAddClick = {
+                                            Log.d("HomeScreen", "🛒 Add to cart clicked: ${product.name}")
+                                            homeViewModel.quickAddToCart(product)
+                                        },
                                         onFavoriteClick = { homeViewModel.toggleFavorite(product.id) },
                                         modifier = Modifier.weight(1f)
                                     )
@@ -268,12 +323,13 @@ fun HomeScreen(
                 }
             }
 
-            // Error Message
-            if (uiState.errorMessage != null) {
+            // ✅ ERROR MESSAGE (Fallback nếu không dùng Snackbar cho error giỏ hàng)
+            if (uiState.errorMessage != null && !uiState.errorMessage!!.contains("giỏ hàng")) {
                 Snackbar(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .padding(bottom = 80.dp),
                     action = {
                         TextButton(onClick = { homeViewModel.retry() }) {
                             Text("Thử lại")

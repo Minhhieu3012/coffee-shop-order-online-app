@@ -12,19 +12,23 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import vn.edu.ut.hieupm9898.customermobile.data.model.Product
 import vn.edu.ut.hieupm9898.customermobile.data.remote.NetworkResult
+import vn.edu.ut.hieupm9898.customermobile.data.repository.CartRepository
 import vn.edu.ut.hieupm9898.customermobile.data.repository.ProductRepository
 import javax.inject.Inject
 
 data class FavoriteUiState(
     val favoriteProducts: List<Product> = emptyList(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val addToCartSuccess: Boolean = false,
+    val addToCartMessage: String? = null
 )
 
 @HiltViewModel
 class FavoriteViewModel @Inject constructor(
     private val productRepository: ProductRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FavoriteUiState())
@@ -121,6 +125,71 @@ class FavoriteViewModel @Inject constructor(
                     it.copy(errorMessage = "Đã xảy ra lỗi khi cập nhật yêu thích")
                 }
             }
+        }
+    }
+
+    /**
+     * ✅ THÊM NHANH VÀO GIỎ HÀNG (Đã cập nhật check Stock)
+     */
+    fun quickAddToCart(product: Product) {
+        // ✅ KIỂM TRA HẾT HÀNG
+        if (product.isOutOfStock()) {
+            _uiState.update {
+                it.copy(
+                    addToCartSuccess = false,
+                    addToCartMessage = "❌ ${product.name} hiện đã hết hàng"
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                Log.d("FavoriteViewModel", "🛒 Quick adding to cart: ${product.name}")
+
+                val result = cartRepository.addToCart(
+                    product = product,
+                    quantity = 1,
+                    size = "Trung bình",
+                    dairy = "Whole Milk",
+                    notes = ""
+                )
+
+                if (result.isSuccess) {
+                    Log.d("FavoriteViewModel", "✅ Quick added: ${product.name}")
+                    _uiState.update {
+                        it.copy(
+                            addToCartSuccess = true,
+                            addToCartMessage = "Đã thêm ${product.name} vào giỏ hàng"
+                        )
+                    }
+                } else {
+                    Log.e("FavoriteViewModel", "❌ Failed to add to cart")
+                    _uiState.update {
+                        it.copy(
+                            addToCartSuccess = false,
+                            addToCartMessage = "Không thể thêm vào giỏ hàng"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FavoriteViewModel", "❌ Error quick add: ${e.message}", e)
+                _uiState.update {
+                    it.copy(
+                        addToCartSuccess = false,
+                        addToCartMessage = "Lỗi: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun resetCartNotification() {
+        _uiState.update {
+            it.copy(
+                addToCartSuccess = false,
+                addToCartMessage = null
+            )
         }
     }
 

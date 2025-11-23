@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.launch
 
 // --- IMPORT FEATURES ---
 import vn.edu.ut.hieupm9898.customermobile.features.cart.*
@@ -46,17 +49,38 @@ fun MainScreen(
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val bottomBarRoutes = listOf(AppRoutes.HOME, AppRoutes.FAVORITE, AppRoutes.CART, AppRoutes.PROFILE)
+    // ✅ CÁC ROUTE HIỂN THỊ BOTTOM NAV BAR
+    val bottomBarRoutes = listOf(
+        AppRoutes.HOME,
+        AppRoutes.FAVORITE,
+        AppRoutes.CART,
+        AppRoutes.PROFILE
+    )
+
+    // ✅ KHỞI TẠO SNACKBAR HOST STATE
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     CustomerMobileTheme {
         Scaffold(
+            // ✅ SNACKBAR HOST
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.padding(bottom = 80.dp) // Tránh bị BottomBar che
+                )
+            },
+            // ✅ BOTTOM NAV BAR - LUÔN HIỂN THỊ Ở CÁC TAB CHÍNH
             bottomBar = {
                 if (currentRoute in bottomBarRoutes) {
                     BrosBottomNavBar(
                         currentRoute = currentRoute ?: AppRoutes.HOME,
                         onNavigate = { route ->
                             mainNavController.navigate(route) {
-                                popUpTo(mainNavController.graph.findStartDestination().id) { saveState = true }
+                                // ✅ ĐẢM BẢO NAVIGATE MƯỢT MÀ, KHÔNG BỊ DUPLICATE
+                                popUpTo(mainNavController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -72,14 +96,28 @@ fun MainScreen(
                 modifier = Modifier.padding(paddingValues)
             ) {
 
-                // --- 1. CÁC TAB CHÍNH (MAIN TABS) ---
+                // ========================================
+                // 1. CÁC TAB CHÍNH (MAIN TABS)
+                // ========================================
+
+                // ✅ HOME SCREEN
                 composable(AppRoutes.HOME) {
                     HomeScreen(
-                        onProductClick = { id -> mainNavController.navigate("${AppRoutes.DETAIL_BASE}/$id") },
-                        onSearchClick = { mainNavController.navigate(AppRoutes.SEARCH) }
+                        onProductClick = { id ->
+                            mainNavController.navigate("${AppRoutes.DETAIL_BASE}/$id")
+                        },
+                        onSearchClick = {
+                            mainNavController.navigate(AppRoutes.SEARCH)
+                        },
+                        onNavigateToCart = {
+                            mainNavController.navigate(AppRoutes.CART) {
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
 
+                // ✅ FAVORITE SCREEN
                 composable(AppRoutes.FAVORITE) {
                     FavoriteScreen(
                         onProductClick = { id ->
@@ -88,20 +126,26 @@ fun MainScreen(
                         onGoHomeClick = {
                             mainNavController.navigate(AppRoutes.HOME) {
                                 popUpTo(AppRoutes.HOME) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
+                        onNavigateToCart = {
+                            mainNavController.navigate(AppRoutes.CART) {
+                                launchSingleTop = true
                             }
                         }
                     )
                 }
 
+                // ✅ CART SCREEN - LUÔN CHO PHÉP NAVIGATE RA NGOÀI
                 composable(AppRoutes.CART) {
-                    OrderScreen(
-                        onBackClick = { mainNavController.popBackStack() },
-                        onOrderClick = { mainNavController.navigate(AppRoutes.PAYMENT_QR) }
+                    CartScreen(
+                        navController = mainNavController
                     )
                 }
 
+                // ✅ PROFILE SCREEN
                 composable(AppRoutes.PROFILE) {
-                    // 👇 TRUYỀN rootNavController VÀO ĐỂ NAVIGATE ĐẾN CÁC PROFILE SUB-SCREENS
                     ProfileScreen(
                         navController = rootNavController,
                         onEditProfileClick = { rootNavController.navigate(AppRoutes.EDIT_PROFILE) },
@@ -113,8 +157,9 @@ fun MainScreen(
                     )
                 }
 
-                // --- 2. CHI TIẾT SẢN PHẨM ---
-                // Thay thế composable DETAIL cũ bằng code này:
+                // ========================================
+                // 2. CHI TIẾT SẢN PHẨM
+                // ========================================
 
                 composable(
                     route = AppRoutes.DETAIL,
@@ -122,7 +167,7 @@ fun MainScreen(
                 ) { backStackEntry ->
                     val productId = backStackEntry.arguments?.getString("id") ?: ""
 
-                    // 🔥 THÊM VIEWMODEL
+                    // ViewModel
                     val viewModel: ProductDetailViewModel = hiltViewModel()
                     val uiState by viewModel.uiState.collectAsState()
 
@@ -141,6 +186,7 @@ fun MainScreen(
                                 CircularProgressIndicator()
                             }
                         }
+
                         uiState.errorMessage != null -> {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -155,6 +201,7 @@ fun MainScreen(
                                 }
                             }
                         }
+
                         uiState.product != null -> {
                             val product = uiState.product!!
 
@@ -172,7 +219,7 @@ fun MainScreen(
                             ProductDetailScreen(
                                 title = product.name,
                                 subtitle = product.description,
-                                rating = 4.5f, // TODO: Thêm rating vào Product model
+                                rating = 4.5f,
                                 ratingCountText = "(4.5)",
                                 description = product.description,
                                 imageUrl = product.imageUrl,
@@ -192,8 +239,21 @@ fun MainScreen(
                                 onDairySelected = { viewModel.selectDairy(it) },
                                 onAddToCartClick = {
                                     viewModel.addToCart()
-                                    // TODO: Hiển thị toast "Đã thêm vào giỏ hàng"
-                                    mainNavController.popBackStack()
+
+                                    coroutineScope.launch {
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "✅ Đã thêm ${product.name} vào giỏ hàng",
+                                            actionLabel = "Xem giỏ"
+                                        )
+
+                                        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                            mainNavController.navigate(AppRoutes.CART) {
+                                                launchSingleTop = true
+                                            }
+                                        } else {
+                                            mainNavController.popBackStack()
+                                        }
+                                    }
                                 },
                                 onRelatedProductClick = { relatedProduct ->
                                     mainNavController.navigate("${AppRoutes.DETAIL_BASE}/${relatedProduct.id}")
@@ -203,32 +263,49 @@ fun MainScreen(
                     }
                 }
 
-                // --- 3. CÁC MÀN HÌNH CON KHÁC ---
+                // ========================================
+                // 3. CÁC MÀN HÌNH PHỤ
+                // ========================================
+
                 composable(AppRoutes.SEARCH) {
                     SearchScreen(onBackClick = { mainNavController.popBackStack() })
                 }
 
-                // 👇 XÓA TẤT CẢ CÁC PROFILE SUB-SCREENS Ở ĐÂY
-                // Vì chúng đã được khai báo trong ProfileNavGraph
+                // ========================================
+                // 4. CART FLOW
+                // ========================================
 
-                // --- 4. CART FLOW ---
                 composable(AppRoutes.PAYMENT_QR) {
                     PaymentQRScreen(
                         onBackClick = { mainNavController.popBackStack() },
-                        onPaymentSuccess = { mainNavController.navigate(AppRoutes.ORDER_SUCCESS) }
+                        onPaymentSuccess = {
+                            mainNavController.navigate(AppRoutes.ORDER_SUCCESS) {
+                                popUpTo(AppRoutes.CART) { inclusive = true }
+                            }
+                        }
                     )
                 }
 
                 composable(AppRoutes.ORDER_SUCCESS) {
                     OrderSuccessScreen(
-                        onTrackOrderClick = { mainNavController.navigate(AppRoutes.DELIVERY) },
-                        onHomeClick = { mainNavController.navigate(AppRoutes.HOME) }
+                        onTrackOrderClick = {
+                            mainNavController.navigate(AppRoutes.DELIVERY)
+                        },
+                        onHomeClick = {
+                            mainNavController.navigate(AppRoutes.HOME) {
+                                popUpTo(AppRoutes.HOME) { inclusive = true }
+                            }
+                        }
                     )
                 }
 
                 composable(AppRoutes.DELIVERY) {
                     DeliveryScreen(
-                        onBackClick = { mainNavController.navigate(AppRoutes.ORDER_HISTORY) }
+                        onBackClick = {
+                            mainNavController.navigate(AppRoutes.HOME) {
+                                popUpTo(AppRoutes.HOME) { inclusive = true }
+                            }
+                        }
                     )
                 }
             }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import vn.edu.ut.hieupm9898.customermobile.data.model.Product
 import vn.edu.ut.hieupm9898.customermobile.data.remote.NetworkResult
+import vn.edu.ut.hieupm9898.customermobile.data.repository.CartRepository
 import vn.edu.ut.hieupm9898.customermobile.data.repository.ProductRepository
 import vn.edu.ut.hieupm9898.customermobile.utils.StringUtils.containsVietnamese
 import vn.edu.ut.hieupm9898.customermobile.utils.StringUtils.normalizeForSearch
@@ -21,10 +22,6 @@ import javax.inject.Inject
 
 /**
  * UI State cho HomeScreen
- *
- * - allProducts: nguồn dữ liệu gốc (tất cả sản phẩm)
- * - products: giữ để tương thích code cũ (nếu có chỗ đang dùng uiState.products)
- * - searchResults: list gợi ý / kết quả tìm kiếm
  */
 data class HomeUiState(
     val products: List<Product> = emptyList(),       // BACKWARD COMPAT
@@ -35,13 +32,17 @@ data class HomeUiState(
     val errorMessage: String? = null,
     val selectedCategory: String = "Tất cả",
     val searchQuery: String = "",
-    val showSuggestions: Boolean = false
+    val showSuggestions: Boolean = false,
+    // ✅ THÊM STATE CHO CART NOTIFICATION
+    val addToCartSuccess: Boolean = false,
+    val addToCartMessage: String? = null
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val productRepository: ProductRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val cartRepository: CartRepository // ✅ INJECT CART REPOSITORY
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -78,10 +79,10 @@ class HomeViewModel @Inject constructor(
                         "📦 Total products from Firebase: ${result.data.size}"
                     )
 
-                    // ✅ THÊM LOG NÀY ĐỂ KIỂM TRA
+                    // ✅ LOG KIỂM TRA STOCK STATUS
                     result.data.forEach { product ->
                         Log.d("HomeViewModel", """
-                        🔍 Product: ${product.name}
+                        📝 Product: ${product.name}
                         - ID: ${product.id}
                         - isAvailable: ${product.isAvailable}
                         - isOutOfStock(): ${product.isOutOfStock()}
@@ -91,7 +92,7 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             allProducts = result.data,
-                            products = result.data, // giữ cho code cũ nếu có
+                            products = result.data,
                             isLoading = false,
                             errorMessage = null
                         )
@@ -133,13 +134,16 @@ class HomeViewModel @Inject constructor(
     fun toggleFavorite(productId: String) {
         val userId = firebaseAuth.currentUser?.uid
         if (userId == null) {
-            // TODO: có thể bắn event để show dialog "Vui lòng đăng nhập"
+            _uiState.update {
+                it.copy(
+                    errorMessage = "Vui lòng đăng nhập để thêm yêu thích"
+                )
+            }
             return
         }
 
         viewModelScope.launch {
-            val currentProduct =
-                _uiState.value.allProducts.find { it.id == productId }
+            val currentProduct = _uiState.value.allProducts.find { it.id == productId }
 
             if (currentProduct == null) {
                 Log.e("HomeViewModel", "⚠️ Không tìm thấy sản phẩm id: $productId")
@@ -169,10 +173,82 @@ class HomeViewModel @Inject constructor(
                     )
                     // 3. Rollback nếu lỗi
                     updateProductStatusInUi(productId, currentStatus)
+                    _uiState.update { it.copy(errorMessage = "Không thể cập nhật yêu thích") }
                 }
 
                 is NetworkResult.Loading -> Unit
             }
+        }
+    }
+
+    /**
+     * ✅ THÊM NHANH VÀO GIỎ HÀNG (từ nút + trên card)
+     */
+    fun quickAddToCart(product: Product) {
+        // ✅ KIỂM TRA HẾT HÀNG TRƯỚC KHI THÊM
+        if (product.isOutOfStock()) {
+            _uiState.update {
+                it.copy(
+                    addToCartSuccess = false,
+                    addToCartMessage = "❌ ${product.name} hiện đã hết hàng"
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                Log.d("HomeViewModel", "🛒 Quick adding to cart: ${product.name}")
+
+                val result = cartRepository.addToCart(
+                    product = product,
+                    quantity = 1,
+                    size = "Trung bình",
+                    dairy = "Whole Milk",
+                    notes = ""
+                )
+
+                if (result.isSuccess) {
+                    Log.d("HomeViewModel", "✅ Quick added: ${product.name}")
+
+                    // ✅ CẬP NHẬT STATE ĐỂ HIỂN THỊ THÔNG BÁO
+                    _uiState.update {
+                        it.copy(
+                            addToCartSuccess = true,
+                            addToCartMessage = "Đã thêm ${product.name} vào giỏ hàng"
+                        )
+                    }
+                } else {
+                    Log.e("HomeViewModel", "❌ Failed to add to cart")
+                    _uiState.update {
+                        it.copy(
+                            addToCartSuccess = false,
+                            addToCartMessage = "Không thể thêm vào giỏ hàng"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "❌ Error quick add: ${e.message}", e)
+                _uiState.update {
+                    it.copy(
+                        addToCartSuccess = false,
+                        addToCartMessage = "Lỗi: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * ✅ RESET CART NOTIFICATION STATE
+     * Gọi sau khi đã hiển thị Snackbar
+     */
+    fun resetCartNotification() {
+        _uiState.update {
+            it.copy(
+                addToCartSuccess = false,
+                addToCartMessage = null
+            )
         }
     }
 
@@ -376,6 +452,13 @@ class HomeViewModel @Inject constructor(
         return state.allProducts.count { product ->
             product.category.equals(englishCategory, ignoreCase = true)
         }
+    }
+
+    /**
+     * ✅ CLEAR ERROR MESSAGE
+     */
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
 
     /**
