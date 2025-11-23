@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import vn.edu.ut.hieupm9898.customermobile.R
-import vn.edu.ut.hieupm9898.customermobile.data.model.Product
 import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
@@ -31,200 +30,241 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
-// Data mẫu
-private val dummyProducts = listOf(
-    Product("1", "Cà phê đen", "Dark Roast, 120 Cal", 4.53, "link_to_img_1", "Coffee", true),
-    Product("2", "Cà phê sữa", "Creamy, High Caffeine", 3.53, "link_to_img_2", "Coffee", false),
-    Product("3", "Trà Đào", "Iced Peach Tea", 3.00, "link_to_img_3", "Tea", false),
-    Product("4", "Bánh Mì", "Traditional Vietnamese Sandwich", 2.50, "link_to_img_4", "Food", true),
-    Product("5", "Cappuccino", "Light & Foamy", 4.20, "link_to_img_5", "Coffee", false),
-    Product("6", "Matcha Latte", "Sweet & Earthy", 4.80, "link_to_img_6", "Tea", true)
-)
-
-private val categoryMap = mapOf(
-    "Tất cả" to "All",
-    "Cà phê" to "Coffee",
-    "Trà" to "Tea",
-    "Đồ ăn" to "Food"
-)
-
 private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đồ ăn")
 
 @Composable
 fun HomeScreen(
     onProductClick: (String) -> Unit,
     onSearchClick: () -> Unit,
-    authViewModel: AuthViewModel = hiltViewModel() // 👈 THÊM ViewModel
+    authViewModel: AuthViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel() // 👈 THÊM ViewModel
 ) {
-    var searchText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Tất cả") }
-    var favoriteProducts by remember { mutableStateOf(dummyProducts.map { it.id to it.isFavorite }.toMap()) }
-
-    // 👇 LẤY THÔNG TIN USER
+    // 👇 LẤY STATE TỪ VIEWMODEL
+    val uiState by homeViewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
 
+    var searchText by remember { mutableStateOf("") }
+
+    // Load user info
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUser()
     }
 
-    // 👇 LOAD USER KHI VÀO SCREEN
-    // Thêm log để debug
+    // Load products khi vào màn hình (chỉ chạy 1 lần)
+    LaunchedEffect(Unit) {
+        homeViewModel.loadProducts()
+    }
+
+    // Debug log
     LaunchedEffect(currentUser) {
         Log.d("HomeScreen", "👤 Current user: ${currentUser?.displayName}")
     }
 
-    val filteredProducts = remember(selectedCategory, searchText, favoriteProducts) {
-        dummyProducts.map { product ->
-            product.copy(isFavorite = favoriteProducts[product.id] ?: product.isFavorite)
-        }.filter { product ->
-            val categoryFilter = selectedCategory == "Tất cả" ||
-                    product.category == categoryMap[selectedCategory]
+    // Lọc products dựa trên category và search
+    val filteredProducts = remember(uiState.products, uiState.selectedCategory, searchText) {
+        var filtered = uiState.products
 
-            val searchFilter = searchText.isEmpty() ||
-                    product.name.contains(searchText, ignoreCase = true) ||
-                    product.description.contains(searchText, ignoreCase = true)
-
-            categoryFilter && searchFilter
+        // Filter by category
+        if (uiState.selectedCategory != "Tất cả") {
+            val categoryMap = mapOf(
+                "Cà phê" to "Coffee",
+                "Trà" to "Tea",
+                "Đồ ăn" to "Food"
+            )
+            val englishCategory = categoryMap[uiState.selectedCategory]
+            if (englishCategory != null) {
+                filtered = filtered.filter { it.category == englishCategory }
+            }
         }
+
+        // Filter by search
+        if (searchText.isNotEmpty()) {
+            filtered = filtered.filter { product ->
+                product.name.contains(searchText, ignoreCase = true) ||
+                        product.description.contains(searchText, ignoreCase = true)
+            }
+        }
+
+        filtered
     }
 
     Scaffold(
         containerColor = BrosBackground
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp)
-        ) {
-            // --- 1. HEADER ---
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                "Chào buổi sáng!",
-                                fontSize = 20.sp,
-                                color = Color.Gray
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp)
+            ) {
+                // --- 1. HEADER ---
+                item {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.logo),
+                                contentDescription = "Avatar",
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White)
                             )
-                            // 👇 HIỂN THỊ TÊN USER
-                            Text(
-                                text = currentUser?.displayName ?: "Khách hàng",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = BrosTitle
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    "Chào buổi sáng!",
+                                    fontSize = 20.sp,
+                                    color = Color.Gray
+                                )
+                                Text(
+                                    text = currentUser?.displayName ?: "Khách hàng",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrosTitle
+                                )
+                            }
+                        }
+                        IconButton(onClick = { /* TODO: Notifications */ }) {
+                            Icon(
+                                Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = BrosTitle,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     }
-                    IconButton(onClick = { /* TODO: Notifications */ }) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = BrosTitle,
-                            modifier = Modifier.size(28.dp)
-                        )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // --- 2. SEARCH BAR ---
+                item {
+                    BrosTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        label = "Tìm kiếm...",
+                        icon = Icons.Default.Search
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // --- 3. CATEGORIES ---
+                item {
+                    Text(
+                        "Phân loại",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BrosTitle
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                item {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(categories) { category ->
+                            CategoryChip(
+                                text = category,
+                                isSelected = category == uiState.selectedCategory,
+                                onClick = { homeViewModel.filterByCategory(category) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // --- 4. PRODUCT TITLE ---
+                item {
+                    Text(
+                        "Đồ uống và món ăn đi kèm",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = BrosTitle,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                // --- 5. PRODUCT GRID ---
+                if (!uiState.isLoading && filteredProducts.isEmpty()) {
+                    // Empty state
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (searchText.isNotEmpty())
+                                    "Không tìm thấy sản phẩm"
+                                else
+                                    "Chưa có sản phẩm",
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                } else {
+                    items(filteredProducts.chunked(2)) { productPair ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            productPair.forEach { product ->
+                                CoffeeCard(
+                                    title = product.name,
+                                    subtitle = product.description,
+                                    price = product.price,
+                                    imageUrl = product.imageUrl,
+                                    isFavorite = product.isFavorite,
+                                    onCardClick = { onProductClick(product.id) },
+                                    onAddClick = { /* TODO: Add to cart */ },
+                                    onFavoriteClick = { homeViewModel.toggleFavorite(product.id) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            if (productPair.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // --- 2. SEARCH BAR ---
-            item {
-                BrosTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    label = "Tìm kiếm...",
-                    icon = Icons.Default.Search
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // --- 3. CATEGORIES ---
-            item {
-                Text(
-                    "Phân loại",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BrosTitle
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(categories) { category ->
-                        CategoryChip(
-                            text = category,
-                            isSelected = category == selectedCategory,
-                            onClick = { selectedCategory = category }
-                        )
-                    }
+                item {
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // --- 4. PRODUCT TITLE ---
-            item {
-                Text(
-                    "Đồ uống và món ăn đi kèm",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = BrosTitle,
-                    modifier = Modifier.padding(bottom = 8.dp)
+            // --- 6. LOADING INDICATOR ---
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // --- 5. PRODUCT GRID ---
-            items(filteredProducts.chunked(2)) { productPair ->
-                Row(
+            // --- 7. ERROR MESSAGE ---
+            if (uiState.errorMessage != null) {
+                Snackbar(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp),
+                    action = {
+                        TextButton(onClick = { homeViewModel.retry() }) {
+                            Text("Thử lại")
+                        }
+                    }
                 ) {
-                    productPair.forEach { product ->
-                        CoffeeCard(
-                            title = product.name,
-                            subtitle = product.description,
-                            price = product.price,
-                            imageUrl = product.imageUrl,
-                            isFavorite = product.isFavorite,
-                            onCardClick = { onProductClick(product.id) },
-                            onAddClick = { /* TODO: Add to cart */ },
-                            onFavoriteClick = {
-                                favoriteProducts = favoriteProducts.toMutableMap().apply {
-                                    this[product.id] = !(this[product.id] ?: product.isFavorite)
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    if (productPair.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+                    Text(uiState.errorMessage ?: "Có lỗi xảy ra")
                 }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
