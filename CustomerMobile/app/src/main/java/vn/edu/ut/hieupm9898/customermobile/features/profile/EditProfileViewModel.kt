@@ -97,6 +97,6 @@ class EditProfileViewModel @Inject constructor(
     }
 
     fun clearSuccess() {
-        _isSuccess.value = false
+        loadCurrentUser() // Gọi lại hàm load
     }
 }

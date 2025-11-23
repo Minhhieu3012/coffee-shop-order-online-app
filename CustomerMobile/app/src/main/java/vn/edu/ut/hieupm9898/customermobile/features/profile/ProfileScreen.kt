@@ -12,27 +12,25 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.data.model.User
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,11 +42,26 @@ fun ProfileScreen(
     onHistoryClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     onBackClick: () -> Unit = {},
-    viewModel: ProfileViewModel = hiltViewModel() // 👈 THÊM ViewModel
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val currentUser by viewModel.currentUser.collectAsState() // 👈 LẤY USER
+    val currentUser by viewModel.currentUser.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+
+    // 👇 THÊM LIFECYCLE OBSERVER ĐỂ REFRESH KHI QUAY LẠI
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // Refresh user data mỗi khi màn hình được resume
+                viewModel.refreshUser()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -80,7 +93,7 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 1. User Info Section - HIỂN THỊ LOADING HOẶC USER
+            // User Info Section
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -91,12 +104,12 @@ fun ProfileScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                UserProfileHeader(user = currentUser) // 👈 TRUYỀN USER VÀO
+                UserProfileHeader(user = currentUser)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 2. Menu Options List
+            // Menu Options List
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -128,10 +141,10 @@ fun ProfileScreen(
                 ProfileOptionItem(
                     icon = Icons.Default.Security,
                     title = "Bảo mật",
-                    onClick = { navController.navigate(AppRoutes.SETTINGS) } // 👈 THÊM NAVIGATION
+                    onClick = { navController.navigate(AppRoutes.SETTINGS) }
                 )
 
-                // 👇 THÊM PHẦN HIỂN THỊ ĐIỂM THƯỞNG
+                // Stats Card
                 if (currentUser != null) {
                     ProfileStatsCard(
                         loyaltyPoints = currentUser!!.loyaltyPoints,
@@ -143,7 +156,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 3. Logout Button
+            // Logout Button
             Surface(
                 onClick = {
                     val sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
@@ -186,7 +199,6 @@ fun ProfileScreen(
     }
 }
 
-// 👇 CẬP NHẬT UserProfileHeader ĐỂ NHẬN USER
 @Composable
 fun UserProfileHeader(user: User?) {
     Column(
@@ -200,7 +212,6 @@ fun UserProfileHeader(user: User?) {
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
         ) {
             if (user?.avatarUrl.isNullOrEmpty()) {
-                // Hiển thị icon mặc định nếu không có avatar
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Default Avatar",
@@ -237,7 +248,6 @@ fun UserProfileHeader(user: User?) {
             color = MaterialTheme.colorScheme.secondary
         )
 
-        // Hiển thị số điện thoại nếu có
         if (!user?.phoneNumber.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -249,7 +259,6 @@ fun UserProfileHeader(user: User?) {
     }
 }
 
-// 👇 THÊM CARD HIỂN THỊ THỐNG KÊ
 @Composable
 fun ProfileStatsCard(
     loyaltyPoints: Int,
@@ -377,20 +386,5 @@ fun ProfileOptionItem(
                 modifier = Modifier.size(16.dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ProfileScreenPreview() {
-    CustomerMobileTheme {
-        ProfileScreen(
-            navController = rememberNavController(),
-            onEditProfileClick = {},
-            onAddressClick = {},
-            onPaymentClick = {},
-            onHistoryClick = {},
-            onNotificationsClick = {}
-        )
     }
 }
