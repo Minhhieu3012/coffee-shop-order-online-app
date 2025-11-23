@@ -30,7 +30,7 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.skeleton.HomeScreenSkel
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
-private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đồ ăn")
+private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đá xay", "Đồ ăn")
 
 @Composable
 fun HomeScreen(
@@ -59,7 +59,7 @@ fun HomeScreen(
 
     // Get filtered products
     val filteredProducts = remember(
-        uiState.products,
+        uiState.allProducts, // 👈 ĐỔI THÀNH allProducts
         uiState.selectedCategory,
         uiState.searchQuery
     ) {
@@ -165,7 +165,8 @@ fun HomeScreen(
                                 CategoryChip(
                                     text = category,
                                     isSelected = category == uiState.selectedCategory,
-                                    onClick = { homeViewModel.filterByCategory(category) }
+                                    onClick = { homeViewModel.filterByCategory(category) },
+                                    count = homeViewModel.getProductCountByCategory(category) // 👈 HIỂN THỊ SỐ LƯỢNG
                                 )
                             }
                         }

@@ -21,14 +21,14 @@ import javax.inject.Inject
  * UI State cho HomeScreen
  */
 data class HomeUiState(
-    val products: List<Product> = emptyList(),
-    val searchResults: List<Product> = emptyList(), // Kết quả gợi ý
+    val allProducts: List<Product> = emptyList(), // 👈 LƯU TẤT CẢ SẢN PHẨM
+    val searchResults: List<Product> = emptyList(),
     val isLoading: Boolean = false,
-    val isSearching: Boolean = false, // Loading riêng cho search
+    val isSearching: Boolean = false,
     val errorMessage: String? = null,
     val selectedCategory: String = "Tất cả",
     val searchQuery: String = "",
-    val showSuggestions: Boolean = false // Hiển thị dropdown gợi ý
+    val showSuggestions: Boolean = false
 )
 
 @HiltViewModel
@@ -40,7 +40,6 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private var searchJob: Job? = null
-    private val allProducts = mutableListOf<Product>()
 
     init {
         loadProducts()
@@ -53,27 +52,39 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            delay(2000) // Delay để hiển thị skeleton
+            delay(2000)
 
             when (val result = productRepository.getAllProducts()) {
                 is NetworkResult.Success -> {
-                    allProducts.clear()
-                    allProducts.addAll(result.data)
+                    // 🔍 LOG ĐỂ XEM DỮ LIỆU TRẢ VỀ
+                    android.util.Log.d("HomeViewModel", "📦 Total products from Firebase: ${result.data.size}")
+
+                    result.data.forEachIndexed { index, product ->
+                        android.util.Log.d("HomeViewModel",
+                            "[$index] ${product.name} | Category: '${product.category}' | ImageURL: '${product.imageUrl}'"
+                        )
+                    }
 
                     _uiState.update {
                         it.copy(
-                            products = result.data,
+                            allProducts = result.data,
                             isLoading = false,
                             errorMessage = null
                         )
                     }
                 }
                 is NetworkResult.Error -> {
+                    android.util.Log.e("HomeViewModel", "❌ Error loading products: ${result.message}")
+
+                    // Dùng offline data
+                    val offlineProducts = productRepository.getOfflineProducts()
+                    android.util.Log.d("HomeViewModel", "📦 Using offline products: ${offlineProducts.size}")
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             errorMessage = result.message,
-                            products = productRepository.getOfflineProducts()
+                            allProducts = offlineProducts
                         )
                     }
                 }
@@ -93,7 +104,6 @@ class HomeViewModel @Inject constructor(
             )
         }
 
-        // Cancel search job cũ
         searchJob?.cancel()
 
         if (query.isEmpty()) {
@@ -106,7 +116,6 @@ class HomeViewModel @Inject constructor(
             return
         }
 
-        // Debounce 300ms
         searchJob = viewModelScope.launch {
             _uiState.update { it.copy(isSearching = true) }
             delay(300)
@@ -129,23 +138,20 @@ class HomeViewModel @Inject constructor(
         if (query.isEmpty()) return emptyList()
 
         val normalizedQuery = query.normalizeForSearch()
+        val currentState = _uiState.value
 
-        return allProducts.filter { product ->
-            // Tìm kiếm trong tên
+        return currentState.allProducts.filter { product ->
             product.name.containsVietnamese(query) ||
-                    // Tìm kiếm trong mô tả
                     product.description.containsVietnamese(query) ||
-                    // Tìm kiếm trong category
                     product.category.containsVietnamese(query)
         }.sortedByDescending { product ->
-            // Ưu tiên kết quả match với tên
             when {
                 product.name.normalizeForSearch().startsWith(normalizedQuery) -> 3
                 product.name.containsVietnamese(query) -> 2
                 product.description.containsVietnamese(query) -> 1
                 else -> 0
             }
-        }.take(5) // Chỉ hiển thị top 5 gợi ý
+        }.take(5)
     }
 
     /**
@@ -181,33 +187,53 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Lọc sản phẩm theo category
+     * Lọc sản phẩm theo category - CHỈ THAY ĐỔI selectedCategory
      */
     fun filterByCategory(category: String) {
         _uiState.update { it.copy(selectedCategory = category) }
     }
 
     /**
-     * Lấy danh sách sản phẩm đã lọc
+     * Lấy danh sách sản phẩm đã lọc theo category và search query
+     * 🔥 HÀM NÀY QUAN TRỌNG - DÙNG TRONG HomeScreen
      */
     fun getFilteredProducts(): List<Product> {
         val state = _uiState.value
-        var filtered = state.products
+        var filtered = state.allProducts
 
-        // Filter by category
+        android.util.Log.d("HomeViewModel", "🔍 getFilteredProducts() called")
+        android.util.Log.d("HomeViewModel", "📦 Total allProducts: ${state.allProducts.size}")
+        android.util.Log.d("HomeViewModel", "📂 Selected category: ${state.selectedCategory}")
+
+        // 1️⃣ Filter theo category (nếu không phải "Tất cả")
         if (state.selectedCategory != "Tất cả") {
             val categoryMap = mapOf(
-                "Cà phê" to "Coffee",
-                "Trà" to "Tea",
-                "Đồ ăn" to "Food"
+                "Cà phê" to listOf("coffee", "cà phê"),
+                "Trà" to listOf("tea", "trà"),
+                "Đá xay" to listOf("đá xay", "smoothie", "frappe"), // 👈 THÊM CATEGORY MỚI
+                "Đồ ăn" to listOf("food", "đồ ăn")
             )
-            val englishCategory = categoryMap[state.selectedCategory]
-            if (englishCategory != null) {
-                filtered = filtered.filter { it.category == englishCategory }
+
+            val targetCategories = categoryMap[state.selectedCategory] ?: listOf(state.selectedCategory.lowercase())
+
+            android.util.Log.d("HomeViewModel", "🎯 Target categories: $targetCategories")
+
+            filtered = filtered.filter { product ->
+                val matches = targetCategories.any { cat ->
+                    product.category.lowercase().contains(cat.lowercase())
+                }
+
+                android.util.Log.d("HomeViewModel",
+                    "Product: ${product.name} | Category: '${product.category}' | Match: $matches"
+                )
+
+                matches
             }
+
+            android.util.Log.d("HomeViewModel", "✅ Filtered result: ${filtered.size} products")
         }
 
-        // Filter by search query
+        // 2️⃣ Filter theo search query (nếu có)
         if (state.searchQuery.isNotEmpty()) {
             filtered = filtered.filter { product ->
                 product.name.containsVietnamese(state.searchQuery) ||
@@ -223,22 +249,35 @@ class HomeViewModel @Inject constructor(
      */
     fun toggleFavorite(productId: String) {
         _uiState.update { state ->
-            val updatedProducts = state.products.map { product ->
+            val updatedProducts = state.allProducts.map { product ->
                 if (product.id == productId) {
                     product.copy(isFavorite = !product.isFavorite)
                 } else {
                     product
                 }
             }
-            state.copy(products = updatedProducts)
+            state.copy(allProducts = updatedProducts) // 👈 CẬP NHẬT allProducts
         }
+    }
 
-        // Update trong allProducts
-        val index = allProducts.indexOfFirst { it.id == productId }
-        if (index != -1) {
-            allProducts[index] = allProducts[index].copy(
-                isFavorite = !allProducts[index].isFavorite
-            )
+    /**
+     * Đếm số lượng sản phẩm theo category
+     */
+    fun getProductCountByCategory(category: String): Int {
+        val state = _uiState.value
+
+        if (category == "Tất cả") return state.allProducts.size
+
+        val categoryMap = mapOf(
+            "Cà phê" to "Coffee",
+            "Trà" to "Tea",
+            "Đồ ăn" to "Food"
+        )
+
+        val englishCategory = categoryMap[category] ?: category
+
+        return state.allProducts.count { product ->
+            product.category.equals(englishCategory, ignoreCase = true)
         }
     }
 
