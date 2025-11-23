@@ -8,12 +8,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import vn.edu.ut.hieupm9898.customermobile.features.auth.authNavGraph
-import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph // 👈 THÊM
+import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.SplashScreen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding1Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding2Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding3Screen
 import vn.edu.ut.hieupm9898.customermobile.features.main.MainScreen
+import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -21,7 +22,7 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = AppRoutes.SPLASH
     ) {
-        // --- 1. MÀN HÌNH CHỜ (SPLASH) ---
+        // 1. Splash
         composable(AppRoutes.SPLASH) {
             SplashScreen(
                 navController = navController,
@@ -33,7 +34,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // --- 2. LUỒNG ONBOARDING ---
+        // 2. Onboarding
         composable(AppRoutes.ONBOARDING_1) {
             Onboarding1Screen(
                 onSkip = { navigateToAuthFlow(navController) },
@@ -58,7 +59,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // --- 3. LUỒNG XÁC THỰC (LOGIN/REGISTER) ---
+        // 3. Auth graph
         authNavGraph(
             navController = navController,
             onLoginSuccess = {
@@ -68,20 +69,35 @@ fun AppNavigation(navController: NavHostController) {
             }
         )
 
-        // --- 4. LUỒNG ỨNG DỤNG CHÍNH (MAIN APP) ---
+        // 4. Main app graph
         navigation(
             route = AppRoutes.MAIN_APP_GRAPH,
             startDestination = AppRoutes.HOME
         ) {
-            // Màn hình chính chứa Bottom Bar
+            // Home chứa bottom bar
             composable(AppRoutes.HOME) {
                 MainScreen(rootNavController = navController)
             }
 
-            // 👇 THÊM TẤT CẢ PROFILE ROUTES
+            // 👉 Favorite route (bắt buộc phải có)
+            composable(AppRoutes.FAVORITE) {
+                FavoriteScreen(
+                    onProductClick = { productId ->
+                        navController.navigate(AppRoutes.createProductDetailRoute(productId))
+                    },
+                    onGoHomeClick = {
+                        navController.navigate(AppRoutes.HOME) {
+                            popUpTo(AppRoutes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+
+            // Profile graph
             profileNavGraph(navController)
 
-            // Màn hình Chi tiết sản phẩm
+            // Product detail
             composable(
                 route = AppRoutes.PRODUCT_DETAIL,
                 arguments = listOf(
@@ -90,8 +106,9 @@ fun AppNavigation(navController: NavHostController) {
                     }
                 )
             ) { backStackEntry ->
-                val productId = backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
-                // TODO: ProductDetailScreen
+                val productId =
+                    backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
+                // TODO: ProductDetailScreen(productId)
             }
         }
     }

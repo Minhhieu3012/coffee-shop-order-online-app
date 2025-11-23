@@ -1,7 +1,9 @@
 package vn.edu.ut.hieupm9898.customermobile.features.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,9 +21,14 @@ import javax.inject.Inject
 
 /**
  * UI State cho HomeScreen
+ *
+ * - allProducts: nguồn dữ liệu gốc (tất cả sản phẩm)
+ * - products: giữ để tương thích code cũ (nếu có chỗ đang dùng uiState.products)
+ * - searchResults: list gợi ý / kết quả tìm kiếm
  */
 data class HomeUiState(
-    val allProducts: List<Product> = emptyList(), // 👈 LƯU TẤT CẢ SẢN PHẨM
+    val products: List<Product> = emptyList(),       // BACKWARD COMPAT
+    val allProducts: List<Product> = emptyList(),    // NGUỒN GỐC DÙNG CHO FILTER & SEARCH
     val searchResults: List<Product> = emptyList(),
     val isLoading: Boolean = false,
     val isSearching: Boolean = false,
@@ -33,7 +40,8 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -47,54 +55,161 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load sản phẩm từ Firebase
+     * - Nếu đã đăng nhập: load kèm trạng thái isFavorite cho user đó
+     * - Nếu chưa đăng nhập: load list thường
+     * - Nếu lỗi: dùng offlineProducts
      */
     fun loadProducts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            delay(2000)
+            // Delay nhẹ cho skeleton / tránh giật UI
+            delay(500)
 
-            when (val result = productRepository.getAllProducts()) {
+            val userId = firebaseAuth.currentUser?.uid
+
+            val result = if (userId != null) {
+                productRepository.getAllProductsWithFavorites(userId)
+            } else {
+                productRepository.getAllProducts()
+            }
+
+            when (result) {
                 is NetworkResult.Success -> {
-                    // 🔍 LOG ĐỂ XEM DỮ LIỆU TRẢ VỀ
-                    android.util.Log.d("HomeViewModel", "📦 Total products from Firebase: ${result.data.size}")
+                    Log.d(
+                        "HomeViewModel",
+                        "📦 Total products from Firebase: ${result.data.size}"
+                    )
 
                     result.data.forEachIndexed { index, product ->
-                        android.util.Log.d("HomeViewModel",
-                            "[$index] ${product.name} | Category: '${product.category}' | ImageURL: '${product.imageUrl}'"
+                        Log.d(
+                            "HomeViewModel",
+                            "[$index] ${product.name} | Category: '${product.category}' | ImageURL: '${product.imageUrl}' | isFavorite: ${product.isFavorite}"
                         )
                     }
 
                     _uiState.update {
                         it.copy(
                             allProducts = result.data,
+                            products = result.data, // giữ cho code cũ nếu có
                             isLoading = false,
                             errorMessage = null
                         )
                     }
                 }
-                is NetworkResult.Error -> {
-                    android.util.Log.e("HomeViewModel", "❌ Error loading products: ${result.message}")
 
-                    // Dùng offline data
+                is NetworkResult.Error -> {
+                    Log.e("HomeViewModel", "❌ Error loading products: ${result.message}")
+
                     val offlineProducts = productRepository.getOfflineProducts()
-                    android.util.Log.d("HomeViewModel", "📦 Using offline products: ${offlineProducts.size}")
+                    Log.d(
+                        "HomeViewModel",
+                        "📦 Using offline products: ${offlineProducts.size}"
+                    )
 
                     _uiState.update {
                         it.copy(
+                            allProducts = offlineProducts,
+                            products = offlineProducts,
                             isLoading = false,
-                            errorMessage = result.message,
-                            allProducts = offlineProducts
+                            errorMessage = result.message
                         )
                     }
                 }
-                is NetworkResult.Loading -> {}
+
+                is NetworkResult.Loading -> {
+                    // không dùng case này ở đây
+                }
             }
         }
     }
 
     /**
-     * Tìm kiếm với debounce và bỏ dấu tiếng Việt
+     * Toggle favorite:
+     * - Update UI trước (optimistic update)
+     * - Gọi xuống repository.sync với Firestore
+     * - Nếu lỗi -> rollback
+     */
+    fun toggleFavorite(productId: String) {
+        val userId = firebaseAuth.currentUser?.uid
+        if (userId == null) {
+            // TODO: có thể bắn event để show dialog "Vui lòng đăng nhập"
+            return
+        }
+
+        viewModelScope.launch {
+            val currentProduct =
+                _uiState.value.allProducts.find { it.id == productId }
+
+            if (currentProduct == null) {
+                Log.e("HomeViewModel", "⚠️ Không tìm thấy sản phẩm id: $productId")
+                return@launch
+            }
+
+            val currentStatus = currentProduct.isFavorite
+            val newStatus = !currentStatus
+
+            // 1. Optimistic update
+            updateProductStatusInUi(productId, newStatus)
+
+            // 2. Gọi xuống Repository để sync với Firestore
+            when (val result =
+                productRepository.toggleFavorite(userId, productId, currentStatus)) {
+                is NetworkResult.Success -> {
+                    Log.d(
+                        "HomeViewModel",
+                        "✅ Toggle favorite thành công cho productId=$productId, newStatus=$newStatus"
+                    )
+                }
+
+                is NetworkResult.Error -> {
+                    Log.e(
+                        "HomeViewModel",
+                        "❌ Lỗi toggle favorite: ${result.message}"
+                    )
+                    // 3. Rollback nếu lỗi
+                    updateProductStatusInUi(productId, currentStatus)
+                }
+
+                is NetworkResult.Loading -> Unit
+            }
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái isFavorite cho tất cả list trong UI:
+     * - allProducts: nguồn gốc
+     * - products: list dùng cho code cũ
+     * - searchResults: để UI search phản ánh đúng
+     */
+    private fun updateProductStatusInUi(productId: String, isFav: Boolean) {
+        _uiState.update { state ->
+            val updatedAll = state.allProducts.map { p ->
+                if (p.id == productId) p.copy(isFavorite = isFav) else p
+            }
+
+            val updatedProducts = state.products.map { p ->
+                if (p.id == productId) p.copy(isFavorite = isFav) else p
+            }
+
+            val updatedSearch = state.searchResults.map { p ->
+                if (p.id == productId) p.copy(isFavorite = isFav) else p
+            }
+
+            state.copy(
+                allProducts = updatedAll,
+                products = updatedProducts,
+                searchResults = updatedSearch
+            )
+        }
+    }
+
+    // =====================================================
+    // SEARCH & SUGGESTION
+    // =====================================================
+
+    /**
+     * Xử lý gõ search: debounce + bỏ dấu + show suggestion
      */
     fun onSearchQueryChange(query: String) {
         _uiState.update {
@@ -104,6 +219,7 @@ class HomeViewModel @Inject constructor(
             )
         }
 
+        // hủy job cũ (debounce)
         searchJob?.cancel()
 
         if (query.isEmpty()) {
@@ -132,31 +248,31 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Tìm kiếm local với bỏ dấu tiếng Việt
+     * Search local trên allProducts, bỏ dấu + ưu tiên match đầu từ
      */
     private fun searchProductsLocal(query: String): List<Product> {
         if (query.isEmpty()) return emptyList()
 
         val normalizedQuery = query.normalizeForSearch()
-        val currentState = _uiState.value
+        val state = _uiState.value
 
-        return currentState.allProducts.filter { product ->
-            product.name.containsVietnamese(query) ||
-                    product.description.containsVietnamese(query) ||
-                    product.category.containsVietnamese(query)
-        }.sortedByDescending { product ->
-            when {
-                product.name.normalizeForSearch().startsWith(normalizedQuery) -> 3
-                product.name.containsVietnamese(query) -> 2
-                product.description.containsVietnamese(query) -> 1
-                else -> 0
+        return state.allProducts
+            .filter { product ->
+                product.name.containsVietnamese(query) ||
+                        product.description.containsVietnamese(query) ||
+                        product.category.containsVietnamese(query)
             }
-        }.take(5)
+            .sortedByDescending { product ->
+                when {
+                    product.name.normalizeForSearch().startsWith(normalizedQuery) -> 3
+                    product.name.containsVietnamese(query) -> 2
+                    product.description.containsVietnamese(query) -> 1
+                    else -> 0
+                }
+            }
+            .take(5)
     }
 
-    /**
-     * Chọn sản phẩm từ gợi ý
-     */
     fun selectSuggestion(product: Product) {
         _uiState.update {
             it.copy(
@@ -166,16 +282,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Ẩn gợi ý
-     */
     fun hideSuggestions() {
         _uiState.update { it.copy(showSuggestions = false) }
     }
 
-    /**
-     * Clear search
-     */
     fun clearSearch() {
         _uiState.update {
             it.copy(
@@ -186,54 +296,57 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Lọc sản phẩm theo category - CHỈ THAY ĐỔI selectedCategory
-     */
+    // =====================================================
+    // FILTER & GET DATA CHO UI
+    // =====================================================
+
     fun filterByCategory(category: String) {
         _uiState.update { it.copy(selectedCategory = category) }
     }
 
     /**
-     * Lấy danh sách sản phẩm đã lọc theo category và search query
-     * 🔥 HÀM NÀY QUAN TRỌNG - DÙNG TRONG HomeScreen
+     * Hàm lấy danh sách hiển thị cuối cùng lên HomeScreen
+     * - Kết hợp category filter + search query
      */
     fun getFilteredProducts(): List<Product> {
         val state = _uiState.value
         var filtered = state.allProducts
 
-        android.util.Log.d("HomeViewModel", "🔍 getFilteredProducts() called")
-        android.util.Log.d("HomeViewModel", "📦 Total allProducts: ${state.allProducts.size}")
-        android.util.Log.d("HomeViewModel", "📂 Selected category: ${state.selectedCategory}")
+        Log.d("HomeViewModel", "🔍 getFilteredProducts() called")
+        Log.d("HomeViewModel", "📦 Total allProducts: ${state.allProducts.size}")
+        Log.d("HomeViewModel", "📂 Selected category: ${state.selectedCategory}")
 
-        // 1️⃣ Filter theo category (nếu không phải "Tất cả")
+        // 1️⃣ Filter theo category
         if (state.selectedCategory != "Tất cả") {
             val categoryMap = mapOf(
                 "Cà phê" to listOf("coffee", "cà phê"),
                 "Trà" to listOf("tea", "trà"),
-                "Đá xay" to listOf("đá xay", "smoothie", "frappe"), // 👈 THÊM CATEGORY MỚI
+                "Đá xay" to listOf("đá xay", "smoothie", "frappe"),
                 "Đồ ăn" to listOf("food", "đồ ăn")
             )
 
-            val targetCategories = categoryMap[state.selectedCategory] ?: listOf(state.selectedCategory.lowercase())
+            val targetCategories =
+                categoryMap[state.selectedCategory] ?: listOf(state.selectedCategory.lowercase())
 
-            android.util.Log.d("HomeViewModel", "🎯 Target categories: $targetCategories")
+            Log.d("HomeViewModel", "🎯 Target categories: $targetCategories")
 
             filtered = filtered.filter { product ->
                 val matches = targetCategories.any { cat ->
                     product.category.lowercase().contains(cat.lowercase())
                 }
 
-                android.util.Log.d("HomeViewModel",
+                Log.d(
+                    "HomeViewModel",
                     "Product: ${product.name} | Category: '${product.category}' | Match: $matches"
                 )
 
                 matches
             }
 
-            android.util.Log.d("HomeViewModel", "✅ Filtered result: ${filtered.size} products")
+            Log.d("HomeViewModel", "✅ Filtered result: ${filtered.size} products")
         }
 
-        // 2️⃣ Filter theo search query (nếu có)
+        // 2️⃣ Filter theo search query (nếu user gõ)
         if (state.searchQuery.isNotEmpty()) {
             filtered = filtered.filter { product ->
                 product.name.containsVietnamese(state.searchQuery) ||
@@ -245,23 +358,7 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Toggle favorite
-     */
-    fun toggleFavorite(productId: String) {
-        _uiState.update { state ->
-            val updatedProducts = state.allProducts.map { product ->
-                if (product.id == productId) {
-                    product.copy(isFavorite = !product.isFavorite)
-                } else {
-                    product
-                }
-            }
-            state.copy(allProducts = updatedProducts) // 👈 CẬP NHẬT allProducts
-        }
-    }
-
-    /**
-     * Đếm số lượng sản phẩm theo category
+     * Đếm số lượng sản phẩm theo category – dùng cho chip/badge
      */
     fun getProductCountByCategory(category: String): Int {
         val state = _uiState.value

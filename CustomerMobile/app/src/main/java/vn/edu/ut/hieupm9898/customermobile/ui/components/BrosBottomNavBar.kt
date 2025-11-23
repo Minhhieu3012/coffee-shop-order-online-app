@@ -2,9 +2,7 @@ package vn.edu.ut.hieupm9898.customermobile.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,29 +29,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 
-// 1. Định nghĩa các "Item" (Mục) cho thanh điều hướng
-// (Người "Từ trên xuống" sẽ dùng cái này để định nghĩa các route)
+// Định nghĩa mỗi item trong bottom bar
 private data class NavItem(
     val label: String,
     val icon: ImageVector,
     val route: String
 )
 
-// 2. Danh sách các item
+// Danh sách item, DÙNG route trong AppRoutes để khớp với NavHost
 private val navItems = listOf(
-    NavItem("Trang chủ", Icons.Default.Home, "home"),
-    NavItem("Yêu thích", Icons.Default.Favorite, "vn/edu/ut/hieupm9898/customermobile/features/favorite"),
-    NavItem("Giỏ hàng", Icons.Default.ShoppingCart, "cart"),
-    NavItem("Hồ sơ", Icons.Default.Person, "profile")
+    NavItem("Trang chủ", Icons.Filled.Home, AppRoutes.HOME),         // "home"
+    NavItem("Yêu thích", Icons.Filled.Favorite, AppRoutes.FAVORITE), // "favorite"
+    NavItem("Giỏ hàng", Icons.Filled.ShoppingCart, AppRoutes.CART),  // "cart"
+    NavItem("Hồ sơ", Icons.Filled.Person, AppRoutes.PROFILE)         // "profile"
 )
 
 /**
- * Thanh điều hướng (Navigation Bar) "nổi" (floating) bo tròn.
+ * Thanh điều hướng (Navigation Bar) "nổi" bo tròn.
  *
- * @param currentRoute Route (tuyến đường) của màn hình hiện tại (để highlight icon).
- * @param onNavigate Hàm (lambda) được gọi khi một item được nhấn.
+ * @param currentRoute route hiện tại lấy từ NavController (destination.route)
+ * @param onNavigate callback điều hướng: nhận đúng route string để NavController.navigate(route)
  */
 @Composable
 fun BrosBottomNavBar(
@@ -63,21 +61,22 @@ fun BrosBottomNavBar(
 ) {
     NavigationBar(
         modifier = modifier
-            .padding(horizontal = 24.dp, vertical = 60.dp) // Tạo khoảng cách "nổi"
-            .clip(RoundedCornerShape(30.dp)), // Bo tròn như trong ảnh
+            .padding(horizontal = 24.dp, vertical = 60.dp)
+            .clip(RoundedCornerShape(30.dp)), // Bo góc, tạo feeling "floating"
         containerColor = MaterialTheme.colorScheme.primary,
-        tonalElevation = 8.dp // Đổ bóng
+        tonalElevation = 8.dp
     ) {
-        // 3. Lặp qua danh sách item và tạo icon
         navItems.forEach { item ->
+            val selected = currentRoute == item.route
+
             NavigationBarItem(
-                // 4. Kiểm tra xem item này có đang được chọn không
-                selected = (currentRoute == item.route),
-
-                // 5. Hàm xử lý khi nhấn
-                onClick = { onNavigate(item.route) },
-
-                // 6. Icon
+                selected = selected,
+                // tránh navigate lại cùng route đang đứng
+                onClick = {
+                    if (!selected) {
+                        onNavigate(item.route)
+                    }
+                },
                 icon = {
                     Icon(
                         imageVector = item.icon,
@@ -86,42 +85,31 @@ fun BrosBottomNavBar(
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 },
-
-                // 7. Ẩn nhãn (label)
                 label = { Text(item.label) },
                 alwaysShowLabel = false,
-
-                // 8. Tùy chỉnh màu sắc
                 colors = NavigationBarItemDefaults.colors(
-                    // Màu icon khi *không* được chọn (màu tan/beige)
                     unselectedIconColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     unselectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-
-                    // Màu icon khi *được* chọn (màu tan/beige, nhưng sáng hơn)
                     selectedIconColor = MaterialTheme.colorScheme.onPrimary,
                     selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-
-                    // Ẩn cái "vòng tròn" (indicator) của Material 3
-                    indicatorColor = Color.Transparent
+                    indicatorColor = Color.Transparent // không show cái "pill" M3
                 )
             )
         }
     }
 }
 
-
 @Preview(showBackground = true, name = "Bottom Nav Bar")
 @Composable
 fun BrosBottomNavBarPreview() {
     CustomerMobileTheme {
-        // Biến "nháp" để lưu trạng thái (test)
-        var selectedRoute by remember { mutableStateOf("home") }
+        var selectedRoute by remember { mutableStateOf(AppRoutes.HOME) }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.BottomCenter // Đặt Bar ở dưới
+            contentAlignment = Alignment.BottomCenter
         ) {
             BrosBottomNavBar(
                 currentRoute = selectedRoute,

@@ -29,6 +29,9 @@ data class User(
     // Địa chỉ mặc định
     val defaultAddress: Address? = null,
 
+    // ✅ DANH SÁCH YÊU THÍCH - Phải là List<String> chứa productId
+    val favorites: List<String> = emptyList(),
+
     // Hệ thống điểm thưởng
     val loyaltyPoints: Int = 0, // Điểm tích lũy
     val totalOrders: Int = 0, // Tổng số đơn hàng

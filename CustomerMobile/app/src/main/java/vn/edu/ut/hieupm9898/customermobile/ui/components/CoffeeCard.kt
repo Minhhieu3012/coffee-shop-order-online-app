@@ -39,16 +39,16 @@ import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * Thẻ (Card) hiển thị thông tin 1 sản phẩm cà phê, khớp với thiết kế mới.
+ * Thẻ (Card) hiển thị thông tin 1 sản phẩm cà phê.
  *
- * @param title Tên sản phẩm (Vd: "Cold coffee frappe").
- * @param subtitle Mô tả phụ (Vd: "90mg Caffeine : 100 Cal").
- * @param price Giá sản phẩm (Vd: 3.55).
- * @param imageUrl Link URL của ảnh sản phẩm.
- * @param isFavorite Trạng thái (đã được yêu thích hay chưa).
- * @param onCardClick Hàm (lambda) được gọi khi nhấn vào *toàn bộ* thẻ.
- * @param onFavoriteClick Hàm (lambda) được gọi khi nhấn vào nút Yêu thích (❤️).
- * @param onAddClick Hàm (lambda) được gọi khi nhấn vào nút Thêm (+).
+ * @param title Tên sản phẩm.
+ * @param subtitle Mô tả phụ.
+ * @param price Giá sản phẩm.
+ * @param imageUrl Link ảnh (có thể rỗng).
+ * @param isFavorite Trạng thái yêu thích.
+ * @param onCardClick Click vào toàn bộ card.
+ * @param onFavoriteClick Click nút tim.
+ * @param onAddClick Click nút +.
  */
 @Composable
 fun CoffeeCard(
@@ -62,7 +62,7 @@ fun CoffeeCard(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Định dạng giá tiền (Vd: $3.55)
+    // Định dạng giá tiền
     val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
     val formattedPrice = formatter.format(price)
 
@@ -70,41 +70,38 @@ fun CoffeeCard(
         modifier = modifier
             .width(220.dp)
             .clickable { onCardClick() },
-        shape = RoundedCornerShape(24.dp), // Bo góc 
+        shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         )
     ) {
-        // Box cho phép xếp chồng các phần tử (ảnh, nút tim, nút +)
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // ----- PHẦN NỀN (Ảnh và Text) -----
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // (1) PHẦN ẢNH
+                // Ảnh sản phẩm (nếu không có URL thì vẫn render box xám, không crash)
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
+                        .data(if (imageUrl.isNotBlank()) imageUrl else null)
                         .crossfade(true)
                         .build(),
                     contentDescription = title,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1f) // Giữ tỉ lệ 1:1 (vuông)
+                        .aspectRatio(1f)
                         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
                     contentScale = ContentScale.Crop
                 )
 
-                // (2) PHẦN TEXT (TÊN, MÔ TẢ, GIÁ)
                 Column(
                     modifier = Modifier.padding(
                         top = 16.dp,
                         start = 16.dp,
                         end = 16.dp,
-                        bottom = 36.dp // "né" nút (+)
+                        bottom = 36.dp
                     )
                 ) {
                     Text(
@@ -131,10 +128,7 @@ fun CoffeeCard(
                 }
             }
 
-            // ----- PHẦN ĐÈ LÊN (Overlays) -----
-
-            // (3) NÚT YÊU THÍCH
-            // Nút này được đặt ở góc trên bên phải (TopEnd) của Box
+            // Nút tim
             IconButton(
                 onClick = onFavoriteClick,
                 modifier = Modifier.align(Alignment.TopEnd)
@@ -146,8 +140,7 @@ fun CoffeeCard(
                 )
             }
 
-            // (4) NÚT THÊM (+)
-            // Nút này được đặt ở góc dưới bên phải (BottomEnd) của Box
+            // Nút +
             IconButton(
                 onClick = onAddClick,
                 modifier = Modifier
@@ -168,7 +161,6 @@ fun CoffeeCard(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun CoffeeCardUpdatedPreview() {
@@ -178,8 +170,8 @@ fun CoffeeCardUpdatedPreview() {
                 title = "Cold coffee frappe",
                 subtitle = "90mg Caffeine : 100 Cal",
                 price = 35000.0,
-                imageUrl = "https://example.com/image.jpg", // (Ảnh placeholder)
-                isFavorite = true, // Test trạng thái "đã thích"
+                imageUrl = "",
+                isFavorite = true,
                 onCardClick = {},
                 onFavoriteClick = {},
                 onAddClick = {}
