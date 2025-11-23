@@ -2,7 +2,9 @@ package vn.edu.ut.hieupm9898.customermobile.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,10 +43,10 @@ private data class NavItem(
 
 // 2. Danh sách các item
 private val navItems = listOf(
-    NavItem("Home", Icons.Default.Home, "home"),
-    NavItem("Favorite", Icons.Default.Favorite, "vn/edu/ut/hieupm9898/customermobile/features/favorite"),
-    NavItem("Cart", Icons.Default.ShoppingCart, "cart"),
-    NavItem("Profile", Icons.Default.Person, "profile")
+    NavItem("Trang chủ", Icons.Default.Home, "home"),
+    NavItem("Yêu thích", Icons.Default.Favorite, "vn/edu/ut/hieupm9898/customermobile/features/favorite"),
+    NavItem("Giỏ hàng", Icons.Default.ShoppingCart, "cart"),
+    NavItem("Hồ sơ", Icons.Default.Person, "profile")
 )
 
 /**
@@ -61,7 +63,7 @@ fun BrosBottomNavBar(
 ) {
     NavigationBar(
         modifier = modifier
-            .padding(horizontal = 24.dp, vertical = 20.dp) // Tạo khoảng cách "nổi"
+            .padding(horizontal = 24.dp, vertical = 60.dp) // Tạo khoảng cách "nổi"
             .clip(RoundedCornerShape(30.dp)), // Bo tròn như trong ảnh
         containerColor = MaterialTheme.colorScheme.primary,
         tonalElevation = 8.dp // Đổ bóng
