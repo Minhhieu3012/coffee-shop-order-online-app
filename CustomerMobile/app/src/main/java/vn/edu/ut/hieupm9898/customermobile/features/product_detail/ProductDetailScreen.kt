@@ -219,21 +219,6 @@ private fun ProductImageHeader(
                     tint = CoffeeBrown
                 )
             }
-
-            // Favorite button
-            Surface(
-                onClick = onFavoriteClick,
-                shape = CircleShape,
-                color = Color.White.copy(alpha = 0.9f),
-                shadowElevation = 4.dp
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorite",
-                    modifier = Modifier.padding(14.dp),
-                    tint = if (isFavorite) Color.Red else CoffeeBrown
-                )
-            }
         }
     }
 }

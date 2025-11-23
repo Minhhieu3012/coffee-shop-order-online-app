@@ -5,7 +5,7 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.Exclude
 
 /**
- * Model sản phẩm - Đã cập nhật
+ * Model sản phẩm - Đã cập nhật với tính năng hết hàng
  */
 data class Product(
     @DocumentId
@@ -28,7 +28,6 @@ data class Product(
     @get:Exclude
     @DrawableRes val imageRes: Int? = null,
 
-    val stock: Int = 0,
     val discount: Double = 0.0
 ) {
     fun getFormattedPrice(): String = "${price.toInt()}đ"
@@ -46,4 +45,13 @@ data class Product(
     fun hasRemoteImage(): Boolean = imageUrl.isNotEmpty()
 
     fun hasLocalImage(): Boolean = imageRes != null
+
+    /**
+     * ✅ THÊM MỚI: Kiểm tra sản phẩm có hết hàng không
+     * Hết hàng khi: isAvailable = false
+     * (Không dùng stock vì Firestore không có field này)
+     */
+    fun isOutOfStock(): Boolean {
+        return !isAvailable
+    }
 }

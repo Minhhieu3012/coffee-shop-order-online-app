@@ -2,6 +2,7 @@ package vn.edu.ut.hieupm9898.customermobile.data.remote
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -32,7 +33,17 @@ class FirebaseDataSource @Inject constructor(
 
             val products = snapshot.documents.mapNotNull { doc ->
                 try {
-                    doc.toObject(Product::class.java)?.copy(id = doc.id)
+                    // ✅ Parse thủ công thay vì dùng toObject()
+                    Product(
+                        id = doc.id,
+                        name = doc.getString("name") ?: "",
+                        description = doc.getString("description") ?: "",
+                        price = doc.getDouble("price") ?: 0.0,
+                        imageUrl = doc.getString("imageUrl") ?: "",
+                        category = doc.getString("category") ?: "",
+                        isAvailable = doc.getBoolean("isAvailable") ?: true,  // ✅ Parse trực tiếp
+                        discount = doc.getDouble("discount") ?: 0.0
+                    )
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing product ${doc.id}: ${e.message}")
                     null

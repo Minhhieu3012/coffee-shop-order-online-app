@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,14 +25,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
@@ -46,6 +51,7 @@ import java.util.Locale
  * @param price Giá sản phẩm.
  * @param imageUrl Link ảnh (có thể rỗng).
  * @param isFavorite Trạng thái yêu thích.
+ * @param isOutOfStock Trạng thái hết hàng. ✅ MỚI THÊM
  * @param onCardClick Click vào toàn bộ card.
  * @param onFavoriteClick Click nút tim.
  * @param onAddClick Click nút +.
@@ -60,7 +66,8 @@ fun CoffeeCard(
     onCardClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onAddClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isOutOfStock: Boolean = false // ✅ Modifier phải là optional parameter cuối cùng
 ) {
     // Định dạng giá tiền
     val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
@@ -69,7 +76,10 @@ fun CoffeeCard(
     Card(
         modifier = modifier
             .width(220.dp)
-            .clickable { onCardClick() },
+            .alpha(if (isOutOfStock) 0.6f else 1f) // ✅ Làm mờ nếu hết hàng
+            .clickable(enabled = !isOutOfStock) { // ✅ Disable click nếu hết hàng
+                onCardClick()
+            },
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(
@@ -82,19 +92,46 @@ fun CoffeeCard(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Ảnh sản phẩm (nếu không có URL thì vẫn render box xám, không crash)
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(if (imageUrl.isNotBlank()) imageUrl else null)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = title,
+                // ✅ BOX CHỨA ẢNH VÀ NHÃN HẾT HÀNG
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
-                    contentScale = ContentScale.Crop
-                )
+                ) {
+                    // Ảnh sản phẩm
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(if (imageUrl.isNotBlank()) imageUrl else null)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // ✅ NHÃN HẾT HÀNG (Overlay trên ảnh)
+                    if (isOutOfStock) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .background(Color.Black.copy(alpha = 0.7f))
+                                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "HẾT HÀNG",
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
 
                 Column(
                     modifier = Modifier.padding(
@@ -128,7 +165,7 @@ fun CoffeeCard(
                 }
             }
 
-            // Nút tim
+            // Nút tim (vẫn hiển thị khi hết hàng)
             IconButton(
                 onClick = onFavoriteClick,
                 modifier = Modifier.align(Alignment.TopEnd)
@@ -140,22 +177,24 @@ fun CoffeeCard(
                 )
             }
 
-            // Nút +
-            IconButton(
-                onClick = onAddClick,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .size(40.dp),
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Thêm vào giỏ hàng"
-                )
+            // ✅ Nút + (Ẩn khi hết hàng)
+            if (!isOutOfStock) {
+                IconButton(
+                    onClick = onAddClick,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .size(40.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Thêm vào giỏ hàng"
+                    )
+                }
             }
         }
     }
@@ -163,7 +202,7 @@ fun CoffeeCard(
 
 @Preview(showBackground = true)
 @Composable
-fun CoffeeCardUpdatedPreview() {
+fun CoffeeCardNormalPreview() {
     CustomerMobileTheme {
         Column(modifier = Modifier.padding(32.dp)) {
             CoffeeCard(
@@ -172,6 +211,27 @@ fun CoffeeCardUpdatedPreview() {
                 price = 35000.0,
                 imageUrl = "",
                 isFavorite = true,
+                isOutOfStock = false,
+                onCardClick = {},
+                onFavoriteClick = {},
+                onAddClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CoffeeCardOutOfStockPreview() {
+    CustomerMobileTheme {
+        Column(modifier = Modifier.padding(32.dp)) {
+            CoffeeCard(
+                title = "Iced Latte",
+                subtitle = "120mg Caffeine : 150 Cal",
+                price = 42000.0,
+                imageUrl = "",
+                isFavorite = false,
+                isOutOfStock = true, // ✅ HẾT HÀNG
                 onCardClick = {},
                 onFavoriteClick = {},
                 onAddClick = {}

@@ -62,12 +62,9 @@ class HomeViewModel @Inject constructor(
     fun loadProducts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-            // Delay nhẹ cho skeleton / tránh giật UI
             delay(500)
 
             val userId = firebaseAuth.currentUser?.uid
-
             val result = if (userId != null) {
                 productRepository.getAllProductsWithFavorites(userId)
             } else {
@@ -81,11 +78,14 @@ class HomeViewModel @Inject constructor(
                         "📦 Total products from Firebase: ${result.data.size}"
                     )
 
-                    result.data.forEachIndexed { index, product ->
-                        Log.d(
-                            "HomeViewModel",
-                            "[$index] ${product.name} | Category: '${product.category}' | ImageURL: '${product.imageUrl}' | isFavorite: ${product.isFavorite}"
-                        )
+                    // ✅ THÊM LOG NÀY ĐỂ KIỂM TRA
+                    result.data.forEach { product ->
+                        Log.d("HomeViewModel", """
+                        🔍 Product: ${product.name}
+                        - ID: ${product.id}
+                        - isAvailable: ${product.isAvailable}
+                        - isOutOfStock(): ${product.isOutOfStock()}
+                    """.trimIndent())
                     }
 
                     _uiState.update {

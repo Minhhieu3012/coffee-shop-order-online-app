@@ -59,7 +59,7 @@ fun HomeScreen(
 
     // Get filtered products
     val filteredProducts = remember(
-        uiState.allProducts, // 👈 ĐỔI THÀNH allProducts
+        uiState.allProducts,
         uiState.selectedCategory,
         uiState.searchQuery
     ) {
@@ -166,9 +166,8 @@ fun HomeScreen(
                                     text = category,
                                     isSelected = category == uiState.selectedCategory,
                                     onClick = { homeViewModel.filterByCategory(category) },
-//                                    count = homeViewModel.getProductCountByCategory(category)
                                     count = if (category == "Đá xay") {
-                                        null // ✅ Không hiển thị số đếm cho "Đá xay"
+                                        null
                                     } else {
                                         homeViewModel.getProductCountByCategory(category)
                                     }
@@ -248,7 +247,13 @@ fun HomeScreen(
                                         price = product.price,
                                         imageUrl = product.imageUrl,
                                         isFavorite = product.isFavorite,
-                                        onCardClick = { onProductClick(product.id) },
+                                        isOutOfStock = product.isOutOfStock(), // ✅ THÊM DÒNG NÀY
+                                        onCardClick = {
+                                            // ✅ Chỉ cho click vào nếu còn hàng
+                                            if (!product.isOutOfStock()) {
+                                                onProductClick(product.id)
+                                            }
+                                        },
                                         onAddClick = { /* TODO: Add to cart */ },
                                         onFavoriteClick = { homeViewModel.toggleFavorite(product.id) },
                                         modifier = Modifier.weight(1f)
