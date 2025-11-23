@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
@@ -10,18 +11,22 @@ import vn.edu.ut.hieupm9898.customermobile.data.model.User
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firestore: FirebaseFirestore // 👈 THÊM MỚI
+    private val firestore: FirebaseFirestore
 ) {
 
     // ============================================
-    // 1. ĐĂNG KÝ - TẠO TÀI KHOẢN + LƯU FIRESTORE
-    // ============================================
+// 1. ĐĂNG KÝ - TẠO TÀI KHOẢN + LƯU FIRESTORE
+// ============================================
     suspend fun register(
+        userName: String,      // 👈 PHẢI CÓ
         email: String,
+        phoneNumber: String,   // 👈 PHẢI CÓ
         password: String,
         referralCode: String = ""
     ): Result<String> {
         return try {
+            Log.d("AuthRepository", "🔄 Đang đăng ký user: $userName, $email, $phoneNumber")
+
             // Bước 1: Tạo tài khoản trên Firebase Auth
             val authResult = firebaseAuth
                 .createUserWithEmailAndPassword(email, password)
@@ -31,16 +36,22 @@ class AuthRepository @Inject constructor(
                 Exception("Không thể lấy UID")
             )
 
-            // Bước 2: Tạo User object với thông tin cơ bản
+            Log.d("AuthRepository", "✅ Tạo Firebase Auth thành công, UID: $uid")
+
+            // Bước 2: Tạo User object với thông tin ĐẦY ĐỦ
             val newUser = User(
                 uid = uid,
                 email = email,
+                displayName = userName,        // 👈 LƯU TÊN
+                phoneNumber = phoneNumber,     // 👈 LƯU SĐT
                 authProvider = "email",
-                isProfileCompleted = false, // ⚠️ Chưa hoàn thành profile
-                referralCode = generateReferralCode(), // Tạo mã giới thiệu
-                referredBy = referralCode, // Lưu mã người giới thiệu (nếu có)
+                isProfileCompleted = true,     // 👈 ĐÃ ĐỦ THÔNG TIN
+                referralCode = generateReferralCode(),
+                referredBy = referralCode,
                 isEmailVerified = false
             )
+
+            Log.d("AuthRepository", "📦 User object: displayName=${newUser.displayName}, phone=${newUser.phoneNumber}")
 
             // Bước 3: Lưu lên Firestore collection "users"
             firestore.collection("users")
@@ -48,9 +59,12 @@ class AuthRepository @Inject constructor(
                 .set(newUser)
                 .await()
 
+            Log.d("AuthRepository", "✅ Lưu Firestore thành công!")
+
             Result.success(uid)
 
         } catch (e: Exception) {
+            Log.e("AuthRepository", "❌ Lỗi đăng ký: ${e.message}", e)
             e.printStackTrace()
             Result.failure(e)
         }

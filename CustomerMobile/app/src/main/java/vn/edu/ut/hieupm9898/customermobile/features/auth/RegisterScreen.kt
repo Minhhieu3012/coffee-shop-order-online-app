@@ -247,9 +247,11 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = hilt
                             Toast.makeText(context, "Bạn cần chấp nhận Điều khoản!", Toast.LENGTH_SHORT).show()
                         }
                         else {
-                            // ✅ GỌI VIEWMODEL ĐỂ ĐĂNG KÝ
+                            // ✅ GỌI VIEWMODEL ĐỂ ĐĂNG KÝ (ĐÃ SỬA)
                             viewModel.onRegisterClicked(
+                                userName = cleanName,           // 👈 THÊM TÊN
                                 email = cleanEmail,
+                                phoneNumber = cleanPhone,       // 👈 THÊM SĐT
                                 password = cleanPass,
                                 referralCode = referralCode.trim()
                             )

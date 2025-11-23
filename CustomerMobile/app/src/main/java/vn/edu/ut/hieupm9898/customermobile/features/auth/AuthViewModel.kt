@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile.features.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +39,7 @@ class AuthViewModel @Inject constructor(
     }
 
     // ĐĂNG NHẬP
+    // ĐĂNG NHẬP
     fun onLoginClicked() = viewModelScope.launch {
         val email = _uiState.value.email.trim()
         val password = _uiState.value.password
@@ -58,11 +60,7 @@ class AuthViewModel @Inject constructor(
                 onSuccess = { user ->
                     _currentUser.value = user
 
-                    if (user.isProfileCompleted) {
-                        _navEvent.emit(AuthNavEvent.NavigateToHome)
-                    } else {
-                        _navEvent.emit(AuthNavEvent.NavigateToCreateProfile)
-                    }
+                    _navEvent.emit(AuthNavEvent.NavigateToHome)
                 },
                 onFailure = { error ->
                     _uiState.update {
@@ -103,11 +101,8 @@ class AuthViewModel @Inject constructor(
             onSuccess = { user ->
                 _currentUser.value = user
 
-                if (user.isProfileCompleted) {
-                    _navEvent.emit(AuthNavEvent.NavigateToHome)
-                } else {
-                    _navEvent.emit(AuthNavEvent.NavigateToCreateProfile)
-                }
+                // 👇 ĐI THẲNG VÀO HOME, KHÔNG CHECK isProfileCompleted NỮA
+                _navEvent.emit(AuthNavEvent.NavigateToHome)
             },
             onFailure = { error ->
                 _uiState.update {
@@ -118,22 +113,35 @@ class AuthViewModel @Inject constructor(
     }
 
     // ĐĂNG KÝ
+    // ĐĂNG KÝ
     fun onRegisterClicked(
+        userName: String,      // 👈 PHẢI CÓ
         email: String,
+        phoneNumber: String,   // 👈 PHẢI CÓ
         password: String,
         referralCode: String = ""
     ) = viewModelScope.launch {
+        Log.d("AuthViewModel", "📝 Đăng ký với: userName=$userName, email=$email, phone=$phoneNumber")
+
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        val result = authRepository.register(email, password, referralCode)
+        val result = authRepository.register(
+            userName = userName,           // 👈 TRUYỀN TÊN
+            email = email,
+            phoneNumber = phoneNumber,     // 👈 TRUYỀN SĐT
+            password = password,
+            referralCode = referralCode
+        )
 
         _uiState.update { it.copy(isLoading = false) }
 
         result.fold(
-            onSuccess = {
+            onSuccess = { uid ->
+                Log.d("AuthViewModel", "✅ Đăng ký thành công với UID: $uid")
                 _navEvent.emit(AuthNavEvent.NavigateToLogin)
             },
             onFailure = { error ->
+                Log.e("AuthViewModel", "❌ Đăng ký thất bại: ${error.message}")
                 _uiState.update {
                     it.copy(errorMessage = "Đăng ký thất bại: ${error.message}")
                 }
@@ -141,31 +149,18 @@ class AuthViewModel @Inject constructor(
         )
     }
 
-    // CẬP NHẬT PROFILE
-    fun onCompleteProfile(
-        displayName: String,
-        phoneNumber: String,
-        dateOfBirth: String,
-        avatarUrl: String = ""
-    ) = viewModelScope.launch {
-        val uid = _currentUser.value?.uid ?: return@launch
-
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-        val result = authRepository.updateProfile(
-            uid, displayName, phoneNumber, dateOfBirth, avatarUrl
-        )
-
-        _uiState.update { it.copy(isLoading = false) }
+    // Thêm vào AuthViewModel
+    fun loadCurrentUser() = viewModelScope.launch {
+        val result = authRepository.getCurrentUser()
 
         result.fold(
-            onSuccess = {
-                _navEvent.emit(AuthNavEvent.NavigateToHome)
+            onSuccess = { user ->
+                Log.d("AuthViewModel", "✅ Loaded user: ${user?.displayName}")
+                _currentUser.value = user
             },
             onFailure = { error ->
-                _uiState.update {
-                    it.copy(errorMessage = "Cập nhật profile thất bại: ${error.message}")
-                }
+                Log.e("AuthViewModel", "❌ Failed to load user: ${error.message}")
+                _currentUser.value = null
             }
         )
     }

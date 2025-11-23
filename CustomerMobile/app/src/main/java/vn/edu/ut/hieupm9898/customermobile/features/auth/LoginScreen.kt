@@ -98,12 +98,6 @@ fun LoginScreen(
                 is AuthNavEvent.NavigateToHome -> {
                     isLoginSuccess = true
                 }
-                is AuthNavEvent.NavigateToCreateProfile -> {
-                    // 👈 XỬ LÝ CHUYỂN ĐẾN TẠO PROFILE
-                    navController.navigate(AppRoutes.CREATE_PROFILE) {
-                        popUpTo(AppRoutes.LOGIN) { inclusive = true }
-                    }
-                }
                 else -> {}
             }
         }

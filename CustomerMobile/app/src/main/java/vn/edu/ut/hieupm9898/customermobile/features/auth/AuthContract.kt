@@ -26,7 +26,6 @@ data class AuthUiState(
 sealed class AuthNavEvent {
     data object NavigateToHome : AuthNavEvent()
     data object NavigateToLogin : AuthNavEvent() // 👈 ĐÃ CÓ
-    data object NavigateToCreateProfile : AuthNavEvent() // 👈 THÊM MỚI
     data object NavigateToRegisterSuccess : AuthNavEvent()
     data class NavigateToOtp(val targetRoute: String) : AuthNavEvent()
     data object NavigateToResetSuccess : AuthNavEvent()

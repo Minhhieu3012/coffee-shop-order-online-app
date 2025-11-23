@@ -1,5 +1,6 @@
 package vn.edu.ut.hieupm9898.customermobile.features.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,11 +19,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.data.model.Product
+import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
@@ -39,7 +41,6 @@ private val dummyProducts = listOf(
     Product("6", "Matcha Latte", "Sweet & Earthy", 4.80, "link_to_img_6", "Tea", true)
 )
 
-// Mapping category tiếng Việt sang tiếng Anh (khớp với Product.category)
 private val categoryMap = mapOf(
     "Tất cả" to "All",
     "Cà phê" to "Coffee",
@@ -51,23 +52,34 @@ private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đồ ăn")
 
 @Composable
 fun HomeScreen(
-    onProductClick: (String) -> Unit, // Đổi từ Int sang String để nhận đúng product.id
-    onSearchClick: () -> Unit
+    onProductClick: (String) -> Unit,
+    onSearchClick: () -> Unit,
+    authViewModel: AuthViewModel = hiltViewModel() // 👈 THÊM ViewModel
 ) {
     var searchText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Tất cả") } // Mặc định là tiếng Việt
+    var selectedCategory by remember { mutableStateOf("Tất cả") }
     var favoriteProducts by remember { mutableStateOf(dummyProducts.map { it.id to it.isFavorite }.toMap()) }
 
-    // Filter logic sửa lại
+    // 👇 LẤY THÔNG TIN USER
+    val currentUser by authViewModel.currentUser.collectAsState()
+
+    LaunchedEffect(Unit) {
+        authViewModel.loadCurrentUser()
+    }
+
+    // 👇 LOAD USER KHI VÀO SCREEN
+    // Thêm log để debug
+    LaunchedEffect(currentUser) {
+        Log.d("HomeScreen", "👤 Current user: ${currentUser?.displayName}")
+    }
+
     val filteredProducts = remember(selectedCategory, searchText, favoriteProducts) {
         dummyProducts.map { product ->
             product.copy(isFavorite = favoriteProducts[product.id] ?: product.isFavorite)
         }.filter { product ->
-            // Lọc theo category (map từ tiếng Việt sang tiếng Anh)
             val categoryFilter = selectedCategory == "Tất cả" ||
                     product.category == categoryMap[selectedCategory]
 
-            // Lọc theo search text
             val searchFilter = searchText.isEmpty() ||
                     product.name.contains(searchText, ignoreCase = true) ||
                     product.description.contains(searchText, ignoreCase = true)
@@ -109,8 +121,9 @@ fun HomeScreen(
                                 fontSize = 20.sp,
                                 color = Color.Gray
                             )
+                            // 👇 HIỂN THỊ TÊN USER
                             Text(
-                                "Khách hàng",
+                                text = currentUser?.displayName ?: "Khách hàng",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = BrosTitle
@@ -122,7 +135,7 @@ fun HomeScreen(
                             Icons.Default.Notifications,
                             contentDescription = "Notifications",
                             tint = BrosTitle,
-                            modifier = Modifier.size(28.dp) // Giảm size icon cho hợp lý
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
@@ -179,7 +192,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // --- 5. PRODUCT GRID (2 cột) ---
+            // --- 5. PRODUCT GRID ---
             items(filteredProducts.chunked(2)) { productPair ->
                 Row(
                     modifier = Modifier
@@ -194,12 +207,9 @@ fun HomeScreen(
                             price = product.price,
                             imageUrl = product.imageUrl,
                             isFavorite = product.isFavorite,
-                            onCardClick = {
-                                onProductClick(product.id) // Truyền String ID
-                            },
+                            onCardClick = { onProductClick(product.id) },
                             onAddClick = { /* TODO: Add to cart */ },
                             onFavoriteClick = {
-                                // Toggle favorite state
                                 favoriteProducts = favoriteProducts.toMutableMap().apply {
                                     this[product.id] = !(this[product.id] ?: product.isFavorite)
                                 }
@@ -207,26 +217,15 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    // Thêm Spacer nếu hàng cuối chỉ có 1 sản phẩm
                     if (productPair.size == 1) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
 
-            // Padding bottom để tránh bị che bởi BottomNavBar
             item {
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun HomePreview() {
-    HomeScreen(
-        onProductClick = {},
-        onSearchClick = {}
-    )
 }

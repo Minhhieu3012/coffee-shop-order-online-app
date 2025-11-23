@@ -50,16 +50,5 @@ fun NavGraphBuilder.authNavGraph(
                 navController = navController
             )
         }
-
-        // 6. Create Profile
-        composable(AppRoutes.PROFILE) {
-            CreateProfileScreen(
-                navController = navController
-            )
-        }
-
-        composable(AppRoutes.CREATE_PROFILE) {
-            CreateProfileScreen(navController = navController)
-        }
     }
 }
