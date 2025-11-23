@@ -30,7 +30,7 @@ import vn.edu.ut.hieupm9898.customermobile.ui.components.skeleton.HomeScreenSkel
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
-private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đá xay", "Đồ ăn")
+private val categories = listOf("Tất cả", "Cà phê", "Trà", "Đá xay")
 
 @Composable
 fun HomeScreen(
@@ -104,7 +104,7 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        "Chào buổi sáng!",
+                                        "Xin chào thượng đế!",
                                         fontSize = 20.sp,
                                         color = Color.Gray
                                     )
@@ -166,7 +166,12 @@ fun HomeScreen(
                                     text = category,
                                     isSelected = category == uiState.selectedCategory,
                                     onClick = { homeViewModel.filterByCategory(category) },
-                                    count = homeViewModel.getProductCountByCategory(category) // 👈 HIỂN THỊ SỐ LƯỢNG
+//                                    count = homeViewModel.getProductCountByCategory(category)
+                                    count = if (category == "Đá xay") {
+                                        null // ✅ Không hiển thị số đếm cho "Đá xay"
+                                    } else {
+                                        homeViewModel.getProductCountByCategory(category)
+                                    }
                                 )
                             }
                         }
