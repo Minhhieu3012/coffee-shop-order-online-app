@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,9 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import vn.edu.ut.hieupm9898.customermobile.R
 import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
-import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
+import vn.edu.ut.hieupm9898.customermobile.ui.components.SearchBarWithSuggestions
 import vn.edu.ut.hieupm9898.customermobile.ui.components.skeleton.HomeScreenSkeleton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
@@ -43,14 +42,12 @@ fun HomeScreen(
     val uiState by homeViewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    var searchText by remember { mutableStateOf("") }
-
     // Load user info
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUser()
     }
 
-    // Load products khi vào màn hình
+    // Load products
     LaunchedEffect(Unit) {
         homeViewModel.loadProducts()
     }
@@ -60,39 +57,19 @@ fun HomeScreen(
         Log.d("HomeScreen", "👤 Current user: ${currentUser?.displayName}")
     }
 
-    // Lọc products dựa trên category và search
-    val filteredProducts = remember(uiState.products, uiState.selectedCategory, searchText) {
-        var filtered = uiState.products
-
-        // Filter by category
-        if (uiState.selectedCategory != "Tất cả") {
-            val categoryMap = mapOf(
-                "Cà phê" to "Coffee",
-                "Trà" to "Tea",
-                "Đồ ăn" to "Food"
-            )
-            val englishCategory = categoryMap[uiState.selectedCategory]
-            if (englishCategory != null) {
-                filtered = filtered.filter { it.category == englishCategory }
-            }
-        }
-
-        // Filter by search
-        if (searchText.isNotEmpty()) {
-            filtered = filtered.filter { product ->
-                product.name.contains(searchText, ignoreCase = true) ||
-                        product.description.contains(searchText, ignoreCase = true)
-            }
-        }
-
-        filtered
+    // Get filtered products
+    val filteredProducts = remember(
+        uiState.products,
+        uiState.selectedCategory,
+        uiState.searchQuery
+    ) {
+        homeViewModel.getFilteredProducts()
     }
 
     Scaffold(
         containerColor = BrosBackground
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // 🔥 HIỂN THỊ SKELETON KHI ĐANG LOADING
             if (uiState.isLoading) {
                 HomeScreenSkeleton(
                     modifier = Modifier
@@ -100,12 +77,12 @@ fun HomeScreen(
                         .padding(paddingValues)
                 )
             } else {
-                // 🔥 HIỂN THỊ NỘI DUNG THẬT KHI ĐÃ LOAD XONG
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(horizontal = 24.dp)
+                        .padding(horizontal = 24.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp)
                 ) {
                     // --- 1. HEADER ---
                     item {
@@ -151,13 +128,19 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // --- 2. SEARCH BAR ---
+                    // --- 2. SEARCH BAR WITH SUGGESTIONS ---
                     item {
-                        BrosTextField(
-                            value = searchText,
-                            onValueChange = { searchText = it },
-                            label = "Tìm kiếm...",
-                            icon = Icons.Default.Search
+                        SearchBarWithSuggestions(
+                            query = uiState.searchQuery,
+                            onQueryChange = { homeViewModel.onSearchQueryChange(it) },
+                            suggestions = uiState.searchResults,
+                            showSuggestions = uiState.showSuggestions,
+                            onSuggestionClick = { product ->
+                                homeViewModel.selectSuggestion(product)
+                                onProductClick(product.id)
+                            },
+                            onClearClick = { homeViewModel.clearSearch() },
+                            isSearching = uiState.isSearching
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                     }
@@ -191,19 +174,31 @@ fun HomeScreen(
 
                     // --- 4. PRODUCT TITLE ---
                     item {
-                        Text(
-                            "Đồ uống và món ăn đi kèm",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = BrosTitle,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Đồ uống và món ăn đi kèm",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = BrosTitle
+                            )
+
+                            if (uiState.searchQuery.isNotEmpty()) {
+                                Text(
+                                    text = "${filteredProducts.size} kết quả",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
                     // --- 5. PRODUCT GRID ---
                     if (filteredProducts.isEmpty()) {
-                        // Empty state
                         item {
                             Box(
                                 modifier = Modifier
@@ -211,13 +206,25 @@ fun HomeScreen(
                                     .padding(vertical = 40.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = if (searchText.isNotEmpty())
-                                        "Không tìm thấy sản phẩm"
-                                    else
-                                        "Chưa có sản phẩm",
-                                    color = Color.Gray
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(64.dp),
+                                        tint = Color.LightGray
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = if (uiState.searchQuery.isNotEmpty())
+                                            "Không tìm thấy \"${uiState.searchQuery}\""
+                                        else
+                                            "Chưa có sản phẩm",
+                                        color = Color.Gray,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -247,14 +254,10 @@ fun HomeScreen(
                             }
                         }
                     }
-
-                    item {
-                        Spacer(modifier = Modifier.height(80.dp))
-                    }
                 }
             }
 
-            // --- 7. ERROR MESSAGE ---
+            // Error Message
             if (uiState.errorMessage != null) {
                 Snackbar(
                     modifier = Modifier
