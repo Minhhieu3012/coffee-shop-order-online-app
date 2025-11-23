@@ -15,17 +15,17 @@ class AuthRepository @Inject constructor(
 ) {
 
     // ============================================
-// 1. ĐĂNG KÝ - TẠO TÀI KHOẢN + LƯU FIRESTORE
-// ============================================
+    // 1. ĐĂNG KÝ - TẠO TÀI KHOẢN + LƯU FIRESTORE
+    // ============================================
     suspend fun register(
-        userName: String,      // 👈 PHẢI CÓ
+        userName: String,
         email: String,
-        phoneNumber: String,   // 👈 PHẢI CÓ
+        phoneNumber: String,
         password: String,
         referralCode: String = ""
     ): Result<String> {
         return try {
-            Log.d("AuthRepository", "🔄 Đang đăng ký user: $userName, $email, $phoneNumber")
+            Log.d("AuthRepository", "📄 Đang đăng ký user: $userName, $email, $phoneNumber")
 
             // Bước 1: Tạo tài khoản trên Firebase Auth
             val authResult = firebaseAuth
@@ -38,20 +38,21 @@ class AuthRepository @Inject constructor(
 
             Log.d("AuthRepository", "✅ Tạo Firebase Auth thành công, UID: $uid")
 
-            // Bước 2: Tạo User object với thông tin ĐẦY ĐỦ
+            // Bước 2: Tạo User object với role = "user" (MẶC ĐỊNH)
             val newUser = User(
                 uid = uid,
                 email = email,
-                displayName = userName,        // 👈 LƯU TÊN
-                phoneNumber = phoneNumber,     // 👈 LƯU SĐT
+                displayName = userName,
+                phoneNumber = phoneNumber,
                 authProvider = "email",
-                isProfileCompleted = true,     // 👈 ĐÃ ĐỦ THÔNG TIN
+                role = "user", // 👈 MẶC ĐỊNH LÀ USER
+                isProfileCompleted = true,
                 referralCode = generateReferralCode(),
                 referredBy = referralCode,
                 isEmailVerified = false
             )
 
-            Log.d("AuthRepository", "📦 User object: displayName=${newUser.displayName}, phone=${newUser.phoneNumber}")
+            Log.d("AuthRepository", "📦 User object: displayName=${newUser.displayName}, phone=${newUser.phoneNumber}, role=${newUser.role}")
 
             // Bước 3: Lưu lên Firestore collection "users"
             firestore.collection("users")
@@ -91,22 +92,20 @@ class AuthRepository @Inject constructor(
                 .await()
 
             val user = if (userDoc.exists()) {
-                // User đã có trong Firestore
                 userDoc.toObject(User::class.java)
                     ?: return Result.failure(Exception("Không thể parse user data"))
             } else {
-                // User chưa có trong Firestore (TH đăng ký cũ hoặc lỗi)
-                // Tạo mới document
+                // User chưa có trong Firestore
                 val newUser = User(
                     uid = uid,
                     email = email,
                     authProvider = "email",
+                    role = "user", // 👈 MẶC ĐỊNH LÀ USER
                     isProfileCompleted = false,
                     referralCode = generateReferralCode(),
                     isEmailVerified = authResult.user?.isEmailVerified ?: false
                 )
 
-                // Lưu lên Firestore
                 firestore.collection("users")
                     .document(uid)
                     .set(newUser)
@@ -115,12 +114,13 @@ class AuthRepository @Inject constructor(
                 newUser
             }
 
+            // ✅ CHO PHÉP CẢ USER VÀ ADMIN ĐĂNG NHẬP VÀO APP
+            Log.d("AuthRepository", "✅ Login thành công: email=${user.email}, role=${user.role}")
             Result.success(user)
 
         } catch (e: Exception) {
             e.printStackTrace()
 
-            // Xử lý các lỗi cụ thể
             val errorMessage = when {
                 e.message?.contains("network", ignoreCase = true) == true ->
                     "Không có kết nối internet. Vui lòng kiểm tra lại."
@@ -131,7 +131,7 @@ class AuthRepository @Inject constructor(
                 e.message?.contains("user-disabled", ignoreCase = true) == true ->
                     "Tài khoản đã bị khóa"
                 else ->
-                    "Lỗi đăng nhập: ${e.message}"
+                    e.message ?: "Lỗi đăng nhập"
             }
 
             Result.failure(Exception(errorMessage))
@@ -157,18 +157,18 @@ class AuthRepository @Inject constructor(
             val userDoc = firestore.collection("users").document(uid).get().await()
 
             val user = if (userDoc.exists()) {
-                // User đã tồn tại -> Lấy dữ liệu
                 userDoc.toObject(User::class.java)!!
             } else {
-                // User mới -> Tạo mới
+                // User mới -> Tạo mới với role = "user"
                 val newUser = User(
                     uid = uid,
                     email = email,
                     displayName = displayName,
                     avatarUrl = photoUrl,
                     authProvider = "google",
+                    role = "user", // 👈 MẶC ĐỊNH LÀ USER
                     isEmailVerified = true,
-                    isProfileCompleted = displayName.isNotEmpty(), // Nếu có tên thì coi như đã xong
+                    isProfileCompleted = displayName.isNotEmpty(),
                     referralCode = generateReferralCode()
                 )
 
@@ -176,6 +176,7 @@ class AuthRepository @Inject constructor(
                 newUser
             }
 
+            // ✅ CHO PHÉP CẢ USER VÀ ADMIN
             Result.success(user)
 
         } catch (e: Exception) {
@@ -199,7 +200,7 @@ class AuthRepository @Inject constructor(
                 "displayName" to displayName,
                 "phoneNumber" to phoneNumber,
                 "dateOfBirth" to dateOfBirth,
-                "isProfileCompleted" to true, // ✅ Đánh dấu đã hoàn thành
+                "isProfileCompleted" to true,
                 "updatedAt" to FieldValue.serverTimestamp()
             )
 
@@ -226,7 +227,7 @@ class AuthRepository @Inject constructor(
     suspend fun getCurrentUser(): Result<User?> {
         return try {
             val uid = firebaseAuth.currentUser?.uid
-                ?: return Result.success(null) // Chưa đăng nhập
+                ?: return Result.success(null)
 
             val userDoc = firestore.collection("users")
                 .document(uid)
@@ -258,10 +259,10 @@ class AuthRepository @Inject constructor(
     }
 
     // ============================================
-    // CÁC HÀM CŨ (GIỮ LẠI HOẶC XÓA NẾU KHÔNG DÙNG)
+    // CÁC HÀM CŨ
     // ============================================
     suspend fun sendOtp(phone: String): Boolean {
-        return true // TODO: Implement OTP nếu cần
+        return true
     }
 
     suspend fun verifyOtp(code: String): Boolean {

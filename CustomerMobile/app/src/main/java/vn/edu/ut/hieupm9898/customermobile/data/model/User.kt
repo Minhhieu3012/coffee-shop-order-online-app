@@ -8,6 +8,9 @@ data class User(
     @DocumentId
     val uid: String = "", // Firebase Auth UID
 
+    // 🔒 PHÂN QUYỀN (QUAN TRỌNG)
+    val role: String = "user", // Giá trị: "user" (mặc định), "admin"
+
     // Thông tin cơ bản
     val email: String = "",
     val displayName: String = "", // Tên hiển thị
