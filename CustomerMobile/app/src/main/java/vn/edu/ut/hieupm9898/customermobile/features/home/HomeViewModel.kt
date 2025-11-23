@@ -3,6 +3,7 @@ package vn.edu.ut.hieupm9898.customermobile.features.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,11 +38,14 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Load sản phẩm từ Firebase (One-time fetch)
+     * Load sản phẩm từ Firebase với DELAY 2 GIÂY để hiển thị skeleton rõ ràng
      */
     fun loadProducts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            // 🔥 DELAY 2 GIÂY để skeleton hiển thị rõ ràng
+            delay(2000)
 
             when (val result = productRepository.getAllProducts()) {
                 is NetworkResult.Success -> {
@@ -111,7 +115,7 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Tìm kiếm sản phẩm
+     * Tìm kiếm sản phẩm với delay
      */
     fun searchProducts(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
@@ -123,6 +127,9 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+
+            // Delay để hiển thị skeleton
+            delay(1500)
 
             when (val result = productRepository.searchProducts(query)) {
                 is NetworkResult.Success -> {
@@ -194,7 +201,7 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Retry khi có lỗi
+     * Retry khi có lỗi (có delay)
      */
     fun retry() {
         loadProducts()

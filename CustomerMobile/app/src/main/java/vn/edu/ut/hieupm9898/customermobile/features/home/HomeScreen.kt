@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,6 +27,7 @@ import vn.edu.ut.hieupm9898.customermobile.features.auth.AuthViewModel
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosTextField
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CategoryChip
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
+import vn.edu.ut.hieupm9898.customermobile.ui.components.skeleton.HomeScreenSkeleton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
@@ -38,9 +38,8 @@ fun HomeScreen(
     onProductClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     authViewModel: AuthViewModel = hiltViewModel(),
-    homeViewModel: HomeViewModel = hiltViewModel() // 👈 THÊM ViewModel
+    homeViewModel: HomeViewModel = hiltViewModel()
 ) {
-    // 👇 LẤY STATE TỪ VIEWMODEL
     val uiState by homeViewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
 
@@ -51,7 +50,7 @@ fun HomeScreen(
         authViewModel.loadCurrentUser()
     }
 
-    // Load products khi vào màn hình (chỉ chạy 1 lần)
+    // Load products khi vào màn hình
     LaunchedEffect(Unit) {
         homeViewModel.loadProducts()
     }
@@ -93,163 +92,166 @@ fun HomeScreen(
         containerColor = BrosBackground
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 24.dp)
-            ) {
-                // --- 1. HEADER ---
-                item {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                painter = painterResource(id = R.drawable.logo),
-                                contentDescription = "Avatar",
+            // 🔥 HIỂN THỊ SKELETON KHI ĐANG LOADING
+            if (uiState.isLoading) {
+                HomeScreenSkeleton(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
+            } else {
+                // 🔥 HIỂN THỊ NỘI DUNG THẬT KHI ĐÃ LOAD XONG
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 24.dp)
+                ) {
+                    // --- 1. HEADER ---
+                    item {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo),
+                                    contentDescription = "Avatar",
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        "Chào buổi sáng!",
+                                        fontSize = 20.sp,
+                                        color = Color.Gray
+                                    )
+                                    Text(
+                                        text = currentUser?.displayName ?: "Khách hàng",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrosTitle
+                                    )
+                                }
+                            }
+                            IconButton(onClick = { /* TODO: Notifications */ }) {
+                                Icon(
+                                    Icons.Default.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = BrosTitle,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+
+                    // --- 2. SEARCH BAR ---
+                    item {
+                        BrosTextField(
+                            value = searchText,
+                            onValueChange = { searchText = it },
+                            label = "Tìm kiếm...",
+                            icon = Icons.Default.Search
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+
+                    // --- 3. CATEGORIES ---
+                    item {
+                        Text(
+                            "Phân loại",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrosTitle
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(categories) { category ->
+                                CategoryChip(
+                                    text = category,
+                                    isSelected = category == uiState.selectedCategory,
+                                    onClick = { homeViewModel.filterByCategory(category) }
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+
+                    // --- 4. PRODUCT TITLE ---
+                    item {
+                        Text(
+                            "Đồ uống và món ăn đi kèm",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = BrosTitle,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    // --- 5. PRODUCT GRID ---
+                    if (filteredProducts.isEmpty()) {
+                        // Empty state
+                        item {
+                            Box(
                                 modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
+                                    .fillMaxWidth()
+                                    .padding(vertical = 40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
-                                    "Chào buổi sáng!",
-                                    fontSize = 20.sp,
+                                    text = if (searchText.isNotEmpty())
+                                        "Không tìm thấy sản phẩm"
+                                    else
+                                        "Chưa có sản phẩm",
                                     color = Color.Gray
                                 )
-                                Text(
-                                    text = currentUser?.displayName ?: "Khách hàng",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrosTitle
-                                )
                             }
                         }
-                        IconButton(onClick = { /* TODO: Notifications */ }) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Notifications",
-                                tint = BrosTitle,
-                                modifier = Modifier.size(28.dp)
-                            )
+                    } else {
+                        items(filteredProducts.chunked(2)) { productPair ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                productPair.forEach { product ->
+                                    CoffeeCard(
+                                        title = product.name,
+                                        subtitle = product.description,
+                                        price = product.price,
+                                        imageUrl = product.imageUrl,
+                                        isFavorite = product.isFavorite,
+                                        onCardClick = { onProductClick(product.id) },
+                                        onAddClick = { /* TODO: Add to cart */ },
+                                        onFavoriteClick = { homeViewModel.toggleFavorite(product.id) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                if (productPair.size == 1) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
 
-                // --- 2. SEARCH BAR ---
-                item {
-                    BrosTextField(
-                        value = searchText,
-                        onValueChange = { searchText = it },
-                        label = "Tìm kiếm...",
-                        icon = Icons.Default.Search
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-
-                // --- 3. CATEGORIES ---
-                item {
-                    Text(
-                        "Phân loại",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BrosTitle
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                item {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(categories) { category ->
-                            CategoryChip(
-                                text = category,
-                                isSelected = category == uiState.selectedCategory,
-                                onClick = { homeViewModel.filterByCategory(category) }
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-
-                // --- 4. PRODUCT TITLE ---
-                item {
-                    Text(
-                        "Đồ uống và món ăn đi kèm",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = BrosTitle,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                // --- 5. PRODUCT GRID ---
-                if (!uiState.isLoading && filteredProducts.isEmpty()) {
-                    // Empty state
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 40.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (searchText.isNotEmpty())
-                                    "Không tìm thấy sản phẩm"
-                                else
-                                    "Chưa có sản phẩm",
-                                color = Color.Gray
-                            )
-                        }
-                    }
-                } else {
-                    items(filteredProducts.chunked(2)) { productPair ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            productPair.forEach { product ->
-                                CoffeeCard(
-                                    title = product.name,
-                                    subtitle = product.description,
-                                    price = product.price,
-                                    imageUrl = product.imageUrl,
-                                    isFavorite = product.isFavorite,
-                                    onCardClick = { onProductClick(product.id) },
-                                    onAddClick = { /* TODO: Add to cart */ },
-                                    onFavoriteClick = { homeViewModel.toggleFavorite(product.id) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            if (productPair.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
-
-                item {
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
-            }
-
-            // --- 6. LOADING INDICATOR ---
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
             }
 
             // --- 7. ERROR MESSAGE ---
