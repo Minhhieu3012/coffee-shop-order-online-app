@@ -14,6 +14,20 @@
   <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body>
+  <!-- 🔒 ADMIN GUARD - KIỂM TRA QUYỀN TRUY CẬP -->
+  <script type="module">
+    import { checkAdminAccess } from './js/admin-guard.js';
+    
+    // Kiểm tra quyền admin khi load trang
+    checkAdminAccess()
+      .then(userData => {
+        console.log("✅ Admin đã xác thực:", userData.displayName || userData.email);
+      })
+      .catch(error => {
+        console.log("❌ Không có quyền truy cập:", error);
+      });
+  </script>
+
   <div class="admin-layout">
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -268,6 +282,7 @@
     </div>
   </div>
   
+  <!-- Scripts -->
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/dashboard.js"></script>

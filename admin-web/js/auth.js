@@ -1,6 +1,7 @@
 // admin-web/js/auth.js
-import { auth } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // 1. XỬ LÝ ĐĂNG NHẬP
 const loginForm = document.getElementById("loginForm");
@@ -25,20 +26,42 @@ if (loginForm) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      console.log("Đăng nhập thành công:", user.email);
+      console.log("✅ Đăng nhập Firebase Auth thành công:", user.email);
       
-      // Chuyển hướng sang trang Admin
+      // 🔒 KIỂM TRA ROLE TRONG FIRESTORE
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (!userDoc.exists()) {
+        throw new Error("Không tìm thấy thông tin người dùng");
+      }
+      
+      const userData = userDoc.data();
+      console.log("📦 User data:", userData);
+      
+      // 🔒 CHỈ CHO PHÉP ADMIN VÀO WEB ADMIN
+      if (userData.role !== "admin") {
+        // ❌ KHÔNG PHẢI ADMIN -> ĐĂNG XUẤT VÀ CHẶN
+        await auth.signOut();
+        throw new Error("Bạn không có quyền truy cập trang quản trị. Chỉ tài khoản Admin mới được phép.");
+      }
+      
+      // ✅ LÀ ADMIN -> CHO PHÉP VÀO
+      console.log("✅ Admin login thành công, chuyển hướng...");
       window.location.href = "admin.html"; 
 
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
+      console.error("❌ Lỗi đăng nhập:", error);
       
       // Hiển thị thông báo lỗi thân thiện
       if (loginError) {
         loginError.style.display = "block";
         let msg = "Đăng nhập thất bại!";
         
-        if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+        if (error.message.includes("quyền truy cập")) {
+          // Lỗi phân quyền
+          msg = error.message;
+        } else if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
           msg = "Sai email hoặc mật khẩu.";
         } else if (error.code === "auth/too-many-requests") {
           msg = "Thử lại quá nhiều lần. Hãy đợi một lát.";
