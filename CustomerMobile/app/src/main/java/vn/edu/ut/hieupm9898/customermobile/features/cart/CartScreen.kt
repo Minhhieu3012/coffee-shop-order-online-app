@@ -7,8 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -60,6 +59,7 @@ fun CartScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreenContent(
     cartItems: List<CartEntity>,
@@ -70,35 +70,41 @@ fun CartScreenContent(
     onCheckoutClick: () -> Unit,
     onGoHomeClick: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+    // ✅ SỬ DỤNG SCAFFOLD ĐỂ ĐỒNG BỘ UI HEADER VỚI FAVORITE SCREEN
+    Scaffold(
+        containerColor = BrosBackground,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Giỏ hàng",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = BrosBackground
+                )
+            )
+        }
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BrosBackground)
+                .padding(paddingValues) // Padding từ Scaffold (tránh đè header)
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Giỏ hàng",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = BrosBrown,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-            )
-
             if (cartItems.isEmpty()) {
-                // ✅ Empty View nhưng vẫn chừa chỗ cho Bottom Nav
                 EmptyCartView(onGoHomeClick = onGoHomeClick)
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        start = 20.dp,
-                        end = 20.dp,
-                        top = 10.dp,
-                        bottom = 200.dp
+                        start = 16.dp, // Đồng bộ margin với Favorite
+                        end = 16.dp,
+                        top = 12.dp,
+                        bottom = 220.dp // ✅ Tăng padding đáy để không bị CartBottomBar + NavBar che mất item cuối
                     ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(cartItems) { item ->
                         CartItemRow(
@@ -110,16 +116,18 @@ fun CartScreenContent(
                     }
                 }
             }
-        }
 
-        if (cartItems.isNotEmpty()) {
-            CartBottomBar(
-                totalPrice = totalPrice,
-                onCheckoutClick = onCheckoutClick,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp)
-            )
+            // ✅ THANH THANH TOÁN
+            if (cartItems.isNotEmpty()) {
+                CartBottomBar(
+                    totalPrice = totalPrice,
+                    onCheckoutClick = onCheckoutClick,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        // ✅ QUAN TRỌNG: Padding bottom 100dp để nằm TRÊN thanh NavBar (NavBar cao khoảng 80dp)
+                        .padding(bottom = 100.dp)
+                )
+            }
         }
     }
 }
@@ -128,11 +136,11 @@ fun CartScreenContent(
 fun EmptyCartView(
     onGoHomeClick: () -> Unit
 ) {
-    // ✅ Sử dụng Box để căn giữa nội dung nhưng vẫn đảm bảo layout không đè lên BottomBar
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 80.dp), // Chừa chỗ cho Navbar
+            // ✅ Trừ hao khoảng cách cho NavBar để nội dung nằm giữa phần nhìn thấy được
+            .padding(bottom = 80.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -142,11 +150,11 @@ fun EmptyCartView(
             Icon(
                 imageVector = Icons.Default.ShoppingCart,
                 contentDescription = null,
-                modifier = Modifier.size(120.dp),
+                modifier = Modifier.size(100.dp),
                 tint = Color.LightGray.copy(alpha = 0.5f)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = "Giỏ hàng trống!",
@@ -164,9 +172,8 @@ fun EmptyCartView(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // ✅ Nút bấm vẫn giữ lại như một Call-to-action (CTA) chính
             BrosButton(
                 text = "Khám phá Menu",
                 onClick = onGoHomeClick,
@@ -175,9 +182,8 @@ fun EmptyCartView(
                     .height(50.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ✅ Dòng text gợi ý Navbar (như bạn yêu cầu về trải nghiệm)
             Text(
                 text = "hoặc chọn mục Trang chủ bên dưới",
                 style = MaterialTheme.typography.bodySmall,
@@ -214,12 +220,12 @@ fun CartItemRow(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(75.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color.LightGray)
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -235,7 +241,7 @@ fun CartItemRow(
                     color = Color.Gray
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = formatPrice(item.price),
@@ -244,7 +250,7 @@ fun CartItemRow(
                     color = BrosBrown
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -311,15 +317,16 @@ fun CartBottomBar(
     onCheckoutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Surface tạo nền trắng và shadow cho phần thanh toán
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shadowElevation = 16.dp,
+        shadowElevation = 16.dp, // Tăng shadow để tách biệt với nền và danh sách
         color = Color.White,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp) // Bo tròn góc trên
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
                 .fillMaxWidth()
         ) {
             Row(
@@ -340,12 +347,14 @@ fun CartBottomBar(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             BrosButton(
                 text = "Thanh toán",
                 onClick = onCheckoutClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             )
         }
     }

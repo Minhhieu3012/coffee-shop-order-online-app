@@ -61,8 +61,8 @@ fun BrosBottomNavBar(
 ) {
     NavigationBar(
         modifier = modifier
-            .padding(horizontal = 24.dp, vertical = 60.dp)
-            .clip(RoundedCornerShape(30.dp)), // Bo góc, tạo feeling "floating"
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(24.dp)), // Bo góc, tạo feeling "floating"
         containerColor = MaterialTheme.colorScheme.primary,
         tonalElevation = 8.dp
     ) {

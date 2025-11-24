@@ -34,7 +34,6 @@ fun FavoriteScreen(
         viewModel.loadFavoriteProducts()
     }
 
-    // ✅ THÔNG BÁO TÙY CHỈNH THỜI GIAN (1.2 giây)
     LaunchedEffect(uiState.addToCartMessage) {
         uiState.addToCartMessage?.let { msg ->
             val job = launch {
@@ -118,10 +117,13 @@ fun FavoriteScreen(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(top = 20.dp, bottom = 100.dp)
+                            .padding(horizontal = 16.dp),  // ✅ Giảm từ 20dp xuống 16dp
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),  // ✅ Giảm từ 16dp xuống 12dp
+                        verticalArrangement = Arrangement.spacedBy(12.dp),    // ✅ Giảm từ 16dp xuống 12dp
+                        contentPadding = PaddingValues(
+                            top = 12.dp,     // ✅ Giảm từ 20dp xuống 12dp
+                            bottom = 90.dp   // ✅ Giảm từ 100dp xuống 90dp để tận dụng không gian
+                        )
                     ) {
                         items(items = uiState.favoriteProducts, key = { it.id }) { product ->
 

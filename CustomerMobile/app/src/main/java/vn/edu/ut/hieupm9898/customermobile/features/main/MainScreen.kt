@@ -29,7 +29,6 @@ import androidx.navigation.navArgument
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-// --- IMPORT FEATURES ---
 import vn.edu.ut.hieupm9898.customermobile.features.cart.*
 import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
 import vn.edu.ut.hieupm9898.customermobile.features.home.*
@@ -85,31 +84,35 @@ fun MainScreen(
                 }
             }
         ) { paddingValues ->
+            // ✅ QUAN TRỌNG: Chỉ áp dụng paddingValues cho các màn hình KHÔNG PHẢI Cart và Favorite
+            // Vì Cart và Favorite tự quản lý padding của riêng chúng
 
             NavHost(
                 navController = mainNavController,
                 startDestination = AppRoutes.HOME,
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.fillMaxSize()  // ✅ Loại bỏ padding ở đây
             ) {
 
                 // HOME
                 composable(AppRoutes.HOME) {
-                    HomeScreen(
-                        onProductClick = { id ->
-                            mainNavController.navigate("${AppRoutes.DETAIL_BASE}/$id")
-                        },
-                        onSearchClick = {
-                            mainNavController.navigate(AppRoutes.SEARCH)
-                        },
-                        onNavigateToCart = {
-                            mainNavController.navigate(AppRoutes.CART) {
-                                launchSingleTop = true
+                    Box(modifier = Modifier.padding(paddingValues)) {  // ✅ Padding riêng cho Home
+                        HomeScreen(
+                            onProductClick = { id ->
+                                mainNavController.navigate("${AppRoutes.DETAIL_BASE}/$id")
+                            },
+                            onSearchClick = {
+                                mainNavController.navigate(AppRoutes.SEARCH)
+                            },
+                            onNavigateToCart = {
+                                mainNavController.navigate(AppRoutes.CART) {
+                                    launchSingleTop = true
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
 
-                // FAVORITE
+                // FAVORITE - ✅ KHÔNG áp dụng paddingValues
                 composable(AppRoutes.FAVORITE) {
                     FavoriteScreen(
                         onProductClick = { id ->
@@ -129,7 +132,7 @@ fun MainScreen(
                     )
                 }
 
-                // CART
+                // CART - ✅ KHÔNG áp dụng paddingValues
                 composable(AppRoutes.CART) {
                     CartScreen(
                         navController = mainNavController
@@ -138,18 +141,20 @@ fun MainScreen(
 
                 // PROFILE
                 composable(AppRoutes.PROFILE) {
-                    ProfileScreen(
-                        navController = rootNavController,
-                        onEditProfileClick = { rootNavController.navigate(AppRoutes.EDIT_PROFILE) },
-                        onAddressClick = { rootNavController.navigate(AppRoutes.ADDRESS_LIST) },
-                        onPaymentClick = { rootNavController.navigate(AppRoutes.PAYMENT_METHODS) },
-                        onHistoryClick = { rootNavController.navigate(AppRoutes.ORDER_HISTORY) },
-                        onNotificationsClick = { rootNavController.navigate(AppRoutes.NOTIFICATIONS) },
-                        onBackClick = { }
-                    )
+                    Box(modifier = Modifier.padding(paddingValues)) {  // ✅ Padding riêng cho Profile
+                        ProfileScreen(
+                            navController = rootNavController,
+                            onEditProfileClick = { rootNavController.navigate(AppRoutes.EDIT_PROFILE) },
+                            onAddressClick = { rootNavController.navigate(AppRoutes.ADDRESS_LIST) },
+                            onPaymentClick = { rootNavController.navigate(AppRoutes.PAYMENT_METHODS) },
+                            onHistoryClick = { rootNavController.navigate(AppRoutes.ORDER_HISTORY) },
+                            onNotificationsClick = { rootNavController.navigate(AppRoutes.NOTIFICATIONS) },
+                            onBackClick = { }
+                        )
+                    }
                 }
 
-                // ========== CHI TIẾT SẢN PHẨM ==========
+                // CHI TIẾT SẢN PHẨM
                 composable(
                     route = AppRoutes.DETAIL,
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
@@ -225,7 +230,6 @@ fun MainScreen(
                                 onAddToCartClick = {
                                     viewModel.addToCart()
 
-                                    // ✅ TỰ ĐỘNG TẮT SAU 1.2s
                                     coroutineScope.launch {
                                         val job = launch {
                                             snackbarHostState.showSnackbar(
