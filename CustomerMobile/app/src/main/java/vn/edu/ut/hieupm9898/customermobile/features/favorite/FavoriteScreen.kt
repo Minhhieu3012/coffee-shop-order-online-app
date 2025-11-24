@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import vn.edu.ut.hieupm9898.customermobile.ui.components.CoffeeCard
 import vn.edu.ut.hieupm9898.customermobile.ui.components.EmptyStateScreen
+import vn.edu.ut.hieupm9898.customermobile.ui.components.skeleton.FavoriteScreenSkeleton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
 
@@ -99,8 +100,9 @@ fun FavoriteScreen(
                 .padding(paddingValues)
         ) {
             when {
+                // ✅ HIỂN THỊ SKELETON
                 uiState.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    FavoriteScreenSkeleton()
                 }
 
                 uiState.favoriteProducts.isEmpty() -> {
@@ -117,18 +119,16 @@ fun FavoriteScreen(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 16.dp),  // ✅ Giảm từ 20dp xuống 16dp
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),  // ✅ Giảm từ 16dp xuống 12dp
-                        verticalArrangement = Arrangement.spacedBy(12.dp),    // ✅ Giảm từ 16dp xuống 12dp
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(
-                            top = 12.dp,     // ✅ Giảm từ 20dp xuống 12dp
-                            bottom = 90.dp   // ✅ Giảm từ 100dp xuống 90dp để tận dụng không gian
+                            top = 12.dp,
+                            bottom = 90.dp
                         )
                     ) {
                         items(items = uiState.favoriteProducts, key = { it.id }) { product ->
-
                             val isOutOfStock = product.isOutOfStock()
-
                             CoffeeCard(
                                 title = product.name,
                                 subtitle = product.description,
