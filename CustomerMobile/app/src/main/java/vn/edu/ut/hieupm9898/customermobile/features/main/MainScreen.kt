@@ -36,6 +36,7 @@ import vn.edu.ut.hieupm9898.customermobile.features.home.*
 import vn.edu.ut.hieupm9898.customermobile.features.product_detail.ProductDetailScreen
 import vn.edu.ut.hieupm9898.customermobile.features.product_detail.ProductDetailViewModel
 import vn.edu.ut.hieupm9898.customermobile.features.product_detail.RelatedProduct
+// 🔥 XÓA DÒNG BỊ LỖI: import vn.edu.ut.hieupm9898.features.product_detail.getFormattedPrice
 import vn.edu.ut.hieupm9898.customermobile.features.profile.*
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosBottomNavBar
@@ -60,6 +61,7 @@ fun MainScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
 
     CustomerMobileTheme {
         Scaffold(
@@ -158,7 +160,7 @@ fun MainScreen(
                     }
                 }
 
-                // CHI TIẾT SẢN PHẨM
+                // CHI TIẾT SẢN PHẨM (ĐÃ KHÔI PHỤC)
                 composable(
                     route = AppRoutes.DETAIL,
                     arguments = listOf(navArgument("id") { type = NavType.StringType })
@@ -168,13 +170,96 @@ fun MainScreen(
                     val viewModel: ProductDetailViewModel = hiltViewModel()
                     val uiState by viewModel.uiState.collectAsState()
 
-                    // Logic ProductDetail... (Giữ nguyên)
-                    // ... (ProductDetailScreen)
+                    LaunchedEffect(productId) {
+                        viewModel.loadProduct(productId)
+                    }
 
-                    // ✅ Tạm thời gọi màn hình để tránh lỗi compile nếu ProductDetailScreen chưa có
-                    // Tạm thời để trống hoặc dùng một Box/Text
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Product Detail Screen for ID: $productId (Logic ProductDetailScreen chưa hoàn thiện)")
+                    when {
+                        uiState.isLoading -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+                        uiState.errorMessage != null -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("Lỗi: ${uiState.errorMessage}")
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Button(onClick = { viewModel.retry(productId) }) {
+                                        Text("Thử lại")
+                                    }
+                                }
+                            }
+                        }
+
+                        uiState.product != null -> {
+                            val product = uiState.product!!
+
+                            // Khai báo coroutineScope cục bộ cho ProductDetailScreen
+                            val detailScope = rememberCoroutineScope()
+
+                            // Giả định RelatedProduct đã được định nghĩa
+                            val relatedProducts = uiState.relatedProducts.map { p ->
+                                RelatedProduct(
+                                    id = p.id,
+                                    name = p.name,
+                                    subtitle = p.description,
+                                    price = "${p.price.toInt()}đ",
+                                    imageUrl = p.imageUrl
+                                )
+                            }
+
+                            // Khôi phục lại ProductDetailScreen
+                            ProductDetailScreen(
+                                title = product.name,
+                                subtitle = product.description,
+                                // 🔥 FIX LỖI: Gọi hàm getFormattedPrice() trên đối tượng product
+                                formattedPrice = product.getFormattedPrice(),
+                                rating = 4.5f,
+                                ratingCountText = "(4.5)",
+                                description = product.description,
+                                imageUrl = product.imageUrl,
+                                isFavorite = uiState.isFavorite,
+                                availableSizes = listOf("Nhỏ", "Trung bình", "Lớn"),
+                                selectedSize = uiState.selectedSize,
+                                availableDairy = listOf(
+                                    "Whole Milk" to 0.0,
+                                    "Almond Milk" to 5000.0,
+                                    "Oat Milk" to 7000.0
+                                ),
+                                selectedDairy = uiState.selectedDairy,
+                                relatedProducts = relatedProducts,
+                                onBackClick = { mainNavController.popBackStack() },
+                                onFavoriteClick = { viewModel.toggleFavorite() },
+                                onSizeSelected = { viewModel.selectSize(it) },
+                                onDairySelected = { viewModel.selectDairy(it) },
+                                onAddToCartClick = {
+                                    viewModel.addToCart()
+                                    // Logic Snackbar
+                                    detailScope.launch { // Sử dụng detailScope hoặc coroutineScope tổng
+                                        val job = launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Đã thêm ${product.name} vào giỏ hàng",
+                                                duration = SnackbarDuration.Indefinite
+                                            )
+                                        }
+                                        delay(1200)
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        job.cancel()
+                                    }
+                                },
+                                onRelatedProductClick = { relatedProduct ->
+                                    mainNavController.navigate("${AppRoutes.DETAIL_BASE}/${relatedProduct.id}")
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -194,11 +279,9 @@ fun MainScreen(
                     OrderSuccessScreen(navController = mainNavController)
                 }
 
-                // DELIVERY (FIX LỖI CHỮ KÝ HÀM VÀ TẠM GỌI DELIVERY SCREEN)
-                // DeliveryScreen cần được định nghĩa hoặc chỉ cần NavController
+
                 composable(AppRoutes.DELIVERY) {
-                    // Thay vì gọi DeliveryScreen với callbacks bị lỗi,
-                    // ta gọi nó với navController (giả định DeliveryScreen nhận NavController)
+
                     DeliveryScreen(navController = mainNavController)
                 }
             }

@@ -39,17 +39,15 @@ private val StarYellow = Color(0xFFFFC107)
 
 /**
  * Product Detail Screen với UI cải thiện
- * - Gradient overlay trên ảnh
- * - Animation mượt mà
- * - Size selector với icon cốc coffee
- * - Section "People also viewed"
- * - Typography và spacing tốt hơn
+ * ...
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     title: String,
     subtitle: String,
+    // 🔥 THÊM: formattedPrice cho giá gốc của sản phẩm
+    formattedPrice: String,
     rating: Float,
     ratingCountText: String,
     description: String,
@@ -118,6 +116,8 @@ fun ProductDetailScreen(
                     ProductHeader(
                         title = title,
                         subtitle = subtitle,
+                        // 🔥 TRUYỀN: formattedPrice
+                        formattedPrice = formattedPrice,
                         rating = rating,
                         ratingCountText = ratingCountText
                     )
@@ -157,9 +157,7 @@ fun ProductDetailScreen(
     }
 }
 
-/**
- * Header ảnh với gradient overlay và buttons
- */
+// ... ProductImageHeader (Giữ nguyên) ...
 @Composable
 private fun ProductImageHeader(
     imageUrl: String,
@@ -223,13 +221,16 @@ private fun ProductImageHeader(
     }
 }
 
+
 /**
- * Product title, subtitle và rating
+ * Product title, subtitle, price và rating
  */
 @Composable
 private fun ProductHeader(
     title: String,
     subtitle: String,
+    // 🔥 THÊM: formattedPrice
+    formattedPrice: String,
     rating: Float,
     ratingCountText: String
 ) {
@@ -237,9 +238,20 @@ private fun ProductHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold, // Tăng độ đậm cho tiêu đề
             color = MaterialTheme.colorScheme.onBackground
         )
+
+        // 🔥 VỊ TRÍ MỚI: Hiển thị giá tiền ngay dưới tiêu đề
+        if (formattedPrice.isNotEmpty()) {
+            Text(
+                text = formattedPrice,
+                style = MaterialTheme.typography.headlineSmall, // Cỡ chữ lớn hơn
+                fontWeight = FontWeight.Bold,
+                color = CoffeeBrown // Màu nâu chủ đạo
+            )
+            Spacer(modifier = Modifier.height(4.dp)) // Khoảng cách nhỏ
+        }
 
         Text(
             text = subtitle,
@@ -251,10 +263,7 @@ private fun ProductHeader(
         RatingBar(rating = rating, ratingCountText = ratingCountText)
     }
 }
-
-/**
- * Rating bar với ngôi sao
- */
+// ... RatingBar (Giữ nguyên) ...
 @Composable
 private fun RatingBar(
     rating: Float,
@@ -286,9 +295,8 @@ private fun RatingBar(
     }
 }
 
-/**
- * Description section
- */
+
+// ... DescriptionSection (Giữ nguyên) ...
 @Composable
 private fun DescriptionSection(description: String) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -306,10 +314,7 @@ private fun DescriptionSection(description: String) {
         )
     }
 }
-
-/**
- * Size selector với icon cốc coffee
- */
+// ... SizeSection (Giữ nguyên) ...
 @Composable
 private fun SizeSection(
     sizes: List<String>,
@@ -345,10 +350,7 @@ private fun SizeSection(
         }
     }
 }
-
-/**
- * Size chip component với coffee cup icon
- */
+// ... SizeChip (Giữ nguyên) ...
 @Composable
 private fun SizeChip(
     text: String,
@@ -396,10 +398,7 @@ private fun SizeChip(
         }
     }
 }
-
-/**
- * Dairy choice section
- */
+// ... DairySection (Giữ nguyên) ...
 @Composable
 private fun DairySection(
     options: List<Pair<String, Double>>,
@@ -439,10 +438,7 @@ private fun DairySection(
         }
     }
 }
-
-/**
- * Dairy option row
- */
+// ... DairyOption (Giữ nguyên) ...
 @Composable
 private fun DairyOption(
     name: String,
@@ -483,10 +479,7 @@ private fun DairyOption(
         )
     }
 }
-
-/**
- * Related products section
- */
+// ... RelatedProductsSection (Giữ nguyên) ...
 @Composable
 private fun RelatedProductsSection(
     products: List<RelatedProduct>,
@@ -512,10 +505,7 @@ private fun RelatedProductsSection(
         }
     }
 }
-
-/**
- * Related product card
- */
+// ... RelatedProductCard (Giữ nguyên) ...
 @Composable
 private fun RelatedProductCard(
     product: RelatedProduct,
@@ -572,8 +562,7 @@ private fun RelatedProductCard(
         }
     }
 }
-
-// Data class cho related products
+// ... RelatedProduct (Giữ nguyên) ...
 data class RelatedProduct(
     val id: String,
     val name: String,
@@ -581,8 +570,7 @@ data class RelatedProduct(
     val price: String,
     val imageUrl: String
 )
-
-
+// ... ImprovedProductDetailPreview (Giữ nguyên) ...
 @Preview(showBackground = true, name = "Product Detail - Improved")
 @Composable
 fun ImprovedProductDetailPreview() {
@@ -593,19 +581,26 @@ fun ImprovedProductDetailPreview() {
         Pair("Oat Milk", 1.25)
     )
     val fakeRelated = listOf(
-        RelatedProduct("1", "Pumpkin Brew", "150mg · 230 Cal", "45000.0", ""),
-        RelatedProduct("2", "Iced Coffee Cram", "110mg · 130 Cal", "35000.0", ""),
-        RelatedProduct("3", "Cold Brew", "140mg · 120 Cal", "47000.0", "")
+        RelatedProduct("1", "Pumpkin Brew", "150mg · 230 Cal", "45.000đ", ""),
+        RelatedProduct("2", "Iced Coffee Cram", "110mg · 130 Cal", "35.000đ", ""),
+        RelatedProduct("3", "Cold Brew", "140mg · 120 Cal", "47.000đ", "")
     )
 
     var isFavorite by remember { mutableStateOf(false) }
     var selectedSize by remember { mutableStateOf("Small") }
     var selectedDairy by remember { mutableStateOf("Whole Milk") }
 
+    // Dữ liệu giá tiền cho Preview
+    val price = 42000.0
+    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
+    val formattedPrice = formatter.format(price)
+
+
     CustomerMobileTheme {
         ProductDetailScreen(
             title = "Cold coffee frapuccino",
             subtitle = "90mg Caffeine : 100Cal",
+            formattedPrice = formattedPrice, // 🔥 TRUYỀN GIÁ TIỀN VÀO HÀM
             rating = 3.0f,
             ratingCountText = "(3.0)",
             description = "Tasteful and flavorful icecream coffee. Ice cream with whipped cream and caramel syrup.",
