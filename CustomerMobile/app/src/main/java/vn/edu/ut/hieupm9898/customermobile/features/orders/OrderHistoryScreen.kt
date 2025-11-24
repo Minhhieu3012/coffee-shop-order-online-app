@@ -1,32 +1,53 @@
-package vn.edu.ut.hieupm9898.customermobile.features.profile
+package vn.edu.ut.hieupm9898.customermobile.features.orders
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// Đảm bảo import đúng Component Card đã tạo
+import androidx.hilt.navigation.compose.hiltViewModel
+import vn.edu.ut.hieupm9898.customermobile.data.model.OrderStatus
 import vn.edu.ut.hieupm9898.customermobile.ui.components.OrderHistoryCard
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderHistoryScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onNavigateToCart: () -> Unit,
+    viewModel: OrderHistoryViewModel = hiltViewModel()
 ) {
-    // State quản lý tab đang chọn (0: Ongoing, 1: History)
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Hiện tại", "Lịch sử")
+    val uiState by viewModel.uiState.collectAsState()
+    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("vi", "VN"))
+
+    // Show error snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background, // Màu nền Theme
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -58,34 +79,39 @@ fun OrderHistoryScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 1. THANH TAB TÙY CHỈNH
+            // TAB ROW
             TabRow(
-                selectedTabIndex = selectedTab,
+                selectedTabIndex = uiState.selectedTab,
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.primary,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
-                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        Modifier.tabIndicatorOffset(tabPositions[uiState.selectedTab]),
                         height = 3.dp,
-                        color = MaterialTheme.colorScheme.primary // Màu Nâu
+                        color = MaterialTheme.colorScheme.primary
                     )
                 },
                 divider = {
-                    // Ẩn đường kẻ mặc định hoặc làm mờ nó
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                    )
                 },
                 modifier = Modifier.padding(horizontal = 24.dp)
             ) {
-                tabs.forEachIndexed { index, title ->
+                listOf("Hiện tại", "Lịch sử").forEachIndexed { index, title ->
                     Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        selected = uiState.selectedTab == index,
+                        onClick = { viewModel.selectTab(index) },
                         text = {
                             Text(
                                 text = title,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
+                                fontWeight = if (uiState.selectedTab == index)
+                                    FontWeight.Bold else FontWeight.Normal,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                                color = if (uiState.selectedTab == index)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.secondary
                             )
                         }
                     )
@@ -94,47 +120,98 @@ fun OrderHistoryScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. DANH SÁCH ĐƠN HÀNG
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                if (selectedTab == 0) {
-                    // --- TAB: ONGOING (Đang giao) ---
-                    items(2) {
-                        OrderHistoryCard(
-                            title = "Cappuccino",
-                            description = "Spicy · Medium",
-                            size = "x1",
-                            price = 45000.0,
-                            imageUrl = "https://img.freepik.com/free-photo/cup-coffee-with-heart-drawn-foam_1286-70.jpg",
-                            onReorderClick = {
-                                // Logic khi nhấn nút (VD: Chuyển sang màn hình Delivery)
-                            }
-                        )
+            // CONTENT
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                val orders = if (uiState.selectedTab == 0)
+                    uiState.ongoingOrders
+                else
+                    uiState.historyOrders
+
+                if (orders.isEmpty()) {
+                    // Empty state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = if (uiState.selectedTab == 0)
+                                    "Chưa có đơn hàng nào"
+                                else
+                                    "Chưa có lịch sử",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = Color.Gray
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Hãy đặt món ngay!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 } else {
-                    // --- TAB: HISTORY (Lịch sử cũ) ---
-                    items(4) {
-                        OrderHistoryCard(
-                            title = "Americano",
-                            description = "No sugar · Large",
-                            size = "x2",
-                            price = 60000.0,
-                            imageUrl = "https://img.freepik.com/free-photo/ice-coffee-tall-glass-with-cream-poured-over_140725-7254.jpg",
-                            onReorderClick = {
-                                // Logic Re-order
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            horizontal = 24.dp,
+                            vertical = 8.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(orders) { order ->
+                            // Lấy sản phẩm đầu tiên để hiển thị
+                            val firstItem = order.items.firstOrNull()
+
+                            if (firstItem != null) {
+                                // Convert status string to display name
+                                val statusDisplay = try {
+                                    OrderStatus.valueOf(order.status).getDisplayName()
+                                } catch (e: Exception) {
+                                    order.status
+                                }
+
+                                OrderHistoryCard(
+                                    title = firstItem.productName,
+                                    description = buildString {
+                                        if (firstItem.size.isNotEmpty()) {
+                                            append(firstItem.size)
+                                        }
+                                        if (firstItem.dairy.isNotEmpty()) {
+                                            if (isNotEmpty()) append(" · ")
+                                            append(firstItem.dairy)
+                                        }
+                                    },
+                                    size = "x${firstItem.quantity}",
+                                    price = order.total,
+                                    imageUrl = firstItem.productImage,
+                                    status = statusDisplay,
+                                    orderDate = order.createdAt?.toDate()?.let {
+                                        dateFormat.format(it)
+                                    } ?: "",
+                                    itemCount = order.items.size,
+                                    onReorderClick = {
+                                        viewModel.reorderOrder(order)
+                                    },
+                                    onCancelClick = if (uiState.selectedTab == 0) {
+                                        { viewModel.cancelOrder(order.orderId) }
+                                    } else null
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OrderHistoryPreview() {
-    CustomerMobileTheme { OrderHistoryScreen() }
 }

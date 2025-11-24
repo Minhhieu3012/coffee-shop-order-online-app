@@ -1,24 +1,12 @@
 package vn.edu.ut.hieupm9898.customermobile.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,25 +15,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import vn.edu.ut.hieupm9898.customermobile.ui.theme.CustomerMobileTheme
 import java.text.NumberFormat
 import java.util.Locale
 
-/**
- * Thẻ (Card) hiển thị một món hàng trong Lịch sử Đặt hàng.
- *
- * @param title Tên sản phẩm (Vd: "Iced coffee with icecream").
- * @param description Mô tả (Vd: "with ice cream.").
- * @param size Kích thước (Vd: "16 Oz (medium size)").
- * @param price Giá sản phẩm (Vd: 4.50).
- * @param imageUrl Link URL của ảnh sản phẩm.
- * @param onReorderClick Hàm (lambda) được gọi khi nhấn nút "REORDER".
- */
 @Composable
 fun OrderHistoryCard(
     title: String,
@@ -53,113 +29,201 @@ fun OrderHistoryCard(
     size: String,
     price: Double,
     imageUrl: String,
+    status: String = "", // 👈 Optional
+    orderDate: String = "", // 👈 Optional
+    itemCount: Int = 1, // 👈 Optional
     onReorderClick: () -> Unit,
+    onCancelClick: (() -> Unit)? = null, // 👈 Optional
     modifier: Modifier = Modifier
 ) {
-    // Định dạng giá tiền
     val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    val formattedPrice = formatter.format(price)
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp), // Bo góc
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.onPrimary // Màu nền
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically, // Căn giữa các phần tử
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            // 1. ẢNH (Bên trái)
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = title,
-                modifier = Modifier
-                    .size(80.dp) // Kích thước ảnh tròn
-                    .clip(CircleShape), // Bo tròn ảnh
-                contentScale = ContentScale.Crop
-            )
+            // Header: Order date & status
+            if (orderDate.isNotEmpty() || status.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (orderDate.isNotEmpty()) {
+                        Text(
+                            text = orderDate,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
 
-            Spacer(modifier = Modifier.width(16.dp))
+                    if (status.isNotEmpty()) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = getStatusColor(status).copy(alpha = 0.1f)
+                        ) {
+                            Text(
+                                text = status,
+                                modifier = Modifier.padding(
+                                    horizontal = 12.dp,
+                                    vertical = 4.dp
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = getStatusColor(status),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
-            // 2. CỘT THÔNG TIN (Ở giữa)
-            Column(
-                modifier = Modifier.weight(1f), // Tự động chiếm không gian còn lại
-                verticalArrangement = Arrangement.Center
+            // Product info
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                // Image
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = title,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.LightGray),
+                    contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-                Text(
-                    text = size,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(8.dp))
 
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Info
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    if (description.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        ) {
+                            Text(
+                                text = size,
+                                modifier = Modifier.padding(
+                                    horizontal = 10.dp,
+                                    vertical = 4.dp
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        if (itemCount > 1) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "+${itemCount - 1} món khác",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+
+                // Price
                 Text(
-                    text = formattedPrice,
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = formatter.format(price),
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. NÚT "REORDER" (Bên phải)
-            Button(
-                onClick = onReorderClick,
-                modifier = Modifier.padding(top = 100.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                )
+            // Action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "Đặt lại",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontSize = 16.sp
-                )
+                // Reorder button
+                Button(
+                    onClick = onReorderClick,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Đặt lại")
+                }
+
+                // Cancel button (only for ongoing orders)
+                if (onCancelClick != null) {
+                    OutlinedButton(
+                        onClick = onCancelClick,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 1.dp
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Hủy")
+                    }
+                }
             }
         }
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun OrderHistoryCardPreview() {
-    CustomerMobileTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFF7F0E5))
-                .padding(16.dp)
-        ) {
-            OrderHistoryCard(
-                title = "Iced coffee with icecream",
-                description = "with ice cream.",
-                size = "16 Oz (medium size)",
-                price = 40000.0,
-                imageUrl = "https://example.com/image.jpg", // (Ảnh placeholder)
-                onReorderClick = {}
-            )
-        }
+/**
+ * Get color based on order status
+ */
+private fun getStatusColor(status: String): Color {
+    return when (status) {
+        "Hoàn thành" -> Color(0xFF4CAF50)
+        "Đang giao hàng" -> Color(0xFF2196F3)
+        "Đang chuẩn bị" -> Color(0xFFFF9800)
+        "Chờ xác nhận" -> Color(0xFFFFC107)
+        "Đã hủy" -> Color(0xFFF44336)
+        "Thất bại" -> Color(0xFFE91E63)
+        else -> Color.Gray
     }
 }

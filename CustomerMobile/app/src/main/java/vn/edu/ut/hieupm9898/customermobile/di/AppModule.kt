@@ -17,6 +17,7 @@ import vn.edu.ut.hieupm9898.customermobile.data.local.CartDao
 import vn.edu.ut.hieupm9898.customermobile.data.local.UserPreferencesManager
 import vn.edu.ut.hieupm9898.customermobile.data.remote.FirebaseDataSource
 import vn.edu.ut.hieupm9898.customermobile.data.repository.CartRepository
+import vn.edu.ut.hieupm9898.customermobile.data.repository.OrderRepository
 import vn.edu.ut.hieupm9898.customermobile.data.repository.ProductRepository
 import javax.inject.Singleton
 
@@ -121,5 +122,14 @@ object AppModule {
     @Singleton
     fun provideUserPreferencesManager(sharedPreferences: SharedPreferences): UserPreferencesManager {
         return UserPreferencesManager(sharedPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOrderRepository(
+        firestore: FirebaseFirestore,
+        firebaseAuth: FirebaseAuth
+    ): OrderRepository {
+        return OrderRepository(firestore, firebaseAuth)
     }
 }

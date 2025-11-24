@@ -8,17 +8,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import vn.edu.ut.hieupm9898.customermobile.features.auth.authNavGraph
-import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph
+import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph // ✅ THÊM IMPORT
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.SplashScreen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding1Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding2Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding3Screen
 import vn.edu.ut.hieupm9898.customermobile.features.main.MainScreen
 import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
-
-// ========== ✅ THÊM MỚI: IMPORT PAYMENT & ORDER SUCCESS ==========
 import vn.edu.ut.hieupm9898.customermobile.features.cart.PaymentQRScreen
 import vn.edu.ut.hieupm9898.customermobile.features.cart.OrderSuccessScreen
+import vn.edu.ut.hieupm9898.customermobile.features.orders.OrderHistoryScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -98,17 +97,17 @@ fun AppNavigation(navController: NavHostController) {
                 )
             }
 
-            // ========== ✅ THÊM MỚI: PAYMENT QR SCREEN ==========
+            // Payment QR Screen
             composable(route = AppRoutes.PAYMENT_QR) {
                 PaymentQRScreen(navController = navController)
             }
 
-            // ========== ✅ THÊM MỚI: ORDER SUCCESS SCREEN ==========
+            // Order Success Screen
             composable(route = AppRoutes.ORDER_SUCCESS) {
                 OrderSuccessScreen(navController = navController)
             }
 
-            // Profile graph
+            // ✅ QUAN TRỌNG: Profile Navigation Graph
             profileNavGraph(navController)
 
             // Product detail
@@ -123,6 +122,28 @@ fun AppNavigation(navController: NavHostController) {
                 val productId =
                     backStackEntry.arguments?.getString(AppRoutes.PRODUCT_DETAIL_ID)
                 // TODO: ProductDetailScreen(productId)
+            }
+
+            // ✅ Route MỚI (Cập nhật hoặc thêm vào):
+            composable("order_history") { // Thay "order_history" bằng AppRoutes.ORDER_HISTORY nếu bạn có
+                OrderHistoryScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToCart = {
+                        // Điều hướng đến Giỏ hàng
+                        navController.navigate("cart") { // Thay "cart" bằng AppRoutes.CART nếu bạn có
+                            // Tùy chọn: Xóa backstack để tránh back lại trang lịch sử nếu muốn
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+
+            // Đảm bảo bạn đã có route cho màn hình giỏ hàng ("cart")
+            composable("cart") { // Thay "cart" bằng AppRoutes.CART
+                vn.edu.ut.hieupm9898.customermobile.features.cart.CartScreen(
+                    navController = navController
+                )
             }
         }
     }
