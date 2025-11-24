@@ -16,6 +16,10 @@ import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding3Screen
 import vn.edu.ut.hieupm9898.customermobile.features.main.MainScreen
 import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
 
+// ========== ✅ THÊM MỚI: IMPORT PAYMENT & ORDER SUCCESS ==========
+import vn.edu.ut.hieupm9898.customermobile.features.cart.PaymentQRScreen
+import vn.edu.ut.hieupm9898.customermobile.features.cart.OrderSuccessScreen
+
 @Composable
 fun AppNavigation(navController: NavHostController) {
     NavHost(
@@ -79,7 +83,7 @@ fun AppNavigation(navController: NavHostController) {
                 MainScreen(rootNavController = navController)
             }
 
-            // 👉 Favorite route (bắt buộc phải có)
+            // Favorite route
             composable(AppRoutes.FAVORITE) {
                 FavoriteScreen(
                     onProductClick = { productId ->
@@ -92,6 +96,16 @@ fun AppNavigation(navController: NavHostController) {
                         }
                     }
                 )
+            }
+
+            // ========== ✅ THÊM MỚI: PAYMENT QR SCREEN ==========
+            composable(route = AppRoutes.PAYMENT_QR) {
+                PaymentQRScreen(navController = navController)
+            }
+
+            // ========== ✅ THÊM MỚI: ORDER SUCCESS SCREEN ==========
+            composable(route = AppRoutes.ORDER_SUCCESS) {
+                OrderSuccessScreen(navController = navController)
             }
 
             // Profile graph
