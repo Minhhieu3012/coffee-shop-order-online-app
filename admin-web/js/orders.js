@@ -4,23 +4,47 @@ import { collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/
 
 let ordersData = [];
 
-// --- HÀM HỖ TRỢ CHUẨN HÓA SIZE ---
-// Chuyển đổi S/M/L -> Nhỏ/Trung bình/Lớn
-function translateSize(sizeKey) {
-  if (!sizeKey) return "";
-  const map = {
-    'S': 'Nhỏ',
-    'M': 'Trung bình',
-    'L': 'Lớn',
-    'small': 'Nhỏ',
-    'medium': 'Trung bình',
-    'large': 'Lớn'
-  };
-  // Nếu tìm thấy trong map thì trả về tiếng Việt, không thì trả về nguyên gốc
-  return map[sizeKey] || sizeKey;
+// --- HELPER: FORMAT DATE (Xử lý Timestamp Firebase) ---
+function formatDate(timestamp) {
+  if (!timestamp) return "";
+  // Nếu là Firebase Timestamp (có hàm toDate)
+  if (timestamp.toDate) {
+    return timestamp.toDate().toLocaleString('vi-VN', { 
+        day: '2-digit', month: '2-digit', year: 'numeric', 
+        hour: '2-digit', minute: '2-digit' 
+    });
+  }
+  // Nếu là string hoặc Date
+  return new Date(timestamp).toLocaleString('vi-VN');
 }
 
-// --- 1. LẮNG NGHE DỮ LIỆU REALTIME TỪ FIREBASE ---
+// --- HELPER: FORMAT TIỀN ---
+function formatMoney(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+}
+
+// --- HELPER: TRANSLATE STATUS (Xử lý in hoa/thường) ---
+function getStatusBadge(status) {
+  if (!status) return `<span class="badge">---</span>`;
+  const s = status.toUpperCase(); // Chuyển về in hoa để so sánh
+
+  switch (s) {
+    case 'PENDING': 
+        return `<span class="badge badge-warning" style="background:#fef3c7; color:#b45309;">Chờ xác nhận</span>`;
+    case 'PROCESSING': 
+        return `<span class="badge badge-info" style="background:#dbeafe; color:#1e40af;">Đang pha chế</span>`;
+    case 'COMPLETED': 
+        return `<span class="badge badge-success" style="background:#dcfce7; color:#15803d;">Hoàn thành</span>`;
+    case 'CANCELLED': 
+        return `<span class="badge badge-danger" style="background:#fee2e2; color:#b91c1c;">Đã hủy</span>`;
+    case 'PAID':
+        return `<span class="badge badge-success">Đã thanh toán</span>`;
+    default: 
+        return `<span class="badge">${status}</span>`;
+  }
+}
+
+// --- 1. LẮNG NGHE DỮ LIỆU ---
 function listenOrders() {
   onSnapshot(collection(db, "orders"), (snapshot) => {
     ordersData = snapshot.docs.map(doc => ({
@@ -28,8 +52,12 @@ function listenOrders() {
       ...doc.data()
     }));
 
-    // Sắp xếp đơn mới nhất lên đầu
-    ordersData.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+    // Sắp xếp: Mới nhất lên đầu (dựa trên seconds của timestamp)
+    ordersData.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+    });
     
     renderOrderTable(ordersData);
   }, (error) => {
@@ -37,27 +65,24 @@ function listenOrders() {
   });
 }
 
-// --- 2. CẬP NHẬT TRẠNG THÁI LÊN FIREBASE ---
+// --- 2. CẬP NHẬT TRẠNG THÁI ---
 async function updateOrderStatusOnDB(id, newStatus) {
   try {
+    // Disable nút bấm tạm thời
     const btn = document.querySelector(`button[onclick*='${id}']`);
     if(btn) btn.disabled = true; 
 
-    await updateDoc(doc(db, "orders", id), { status: newStatus });
+    // Mobile App dùng uppercase (PENDING, PROCESSING...)
+    await updateDoc(doc(db, "orders", id), { status: newStatus.toUpperCase() });
     
-    let msg = "Đã cập nhật đơn hàng!";
-    if(newStatus === 'processing') msg = "Đã duyệt đơn, bắt đầu pha chế!";
-    if(newStatus === 'completed') msg = "Đơn hàng hoàn thành!";
-    if(newStatus === 'cancelled') msg = "Đã hủy đơn hàng.";
-    alert(msg);
-
+    alert("Đã cập nhật trạng thái: " + newStatus);
   } catch (e) {
     console.error("Lỗi update:", e);
     alert("Lỗi: " + e.message);
   }
 }
 
-// --- 3. HÀM RENDER BẢNG ---
+// --- 3. RENDER BẢNG ---
 function renderOrderTable(data = ordersData) {
   const tableBody = document.getElementById("orderTableBody");
   if (!tableBody) return;
@@ -70,33 +95,34 @@ function renderOrderTable(data = ordersData) {
 
   data.forEach(order => {
     const row = document.createElement("tr");
-    const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice || 0);
-    let statusBadge = getStatusBadge(order.status);
+    
+    // Dữ liệu từ mobile: userName, total
+    const customer = order.userName || "Khách vãng lai";
+    const total = formatMoney(order.total);
+    const timeStr = formatDate(order.createdAt);
+    const statusBadge = getStatusBadge(order.status);
     
     const itemsList = order.items || [];
-    
-    // Tóm tắt món ăn
+    // Mobile dùng productName
     const itemsSummary = itemsList.map(i => {
-        const sizeText = translateSize(i.size);
-        const sizeStr = sizeText ? `(${sizeText})` : ""; 
-        return `${i.quantity}x ${i.name} ${sizeStr}`;
+        return `${i.quantity}x ${i.productName} (${i.size})`;
     }).join(", ");
 
     row.innerHTML = `
       <td>
         <a href="#" onclick="window.viewOrder('${order.id}')" style="color: #6a4616; font-weight: 700; text-decoration: none;">
-          ${order.id.length > 8 ? "..." + order.id.slice(-5) : order.id} 
+          ...${order.id.slice(-5)} 
           <i class="fa-solid fa-up-right-from-square" style="font-size: 0.7rem; margin-left: 4px;"></i>
         </a>
       </td>
       <td>
-        <div style="font-weight: 500;">${order.customerName || "Khách vãng lai"}</div>
+        <div style="font-weight: 500;">${customer}</div>
         <small style="color: #6b7280; display: block; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${itemsSummary || "Không có món"}
         </small>
       </td>
-      <td>${order.createdAt || "---"}</td>
-      <td style="font-weight: 600;">${price}</td>
+      <td>${timeStr}</td>
+      <td style="font-weight: 600;">${total}</td>
       <td>${statusBadge}</td>
       <td>
         <button class="action-btn" onclick="window.viewOrder('${order.id}')" title="Xem chi tiết">
@@ -108,17 +134,7 @@ function renderOrderTable(data = ordersData) {
   });
 }
 
-function getStatusBadge(status) {
-  switch (status) {
-    case 'pending': return `<span class="badge badge-warning" style="background:#fef3c7; color:#b45309;">Chờ xác nhận</span>`;
-    case 'processing': return `<span class="badge badge-info" style="background:#dbeafe; color:#1e40af;">Đang pha chế</span>`;
-    case 'completed': return `<span class="badge badge-success" style="background:#dcfce7; color:#15803d;">Hoàn thành</span>`;
-    case 'cancelled': return `<span class="badge badge-danger" style="background:#fee2e2; color:#b91c1c;">Đã hủy</span>`;
-    default: return `<span class="badge">${status}</span>`;
-  }
-}
-
-// --- 4. XỬ LÝ MODAL CHI TIẾT ---
+// --- 4. MODAL CHI TIẾT ---
 const orderModal = document.getElementById("orderModal");
 const closeOrderBtn = document.getElementById("closeOrderModal");
 
@@ -129,82 +145,67 @@ window.addEventListener("click", (e) => {
   if (e.target == orderModal) orderModal.classList.remove("show"); 
 });
 
-// Hàm xem chi tiết
 window.viewOrder = (id) => {
   const order = ordersData.find(o => o.id === id);
   if (!order) return;
 
-  document.getElementById("ordModalId").innerText = "#" + (order.id.length > 8 ? "..." + order.id.slice(-5) : order.id);
-  document.getElementById("ordModalCustomer").value = order.customerName || "";
-  
-  if(document.getElementById("ordModalDate")) {
-      document.getElementById("ordModalDate").value = order.createdAt || ""; 
-  }
-  
-  document.getElementById("ordModalStatus").innerHTML = getStatusBadge(order.status);
+  // Header Info
+  document.getElementById("ordModalId").innerText = "#" + order.id.slice(-5);
+  document.getElementById("ordModalCustomer").innerText = (order.userName || "Khách vãng lai") + (order.userPhone ? ` - ${order.userPhone}` : "");
+  document.getElementById("ordModalDate").innerText = formatDate(order.createdAt);
 
+  // Items List
   const itemsContainer = document.getElementById("ordModalItems");
   let itemsHtml = "";
   
-  const itemsList = order.items || [];
-
-  if (itemsList.length > 0) {
-    itemsList.forEach(item => {
-      const itemTotal = (item.price || 0) * (item.quantity || 1);
-      
-      // Xử lý hiển thị Size đẹp (style mobile)
-      const sizeText = translateSize(item.size);
-      let sizeDisplay = "";
-      if(sizeText) {
-         // Style badge màu nâu/xám nhạt giống trong ảnh
-         sizeDisplay = `<span style="
-            background: #e7e5e4; 
-            color: #444; 
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            font-size: 0.75rem; 
-            font-weight: 600; 
-            margin-left: 8px;
-            display: inline-block;
-            border: 1px solid #d6d3d1;
-         "><i class="fa-solid fa-mug-hot" style="font-size:0.7rem; margin-right:3px;"></i> ${sizeText}</span>`;
-      }
-      
+  if (order.items && order.items.length > 0) {
+    order.items.forEach(item => {
       itemsHtml += `
-        <div class="order-item-row" style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px dashed #eee;">
-          <div style="display:flex; align-items:center;">
-            <b style="margin-right: 8px; color: #6a4616;">${item.quantity}x</b> 
-            <span>${item.name}</span>
-            ${sizeDisplay}
+        <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px dashed #eee; align-items: flex-start;">
+          <div style="display:flex; gap: 10px;">
+            <img src="${item.productImage}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;" onerror="this.src='assets/logo.png'">
+            <div>
+                <div style="font-weight: 500;">${item.productName}</div>
+                <div style="font-size: 0.8rem; color: #666;">
+                    Size: <span style="background: #eee; padding: 2px 6px; border-radius: 4px;">${item.size}</span> x${item.quantity}
+                </div>
+            </div>
           </div>
-          <span style="font-weight:500;">${new Intl.NumberFormat('vi-VN').format(itemTotal)} đ</span>
+          <span style="font-weight:500;">${formatMoney(item.lineTotal || item.price * item.quantity)}</span>
         </div>`;
     });
   } else {
     itemsHtml = "<p style='text-align:center; color:#999;'>Không có thông tin món ăn</p>";
   }
-  
-  itemsHtml += `
-    <div class="order-total-row" style="margin-top: 15px; padding-top: 10px; border-top: 2px solid #eee; display:flex; justify-content:space-between; font-size: 1.1rem; font-weight: bold; color: #6a4616;">
-      <span>Tổng cộng:</span>
-      <span>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice || 0)}</span>
-    </div>`;
   itemsContainer.innerHTML = itemsHtml;
 
-  // Footer Buttons
+  // Footer & Payment Info (New Fields)
+  document.getElementById("ordModalSubtotal").innerText = formatMoney(order.subtotal);
+  document.getElementById("ordModalShip").innerText = formatMoney(order.deliveryFee);
+  document.getElementById("ordModalTotal").innerText = formatMoney(order.total);
+  
+  // Payment Method & Note
+  const payMethod = order.paymentMethod === 'BANK_TRANSFER' ? 'Chuyển khoản' : (order.paymentMethod === 'CASH' ? 'Tiền mặt' : order.paymentMethod);
+  document.getElementById("ordModalPayment").innerText = `${payMethod} (${order.paymentStatus || 'UNPAID'})`;
+  document.getElementById("ordModalNote").innerText = order.note || "Không có";
+  document.getElementById("ordModalStatus").innerHTML = getStatusBadge(order.status);
+
+  // Action Buttons logic
   const footer = document.getElementById("ordModalFooter");
+  const status = order.status ? order.status.toUpperCase() : "";
+  
   let buttonsHtml = `<button type="button" class="btn-secondary close-modal-btn" onclick="document.getElementById('orderModal').classList.remove('show')">Đóng</button>`;
 
-  if (order.status === 'pending') {
+  if (status === 'PENDING') {
     buttonsHtml = `
       <button type="button" class="btn-secondary" onclick="document.getElementById('orderModal').classList.remove('show')">Đóng</button>
-      <button type="button" class="btn-primary btn-cancel" onclick="window.processOrder('${order.id}', 'cancelled')">Hủy đơn</button>
-      <button type="button" class="btn-primary btn-approve" onclick="window.processOrder('${order.id}', 'processing')">Duyệt đơn</button>
+      <button type="button" class="btn-primary btn-cancel" onclick="window.processOrder('${order.id}', 'CANCELLED')">Hủy đơn</button>
+      <button type="button" class="btn-primary btn-approve" onclick="window.processOrder('${order.id}', 'PROCESSING')">Duyệt đơn</button>
     `;
-  } else if (order.status === 'processing') {
+  } else if (status === 'PROCESSING') {
     buttonsHtml = `
       <button type="button" class="btn-secondary" onclick="document.getElementById('orderModal').classList.remove('show')">Đóng</button>
-      <button type="button" class="btn-primary btn-complete" onclick="window.processOrder('${order.id}', 'completed')">Hoàn thành</button>
+      <button type="button" class="btn-primary btn-complete" onclick="window.processOrder('${order.id}', 'COMPLETED')">Hoàn thành</button>
     `;
   }
   footer.innerHTML = buttonsHtml;
@@ -213,7 +214,7 @@ window.viewOrder = (id) => {
 };
 
 window.processOrder = async (id, newStatus) => {
-  if(confirm("Bạn chắc chắn muốn cập nhật trạng thái đơn này?")) {
+  if(confirm(`Bạn chắc chắn muốn chuyển trạng thái thành ${newStatus}?`)) {
       await updateOrderStatusOnDB(id, newStatus);
       if (orderModal) orderModal.classList.remove("show");
   }
@@ -231,7 +232,7 @@ if (searchInput) {
     const keyword = normalizeStr(e.target.value);
     const filteredData = ordersData.filter(o => 
       normalizeStr(o.id).includes(keyword) || 
-      normalizeStr(o.customerName || "").includes(keyword)
+      normalizeStr(o.userName || "").includes(keyword)
     );
     renderOrderTable(filteredData);
   });

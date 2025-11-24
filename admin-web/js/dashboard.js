@@ -5,14 +5,25 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.
 let allProducts = [];
 let allOrders = [];
 
+function formatDate(timestamp) {
+  if (!timestamp) return "Vừa xong";
+  if (timestamp.toDate) {
+    // Chỉ lấy giờ phút cho gọn ở dashboard
+    return timestamp.toDate().toLocaleString('vi-VN', { 
+        hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
+    });
+  }
+  return new Date(timestamp).toLocaleString('vi-VN');
+}
+
 // 1. KHỞI ĐỘNG CÁC BỘ LẮNG NGHE
 function initRealtimeDashboard() {
   
-  // Lắng nghe Sản phẩm
+  // Lắng nghe Sản phẩm (để lấy ảnh nếu cần, tuy nhiên order mới đã có ảnh rồi)
   onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = snapshot.docs.map(doc => doc.data());
     updateStat("statProducts", snapshot.size);
-    if (allOrders.length > 0) calculateAndRenderBestSellers(allOrders, allProducts);
+    if (allOrders.length > 0) calculateAndRenderBestSellers(allOrders);
   });
 
   // Lắng nghe Users
@@ -28,16 +39,19 @@ function initRealtimeDashboard() {
 
     updateStat("statOrders", snapshot.size);
 
+    // Tính doanh thu (chỉ tính đơn COMPLETED)
     const totalRevenue = allOrders.reduce((sum, order) => {
-      if (order.status === 'completed') {
-        return sum + Number(order.totalPrice || 0);
+      const status = order.status ? order.status.toUpperCase() : "";
+      if (status === 'COMPLETED') {
+        return sum + Number(order.total || 0); // Dùng field 'total'
       }
       return sum;
     }, 0);
+    
     updateStat("statRevenue", new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue));
 
     renderRecentOrders(allOrders);
-    if (allProducts.length > 0) calculateAndRenderBestSellers(allOrders, allProducts);
+    calculateAndRenderBestSellers(allOrders);
   });
 }
 
@@ -46,17 +60,18 @@ function updateStat(id, value) {
   if (el) el.innerText = value;
 }
 
-// 2. BẢNG ĐƠN HÀNG GẦN ĐÂY (Có Thời gian thật)
+// 2. BẢNG ĐƠN HÀNG GẦN ĐÂY
 function renderRecentOrders(orders) {
   const tableBody = document.getElementById("recentOrdersBody");
   if (!tableBody) return;
 
   tableBody.innerHTML = "";
 
+  // Sort theo timestamp (seconds)
   const sortedOrders = [...orders].sort((a, b) => {
-    const timeA = a.createdAt || "";
-    const timeB = b.createdAt || "";
-    return timeB.localeCompare(timeA); 
+    const timeA = a.createdAt?.seconds || 0;
+    const timeB = b.createdAt?.seconds || 0;
+    return timeB - timeA;
   });
 
   const recentOrders = sortedOrders.slice(0, 5);
@@ -67,21 +82,21 @@ function renderRecentOrders(orders) {
   }
 
   recentOrders.forEach(order => {
-    const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice || 0);
+    const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total || 0);
+    const status = order.status ? order.status.toUpperCase() : "";
     
     let statusBadge = `<span class="badge badge-warning">Chờ</span>`;
-    if (order.status === 'processing') statusBadge = `<span class="badge badge-info">Làm</span>`;
-    if (order.status === 'completed') statusBadge = `<span class="badge badge-success">Xong</span>`;
-    if (order.status === 'cancelled') statusBadge = `<span class="badge badge-danger">Hủy</span>`;
+    if (status === 'PROCESSING') statusBadge = `<span class="badge badge-info">Làm</span>`;
+    if (status === 'COMPLETED') statusBadge = `<span class="badge badge-success">Xong</span>`;
+    if (status === 'CANCELLED') statusBadge = `<span class="badge badge-danger">Hủy</span>`;
 
-    // Lấy thời gian từ Firebase (createdAt)
-    // Nếu chưa có thì hiện "Vừa xong"
-    const timeDisplay = order.createdAt || "Vừa xong";
+    const timeDisplay = formatDate(order.createdAt);
+    const customerName = order.userName || "Khách lẻ";
 
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><b>...${order.id.slice(-5)}</b><br><span style="font-size:0.75rem; color:#888;">${timeDisplay}</span></td>
-      <td>${order.customerName || "Khách lẻ"}</td>
+      <td>${customerName}</td>
       <td style="font-weight:600;">${price}</td>
       <td>${statusBadge}</td>
     `;
@@ -89,8 +104,8 @@ function renderRecentOrders(orders) {
   });
 }
 
-// 3. TOP BÁN CHẠY (Đã bỏ chữ "ly")
-function calculateAndRenderBestSellers(orders, products) {
+// 3. TOP BÁN CHẠY (Dựa trên items.productName và items.productImage của Order)
+function calculateAndRenderBestSellers(orders) {
   const listContainer = document.getElementById("bestSellerList");
   if (!listContainer) return;
 
@@ -99,14 +114,21 @@ function calculateAndRenderBestSellers(orders, products) {
   const salesMap = {};
 
   orders.forEach(order => {
-    if (order.status === 'completed' && Array.isArray(order.items)) {
+    // Chỉ đếm đơn hoàn thành
+    const status = order.status ? order.status.toUpperCase() : "";
+    
+    if (status === 'COMPLETED' && Array.isArray(order.items)) {
       order.items.forEach(item => {
-        const name = item.name;
+        const name = item.productName; // Dữ liệu mới dùng productName
         const qty = item.quantity || 1;
+        const img = item.productImage; // Dữ liệu mới có sẵn ảnh
+
         if (!salesMap[name]) {
-          salesMap[name] = { qty: 0, name: name };
+          salesMap[name] = { qty: 0, name: name, image: img };
         }
         salesMap[name].qty += qty;
+        // Cập nhật ảnh nếu chưa có (phòng hờ)
+        if (!salesMap[name].image && img) salesMap[name].image = img;
       });
     }
   });
@@ -120,15 +142,14 @@ function calculateAndRenderBestSellers(orders, products) {
   }
 
   top5.forEach((item, index) => {
-    const productInfo = products.find(p => p.name === item.name);
-    const imgUrl = productInfo ? productInfo.imageUrl : 'assets/logo.png';
+    const imgUrl = item.image || 'assets/logo.png';
     const rankClass = index === 0 ? "rank-1" : (index === 1 ? "rank-2" : (index === 2 ? "rank-3" : ""));
 
     const div = document.createElement("div");
     div.className = "best-seller-item";
     div.innerHTML = `
       <div class="rank-number ${rankClass}">#${index + 1}</div>
-      <img src="${imgUrl}" class="user-avatar" style="border-radius: 8px; width: 45px; height: 45px;" onerror="this.src='assets/logo.png'">
+      <img src="${imgUrl}" class="user-avatar" style="border-radius: 8px; width: 45px; height: 45px; object-fit: cover;" onerror="this.src='assets/logo.png'">
       <div class="item-info">
         <span class="item-name">${item.name}</span>
         <span class="item-price" style="color: #6b7280; font-size: 0.85rem;">Đã bán: ${item.qty}</span> </div>

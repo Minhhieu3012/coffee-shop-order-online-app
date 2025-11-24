@@ -16,15 +16,7 @@
 <body>
   <script type="module">
     import { checkAdminAccess } from './js/admin-guard.js';
-    
-    // Kiểm tra quyền admin khi load trang
-    checkAdminAccess()
-      .then(userData => {
-        console.log("✅ Admin đã xác thực:", userData.displayName || userData.email);
-      })
-      .catch(error => {
-        console.log("❌ Không có quyền truy cập:", error);
-      });
+    checkAdminAccess().catch(e => console.log(e));
   </script>
 
   <div class="admin-layout">
@@ -32,32 +24,12 @@
       <div class="sidebar-header">
         <div class="sidebar-title">Bros Cafe Admin</div>
       </div>
-
       <nav class="sidebar-menu">
-        <button class="menu-item active" data-route="dashboard">
-          <i class="fa-solid fa-chart-line"></i>
-          <span>Dashboard</span>
-        </button>
-
-        <button class="menu-item" data-route="users">
-          <i class="fa-solid fa-user-group"></i>
-          <span>Quản lý users</span>
-        </button>
-
-        <button class="menu-item" data-route="orders">
-          <i class="fa-solid fa-receipt"></i>
-          <span>Quản lý đơn hàng</span>
-        </button>
-
-        <button class="menu-item" data-route="products">
-          <i class="fa-solid fa-mug-hot"></i>
-          <span>Quản lý sản phẩm</span>
-        </button>
-
-        <button class="menu-item menu-item-danger" id="btnLogout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          <span>Đăng xuất</span>
-        </button>
+        <button class="menu-item active" data-route="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
+        <button class="menu-item" data-route="users"><i class="fa-solid fa-user-group"></i><span>Quản lý users</span></button>
+        <button class="menu-item" data-route="orders"><i class="fa-solid fa-receipt"></i><span>Quản lý đơn hàng</span></button>
+        <button class="menu-item" data-route="products"><i class="fa-solid fa-mug-hot"></i><span>Quản lý sản phẩm</span></button>
+        <button class="menu-item menu-item-danger" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span></button>
       </nav>
     </aside>
 
@@ -67,9 +39,7 @@
       </header>
 
       <section id="page-dashboard" class="page active">
-        <div class="page-header">
-          <h2 class="section-title">Tổng quan</h2>
-        </div>
+        <div class="page-header"><h2 class="section-title">Tổng quan</h2></div>
         <div class="dashboard-cards">
           <div class="stat-card">
             <div class="stat-icon bg-green"><i class="fa-solid fa-sack-dollar"></i></div>
@@ -92,78 +62,45 @@
           <div class="card">
             <div class="card-header">
               <div class="card-title">Đơn hàng vừa đặt</div>
-              <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="document.querySelector('[data-route=orders]').click()">Xem tất cả</button>
+              <button class="btn-secondary" onclick="document.querySelector('[data-route=orders]').click()">Xem tất cả</button>
             </div>
             <div class="table-container" style="box-shadow: none; border: none;">
               <table class="data-table">
                 <thead>
-                  <tr>
-                    <th>Mã đơn</th>
-                    <th>Khách</th>
-                    <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
-                  </tr>
+                  <tr><th>Mã đơn</th><th>Khách</th><th>Tổng tiền</th><th>Trạng thái</th></tr>
                 </thead>
                 <tbody id="recentOrdersBody"></tbody>
               </table>
             </div>
           </div>
           <div class="card">
-            <div class="card-header">
-              <div class="card-title">Top bán chạy 🔥</div>
-            </div>
+            <div class="card-header"><div class="card-title">Top bán chạy 🔥</div></div>
             <div class="best-seller-list" id="bestSellerList"></div>
           </div>
         </div>
       </section>
 
       <section id="page-users" class="page">
-        <div class="page-header">
-          <h2 class="section-title">Danh sách người dùng</h2>
-        </div>
+        <div class="page-header"><h2 class="section-title">Danh sách người dùng</h2></div>
         <div class="toolbar">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchUser" placeholder="Tìm tên, email, sđt..." />
-          </div>
+          <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchUser" placeholder="Tìm tên, email..." /></div>
         </div>
         <div class="table-container">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Người dùng</th>
-                <th>Vai trò</th>
-                <th>Số điện thoại</th>
-                <th style="width: 100px; text-align: center;">Hành động</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Người dùng</th><th>Vai trò</th><th>Số điện thoại</th><th>Hành động</th></tr></thead>
             <tbody id="userTableBody"></tbody>
           </table>
         </div>
       </section>
 
       <section id="page-orders" class="page">
-        <div class="page-header">
-          <h2 class="section-title">Danh sách đơn hàng</h2>
-        </div>
+        <div class="page-header"><h2 class="section-title">Danh sách đơn hàng</h2></div>
         <div class="toolbar">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchOrder" placeholder="Tìm mã đơn, tên khách..." />
-          </div>
+          <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchOrder" placeholder="Tìm mã đơn, tên khách..." /></div>
         </div>
         <div class="table-container">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Mã đơn</th>
-                <th>Khách hàng</th>
-                <th>Thời gian</th>
-                <th>Tổng tiền</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Thời gian</th><th>Tổng tiền</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
             <tbody id="orderTableBody"></tbody>
           </table>
         </div>
@@ -172,28 +109,14 @@
       <section id="page-products" class="page">
         <div class="page-header">
           <h2 class="section-title">Danh sách sản phẩm</h2>
-          <button class="btn-primary" id="btnAddProduct">
-            <i class="fa-solid fa-plus"></i> Thêm món mới
-          </button>
+          <button class="btn-primary" id="btnAddProduct"><i class="fa-solid fa-plus"></i> Thêm món mới</button>
         </div>
         <div class="toolbar">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchProduct" placeholder="Tìm tên món..." />
-          </div>
+          <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchProduct" placeholder="Tìm tên món..." /></div>
         </div>
         <div class="table-container">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Ảnh</th>
-                <th>Tên món</th>
-                <th>Danh mục</th>
-                <th>Giá bán</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Ảnh</th><th>Tên món</th><th>Danh mục</th><th>Giá bán</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
             <tbody id="productTableBody"></tbody>
           </table>
         </div>
@@ -203,87 +126,68 @@
 
   <div id="productModal" class="modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modalTitle">Thêm món mới</h3>
-        <span class="close-modal">&times;</span>
-      </div>
+      <div class="modal-header"><h3 id="modalTitle">Thêm món mới</h3><span class="close-modal">&times;</span></div>
       <form id="productForm">
         <input type="hidden" id="prodId">
-        <div class="form-group">
-          <label for="prodName">Tên món</label>
-          <input type="text" id="prodName" required placeholder="VD: Cà phê sữa đá">
-        </div>
+        <div class="form-group"><label>Tên món</label><input type="text" id="prodName" required placeholder="VD: Cà phê sữa đá"></div>
         <div class="form-row">
-          <div class="form-group">
-            <label for="prodCategory">Danh mục</label>
-            <select id="prodCategory" title="Chọn danh mục">
-              <option value="Cà phê">Cà phê</option>
-              <option value="Trà trái cây">Trà trái cây</option>
-              <option value="Đá xay">Đá xay</option>
-              <option value="Bánh ngọt">Bánh ngọt</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="prodPrice">Giá bán (VNĐ)</label>
-            <input type="number" id="prodPrice" required placeholder="VD: 25000">
-          </div>
+          <div class="form-group"><label>Danh mục</label><select id="prodCategory"><option value="Cà phê">Cà phê</option><option value="Trà trái cây">Trà trái cây</option><option value="Đá xay">Đá xay</option><option value="Bánh ngọt">Bánh ngọt</option></select></div>
+          <div class="form-group"><label>Giá bán (VNĐ)</label><input type="number" id="prodPrice" required placeholder="VD: 25000"></div>
         </div>
-
-        <div class="form-group">
-            <label for="prodDesc">Mô tả sản phẩm</label>
-            <textarea id="prodDesc" rows="3" placeholder="Mô tả chi tiết về món ăn (thành phần, hương vị)..." style="width: 100%; resize: vertical; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="prodImage">Link ảnh (URL)</label>
-          <input type="url" id="prodImage" placeholder="https://...">
-          <small style="color: #666; font-size: 0.8rem;">Copy link ảnh trên mạng dán vào đây</small>
-        </div>
-        <div class="form-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="prodStatus" checked>
-            Đang kinh doanh (Còn hàng)
-          </label>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary close-modal-btn">Hủy</button>
-          <button type="submit" class="btn-primary">Lưu sản phẩm</button>
-        </div>
+        <div class="form-group"><label>Mô tả sản phẩm</label><textarea id="prodDesc" rows="3" style="width:100%; resize:vertical; padding:8px; border:1px solid #ccc; border-radius:4px;"></textarea></div>
+        <div class="form-group"><label>Link ảnh (URL)</label><input type="url" id="prodImage"><small style="color:#666;">Copy link ảnh dán vào đây</small></div>
+        <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="prodStatus" checked> Đang kinh doanh</label></div>
+        <div class="modal-footer"><button type="button" class="btn-secondary close-modal-btn">Hủy</button><button type="submit" class="btn-primary">Lưu sản phẩm</button></div>
       </form>
     </div>
   </div>
 
   <div id="orderModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 600px;">
       <div class="modal-header">
-        <h3>Chi tiết đơn hàng <span id="ordModalId" style="color: #666;">#DH...</span></h3>
+        <h3>Đơn hàng <span id="ordModalId" style="color: #6a4616;">#...</span></h3>
         <span class="close-modal" id="closeOrderModal">&times;</span>
       </div>
       
       <div class="modal-body">
-        <div class="form-row">
+        <div class="form-row" style="margin-bottom: 1rem;">
           <div class="form-group">
-            <label>Khách hàng</label>
-            <input type="text" id="ordModalCustomer" readonly style="background: #f9fafb; font-weight: 600;">
+            <label style="font-size: 0.85rem; color: #666;">Khách hàng</label>
+            <div id="ordModalCustomer" style="font-weight: 600; font-size: 1rem;"></div>
           </div>
-          <div class="form-group">
-            <label>Thời gian đặt</label>
-            <input type="text" id="ordModalDate" readonly style="background: #f9fafb;">
+          <div class="form-group" style="text-align: right;">
+            <label style="font-size: 0.85rem; color: #666;">Thời gian đặt</label>
+            <div id="ordModalDate" style="font-weight: 500;"></div>
           </div>
         </div>
 
-        <label>Danh sách món ăn</label>
-        <div class="order-details-box" id="ordModalItems">
-          </div>
+        <hr style="border: 0; border-top: 1px dashed #ddd; margin: 0.5rem 0 1rem 0;">
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-          <span>Trạng thái đơn:</span>
-          <span id="ordModalStatus"></span>
+        <div id="ordModalItems" style="margin-bottom: 1rem;"></div>
+
+        <div style="background: #f9fafb; padding: 12px; border-radius: 8px;">
+            <div class="order-summary-row" style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span style="color:#666;">Tạm tính:</span>
+                <span id="ordModalSubtotal" style="font-weight:500;">0 đ</span>
+            </div>
+            <div class="order-summary-row" style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span style="color:#666;">Phí giao hàng:</span>
+                <span id="ordModalShip" style="font-weight:500;">0 đ</span>
+            </div>
+            <div class="order-summary-row" style="display:flex; justify-content:space-between; font-size: 1.1rem; font-weight: bold; color: #6a4616; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                <span>Tổng cộng:</span>
+                <span id="ordModalTotal">0 đ</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem; font-size: 0.9rem;">
+            <p><strong>Thanh toán:</strong> <span id="ordModalPayment">---</span></p>
+            <p style="margin-top: 4px;"><strong>Ghi chú:</strong> <span id="ordModalNote" style="font-style: italic; color: #555;">Không có</span></p>
+            <p style="margin-top: 8px;"><strong>Trạng thái:</strong> <span id="ordModalStatus"></span></p>
         </div>
       </div>
 
-      <div class="modal-footer" id="ordModalFooter">
-        </div>
+      <div class="modal-footer" id="ordModalFooter"></div>
     </div>
   </div>
   
