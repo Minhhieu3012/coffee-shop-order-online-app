@@ -1,0 +1,39 @@
+rules_version = '2'
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    //---------------- HELPER FUNCTIONS -------------------
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function getUserRole(userId) {
+      return get(/database/(default)/documents/users/$(userId)).data.role;
+    }
+
+    function isAdmin() {
+      return isLoggedIn() && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    //---------------- QUY TAC CHO CAC THU MUC -------------------
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isLoggedIn() && isOwner(userId);
+    }
+
+    match /products/{productId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
