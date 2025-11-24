@@ -13,13 +13,16 @@ object AppRoutes {
     const val ONBOARDING_3 = "onboarding_3"
 
     // Authentication
-    const val AUTH_FLOW = "auth_flow" // Đã sửa từ AUTH_GRAPH để khớp AppNavigation
-    const val AUTH_GRAPH = "auth_graph" // Giữ lại nếu MainScreen dùng
+    const val AUTH_FLOW = "auth_flow"
+    const val AUTH_GRAPH = "auth_graph"
     const val LOGIN = "login"
     const val REGISTER = "register"
-    const val OTP_VERIFICATION = "otp_verification"
-    const val RESET_PASSWORD = "reset_password"
     const val FORGOT_PASSWORD = "forgot_password"
+
+    // ✅ ĐÃ XÓA: OTP_VERIFICATION và RESET_PASSWORD
+    // Không cần nữa vì dùng Firebase Email Reset
+    // const val OTP_VERIFICATION = "otp_verification"
+    // const val RESET_PASSWORD = "reset_password"
 
     // Main App
     const val MAIN_APP_GRAPH = "main_app_graph"
@@ -35,7 +38,7 @@ object AppRoutes {
     const val DETAIL_BASE = "detail"
     const val SEARCH = "search"
 
-    // Product Detail (Đã sửa để khớp AppNavigation)
+    // Product Detail
     const val PRODUCT_DETAIL_ID = "productId"
     const val PRODUCT_DETAIL = "product_detail/{$PRODUCT_DETAIL_ID}"
 
@@ -43,7 +46,7 @@ object AppRoutes {
     const val PAYMENT_QR = "payment_qr"
     const val ORDER_SUCCESS = "order_success"
     const val DELIVERY = "delivery"
-    const val PAYMENT_METHODS = "payment_methods" // Đã thêm
+    const val PAYMENT_METHODS = "payment_methods"
 
     // Profile Sub Screens
     const val EDIT_PROFILE = "edit_profile"

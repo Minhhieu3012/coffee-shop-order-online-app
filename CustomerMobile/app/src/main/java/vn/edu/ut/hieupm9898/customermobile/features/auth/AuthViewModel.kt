@@ -24,6 +24,9 @@ class AuthViewModel @Inject constructor(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser = _currentUser.asStateFlow()
 
+    /**
+     * Cập nhật các trường trong form
+     */
     fun updateField(field: String, value: String) {
         _uiState.update { currentState ->
             when (field) {
@@ -32,10 +35,16 @@ class AuthViewModel @Inject constructor(
                 "phoneNumber" -> currentState.copy(phoneNumber = value)
                 "newPassword" -> currentState.copy(newPassword = value)
                 "confirmPassword" -> currentState.copy(confirmPassword = value)
-                "otpCode" -> currentState.copy(otpCode = value)
                 else -> currentState
             }
         }
+    }
+
+    /**
+     * Xóa thông báo lỗi
+     */
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }
 
     /**
@@ -45,6 +54,9 @@ class AuthViewModel @Inject constructor(
         return authRepository.isUserLoggedIn()
     }
 
+    /**
+     * ĐĂNG NHẬP
+     */
     fun onLoginClicked(isRememberMe: Boolean) = viewModelScope.launch {
         val email = _uiState.value.email.trim()
         val password = _uiState.value.password
@@ -63,7 +75,6 @@ class AuthViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { user ->
-                    // 🔥 LƯU TRẠNG THÁI "GHI NHỚ"
                     authRepository.saveRememberMeState(isRememberMe)
                     _currentUser.value = user
                     _navEvent.emit(AuthNavEvent.NavigateToHome)
@@ -95,6 +106,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    /**
+     * ĐĂNG NHẬP GOOGLE
+     */
     fun onGoogleSignInClicked(idToken: String) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
@@ -104,7 +118,6 @@ class AuthViewModel @Inject constructor(
 
         result.fold(
             onSuccess = { user ->
-                // 🔥 TỰ ĐỘNG LƯU TRẠNG THÁI "GHI NHỚ" KHI ĐĂNG NHẬP GOOGLE
                 authRepository.saveRememberMeState(true)
                 _currentUser.value = user
                 _navEvent.emit(AuthNavEvent.NavigateToHome)
@@ -117,6 +130,9 @@ class AuthViewModel @Inject constructor(
         )
     }
 
+    /**
+     * ĐĂNG KÝ
+     */
     fun onRegisterClicked(
         userName: String,
         email: String,
@@ -152,6 +168,9 @@ class AuthViewModel @Inject constructor(
         )
     }
 
+    /**
+     * TẢI THÔNG TIN USER HIỆN TẠI
+     */
     fun loadCurrentUser() = viewModelScope.launch {
         val result = authRepository.getCurrentUser()
 
@@ -171,21 +190,70 @@ class AuthViewModel @Inject constructor(
      * 🔥 ĐĂNG XUẤT - XÓA TRẠNG THÁI GHI NHỚ VÀ FIREBASE AUTH
      */
     fun logout() {
-        authRepository.logout() // Xóa SharedPreferences và Firebase signOut
+        authRepository.logout()
         _currentUser.value = null
         _uiState.value = AuthUiState()
     }
 
-    fun onProceedForgotPassword() = viewModelScope.launch {
-        _uiState.update { it.copy(isLoading = true) }
-        kotlinx.coroutines.delay(1000)
+    // ============================================
+    // ✅ CHỨC NĂNG RESET PASSWORD QUA EMAIL
+    // ============================================
 
-        val sent = authRepository.sendOtp(_uiState.value.phoneNumber)
-
-        _uiState.update { it.copy(isLoading = false) }
-
-        if (sent) {
-            _navEvent.emit(AuthNavEvent.NavigateToOtp(OtpTargets.RESET_PASSWORD))
+    /**
+     * ✅ GỬI EMAIL RESET PASSWORD
+     */
+    fun sendResetPasswordEmail(email: String) = viewModelScope.launch {
+        if (email.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Vui lòng nhập email") }
+            return@launch
         }
+
+        // Validate email format
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            _uiState.update { it.copy(errorMessage = "Email không hợp lệ") }
+            return@launch
+        }
+
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
+
+        try {
+            val success = authRepository.resetPassword(email)
+
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (success) {
+                Log.d("AuthViewModel", "✅ Email reset password đã được gửi đến: $email")
+                _uiState.update {
+                    it.copy(
+                        isEmailSent = true,
+                        successMessage = "Email đặt lại mật khẩu đã được gửi!\nVui lòng kiểm tra hộp thư của bạn."
+                    )
+                }
+            } else {
+                Log.e("AuthViewModel", "❌ Không thể gửi email reset password")
+                _uiState.update {
+                    it.copy(errorMessage = "Không thể gửi email. Vui lòng thử lại sau.")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AuthViewModel", "❌ Lỗi gửi email: ${e.message}")
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    errorMessage = when {
+                        e.message?.contains("network") == true -> "Không có kết nối internet"
+                        e.message?.contains("user-not-found") == true -> "Email không tồn tại trong hệ thống"
+                        else -> "Lỗi: ${e.message}"
+                    }
+                )
+            }
+        }
+    }
+
+    /**
+     * ✅ RESET STATE SAU KHI GỬI EMAIL THÀNH CÔNG
+     */
+    fun resetEmailSentState() {
+        _uiState.update { it.copy(isEmailSent = false, successMessage = null) }
     }
 }

@@ -16,23 +16,16 @@ data class AuthUiState(
     val phoneNumber: String = "",
     val newPassword: String = "",
     val confirmPassword: String = "",
-    val otpCode: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isOtpSent: Boolean = false
+    val successMessage: String? = null, // ✅ THÊM MỚI: Thông báo thành công
+    val isEmailSent: Boolean = false    // ✅ THÊM MỚI: Trạng thái đã gửi email
 )
 
 // --- SỰ KIỆN ĐIỀU HƯỚNG (SharedFlow) ---
 sealed class AuthNavEvent {
     data object NavigateToHome : AuthNavEvent()
-    data object NavigateToLogin : AuthNavEvent() // 👈 ĐÃ CÓ
+    data object NavigateToLogin : AuthNavEvent()
     data object NavigateToRegisterSuccess : AuthNavEvent()
-    data class NavigateToOtp(val targetRoute: String) : AuthNavEvent()
-    data object NavigateToResetSuccess : AuthNavEvent()
-}
-
-// --- TARGET CHO OTP ---
-object OtpTargets {
-    const val COMPLETE_REGISTRATION = "complete_registration"
-    const val RESET_PASSWORD = "reset_password"
+    data object NavigateToEmailSent : AuthNavEvent() // ✅ THÊM MỚI: Thông báo email đã gửi
 }

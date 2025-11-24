@@ -30,25 +30,15 @@ fun NavGraphBuilder.authNavGraph(
             )
         }
 
-        // 3. Màn hình Forgot Password
+        // 3. Màn hình Forgot Password (GỬI EMAIL)
         composable(AppRoutes.FORGOT_PASSWORD) {
             ForgotPasswordScreen(
                 navController = navController
             )
         }
 
-        // 4. OTP Verification
-        composable(AppRoutes.OTP_VERIFICATION) {
-            OTPVerificationScreen(
-                navController = navController
-            )
-        }
-
-        // 5. Reset Password
-        composable(AppRoutes.RESET_PASSWORD) {
-            ResetPasswordScreen(
-                navController = navController
-            )
-        }
+        // ✅ ĐÃ XÓA: OTP_VERIFICATION và RESET_PASSWORD
+        // User sẽ reset password thông qua link trong email
+        // Firebase tự động xử lý việc này
     }
 }
