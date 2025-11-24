@@ -20,3 +20,10 @@ local.properties
 
 # Logs
 *.log
+
+/.idea/
+/*.iml
+/build/
+/local.properties
+
+/CustomerMobile
