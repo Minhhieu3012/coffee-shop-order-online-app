@@ -19,11 +19,6 @@ object AppRoutes {
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
 
-    // ✅ ĐÃ XÓA: OTP_VERIFICATION và RESET_PASSWORD
-    // Không cần nữa vì dùng Firebase Email Reset
-    // const val OTP_VERIFICATION = "otp_verification"
-    // const val RESET_PASSWORD = "reset_password"
-
     // Main App
     const val MAIN_APP_GRAPH = "main_app_graph"
 

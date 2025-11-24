@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.ReceiptLong // Sửa icon Receipt -> ReceiptLong cho đẹp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,9 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import kotlinx.coroutines.delay
-import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosButton
@@ -29,7 +27,8 @@ import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosTitle
 
 @Composable
 fun OrderSuccessScreen(
-    navController: NavController
+    onViewOrderClick: () -> Unit, // ✅ Callback chuyển sang lịch sử
+    onHomeClick: () -> Unit       // ✅ Callback về trang chủ
 ) {
     // Animation effect
     LaunchedEffect(Unit) {
@@ -110,22 +109,10 @@ fun OrderSuccessScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    InfoRow(
-                        label = "Trạng thái",
-                        value = "Chờ xác nhận"
-                    )
-                    InfoRow(
-                        label = "Thanh toán",
-                        value = "Đã thanh toán"
-                    )
-                    InfoRow(
-                        label = "Giao hàng",
-                        value = "Giao tận nơi"
-                    )
-                    InfoRow(
-                        label = "Thời gian dự kiến",
-                        value = "20-30 phút"
-                    )
+                    InfoRow(label = "Trạng thái", value = "Chờ xác nhận")
+                    InfoRow(label = "Thanh toán", value = "Đã thanh toán") // Logic thực tế cần lấy từ ViewModel
+                    InfoRow(label = "Giao hàng", value = "Giao tận nơi")
+                    InfoRow(label = "Thời gian dự kiến", value = "20-30 phút")
                 }
             }
 
@@ -133,11 +120,7 @@ fun OrderSuccessScreen(
 
             // Track Order Button
             Button(
-                onClick = {
-                    navController.navigate(AppRoutes.ORDER_HISTORY) {
-                        popUpTo(AppRoutes.HOME) { inclusive = false }
-                    }
-                },
+                onClick = onViewOrderClick, // ✅ Gọi callback
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -147,7 +130,7 @@ fun OrderSuccessScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Receipt,
+                    imageVector = Icons.Default.ReceiptLong,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
@@ -163,18 +146,15 @@ fun OrderSuccessScreen(
 
             // Back to Home Button
             OutlinedButton(
-                onClick = {
-                    navController.navigate(AppRoutes.HOME) {
-                        popUpTo(AppRoutes.HOME) { inclusive = true }
-                    }
-                },
+                onClick = onHomeClick, // ✅ Gọi callback
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = BrosBrown
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp) // Thêm border cho rõ
             ) {
                 Icon(
                     imageVector = Icons.Default.Home,

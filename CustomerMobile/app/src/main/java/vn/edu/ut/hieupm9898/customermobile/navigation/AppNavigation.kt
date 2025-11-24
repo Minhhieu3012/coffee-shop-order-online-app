@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import vn.edu.ut.hieupm9898.customermobile.features.auth.authNavGraph
-import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph // ✅ THÊM IMPORT
+import vn.edu.ut.hieupm9898.customermobile.features.profile.profileNavGraph
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.SplashScreen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding1Screen
 import vn.edu.ut.hieupm9898.customermobile.features.onboarding.Onboarding2Screen
@@ -18,6 +18,8 @@ import vn.edu.ut.hieupm9898.customermobile.features.favorite.FavoriteScreen
 import vn.edu.ut.hieupm9898.customermobile.features.cart.PaymentQRScreen
 import vn.edu.ut.hieupm9898.customermobile.features.cart.OrderSuccessScreen
 import vn.edu.ut.hieupm9898.customermobile.features.orders.OrderHistoryScreen
+import vn.edu.ut.hieupm9898.customermobile.features.cart.CartScreen
+import vn.edu.ut.hieupm9898.customermobile.features.profile.ProfileScreen // ✅ Import ProfileScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -93,6 +95,30 @@ fun AppNavigation(navController: NavHostController) {
                             popUpTo(AppRoutes.HOME) { inclusive = false }
                             launchSingleTop = true
                         }
+                    },
+                    // Đảm bảo FavoriteScreen có tham số này nếu bạn đã thêm ở bước trước
+                    onNavigateToCart = {
+                        navController.navigate(AppRoutes.CART) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+
+            // ✅ THÊM MÀN HÌNH PROFILE VÀO ĐÂY ĐỂ TRÁNH CRASH ✅
+            composable(AppRoutes.PROFILE) {
+                ProfileScreen(
+                    navController = navController,
+                    onEditProfileClick = { navController.navigate(AppRoutes.EDIT_PROFILE) },
+                    onAddressClick = { navController.navigate(AppRoutes.ADDRESS_LIST) },
+                    onPaymentClick = { navController.navigate(AppRoutes.PAYMENT_METHODS) },
+                    onHistoryClick = { navController.navigate(AppRoutes.ORDER_HISTORY) },
+                    onNotificationsClick = { navController.navigate(AppRoutes.NOTIFICATIONS) },
+                    onBackClick = {
+                        // Khi back từ tab Profile ở Root, thường sẽ về Home
+                        navController.navigate(AppRoutes.HOME) {
+                            popUpTo(AppRoutes.HOME) { inclusive = true }
+                        }
                     }
                 )
             }
@@ -104,10 +130,22 @@ fun AppNavigation(navController: NavHostController) {
 
             // Order Success Screen
             composable(route = AppRoutes.ORDER_SUCCESS) {
-                OrderSuccessScreen(navController = navController)
+                OrderSuccessScreen(
+                    onViewOrderClick = {
+                        navController.navigate(AppRoutes.ORDER_HISTORY) {
+                            popUpTo(AppRoutes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
+                    onHomeClick = {
+                        navController.navigate(AppRoutes.HOME) {
+                            popUpTo(AppRoutes.HOME) { inclusive = true }
+                        }
+                    }
+                )
             }
 
-            // ✅ QUAN TRỌNG: Profile Navigation Graph
+            // Đăng ký các màn hình con của Profile (Edit, Address, v.v.)
             profileNavGraph(navController)
 
             // Product detail
@@ -124,26 +162,25 @@ fun AppNavigation(navController: NavHostController) {
                 // TODO: ProductDetailScreen(productId)
             }
 
-            // ✅ Route MỚI (Cập nhật hoặc thêm vào):
-            composable("order_history") { // Thay "order_history" bằng AppRoutes.ORDER_HISTORY nếu bạn có
+            // Màn hình Lịch sử đơn hàng
+            composable(AppRoutes.ORDER_HISTORY) {
                 OrderHistoryScreen(
-                    onBackClick = { navController.popBackStack() },
+                    onBackClick = {
+                        navController.navigate(AppRoutes.HOME) {
+                            popUpTo(AppRoutes.HOME) { inclusive = true }
+                        }
+                    },
                     onNavigateToCart = {
-                        // Điều hướng đến Giỏ hàng
-                        navController.navigate("cart") { // Thay "cart" bằng AppRoutes.CART nếu bạn có
-                            // Tùy chọn: Xóa backstack để tránh back lại trang lịch sử nếu muốn
-                            popUpTo("home") { inclusive = false }
+                        navController.navigate(AppRoutes.CART) {
                             launchSingleTop = true
                         }
                     }
                 )
             }
 
-            // Đảm bảo bạn đã có route cho màn hình giỏ hàng ("cart")
-            composable("cart") { // Thay "cart" bằng AppRoutes.CART
-                vn.edu.ut.hieupm9898.customermobile.features.cart.CartScreen(
-                    navController = navController
-                )
+            // Màn hình Giỏ hàng
+            composable(AppRoutes.CART) {
+                CartScreen(navController = navController)
             }
         }
     }
