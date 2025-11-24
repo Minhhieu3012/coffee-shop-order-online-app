@@ -25,10 +25,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import vn.edu.ut.hieupm9898.customermobile.data.local.CartEntity
 import vn.edu.ut.hieupm9898.customermobile.navigation.AppRoutes
+import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosBottomNavBar
 import vn.edu.ut.hieupm9898.customermobile.ui.components.BrosButton
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBackground
 import vn.edu.ut.hieupm9898.customermobile.ui.theme.BrosBrown
@@ -55,6 +57,19 @@ fun CartScreen(
                 popUpTo(AppRoutes.HOME) { inclusive = false }
                 launchSingleTop = true
             }
+        },
+        // ✅ Logic điều hướng cho BottomNavBar
+        onBottomNavClick = { route ->
+            if (route != AppRoutes.CART) { // Không reload nếu đang ở Cart
+                navController.navigate(route) {
+                    // Quay về đích bắt đầu của graph để tránh chồng chất backstack
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
         }
     )
 }
@@ -68,9 +83,9 @@ fun CartScreenContent(
     onDecreaseClick: (CartEntity) -> Unit,
     onRemoveItem: (CartEntity) -> Unit,
     onCheckoutClick: () -> Unit,
-    onGoHomeClick: () -> Unit
+    onGoHomeClick: () -> Unit,
+    onBottomNavClick: (String) -> Unit // Callback cho NavBar
 ) {
-    // ✅ SỬ DỤNG SCAFFOLD ĐỂ ĐỒNG BỘ UI HEADER VỚI FAVORITE SCREEN
     Scaffold(
         containerColor = BrosBackground,
         topBar = {
@@ -86,12 +101,19 @@ fun CartScreenContent(
                     containerColor = BrosBackground
                 )
             )
+        },
+        // ✅ THÊM BOTTOM NAV BAR VÀO ĐÂY
+        bottomBar = {
+            BrosBottomNavBar(
+                currentRoute = AppRoutes.CART, // Đánh dấu tab Giỏ hàng đang active
+                onNavigate = onBottomNavClick
+            )
         }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Padding từ Scaffold (tránh đè header)
+                .padding(paddingValues) // Padding này tự động trừ chiều cao của TopBar VÀ BottomBar
         ) {
             if (cartItems.isEmpty()) {
                 EmptyCartView(onGoHomeClick = onGoHomeClick)
@@ -99,10 +121,11 @@ fun CartScreenContent(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        start = 16.dp, // Đồng bộ margin với Favorite
+                        start = 16.dp,
                         end = 16.dp,
                         top = 12.dp,
-                        bottom = 220.dp // ✅ Tăng padding đáy để không bị CartBottomBar + NavBar che mất item cuối
+                        // ✅ Padding bottom đủ lớn để không bị thanh "Tổng cộng" che mất item cuối
+                        bottom = 120.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -117,15 +140,15 @@ fun CartScreenContent(
                 }
             }
 
-            // ✅ THANH THANH TOÁN
+            // ✅ THANH THANH TOÁN (TOTAL + CHECKOUT)
             if (cartItems.isNotEmpty()) {
                 CartBottomBar(
                     totalPrice = totalPrice,
                     onCheckoutClick = onCheckoutClick,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        // ✅ QUAN TRỌNG: Padding bottom 100dp để nằm TRÊN thanh NavBar (NavBar cao khoảng 80dp)
-                        .padding(bottom = 100.dp)
+                        // ✅ Chỉ cần padding nhỏ để cách BottomNavBar một chút cho đẹp
+                        .padding(bottom = 16.dp)
                 )
             }
         }
@@ -137,10 +160,7 @@ fun EmptyCartView(
     onGoHomeClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            // ✅ Trừ hao khoảng cách cho NavBar để nội dung nằm giữa phần nhìn thấy được
-            .padding(bottom = 80.dp),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -180,14 +200,6 @@ fun EmptyCartView(
                 modifier = Modifier
                     .width(200.dp)
                     .height(50.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "hoặc chọn mục Trang chủ bên dưới",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.LightGray
             )
         }
     }
@@ -319,10 +331,10 @@ fun CartBottomBar(
 ) {
     // Surface tạo nền trắng và shadow cho phần thanh toán
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = 16.dp, // Tăng shadow để tách biệt với nền và danh sách
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp), // Thêm padding ngang cho đẹp
+        shadowElevation = 8.dp,
         color = Color.White,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp) // Bo tròn góc trên
+        shape = RoundedCornerShape(24.dp) // Bo tròn nguyên khối
     ) {
         Column(
             modifier = Modifier

@@ -32,9 +32,20 @@ fun OrderHistoryScreen(
     val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("vi", "VN"))
 
-    // Show error snackbar
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // ✅ LẮNG NGHE SỰ KIỆN ĐIỀU HƯỚNG TỪ VIEWMODEL
+    LaunchedEffect(Unit) {
+        viewModel.navigationChannel.collect { event ->
+            when (event) {
+                is OrderHistoryEvent.NavigateToCart -> {
+                    onNavigateToCart()
+                }
+            }
+        }
+    }
+
+    // Show error snackbar
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { error ->
             snackbarHostState.showSnackbar(
@@ -64,7 +75,7 @@ fun OrderHistoryScreen(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(60.dp)
+                            modifier = Modifier.size(24.dp) // Adjusted size to standard
                         )
                     }
                 },
@@ -135,7 +146,6 @@ fun OrderHistoryScreen(
                     uiState.historyOrders
 
                 if (orders.isEmpty()) {
-                    // Empty state
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -165,16 +175,16 @@ fun OrderHistoryScreen(
                     LazyColumn(
                         contentPadding = PaddingValues(
                             horizontal = 24.dp,
-                            vertical = 8.dp
+                            vertical = 8.dp,
+                            // Thêm bottom padding để tránh bị che bởi navigation bar nếu có
+                            // bottom = 80.dp
                         ),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(orders) { order ->
-                            // Lấy sản phẩm đầu tiên để hiển thị
                             val firstItem = order.items.firstOrNull()
 
                             if (firstItem != null) {
-                                // Convert status string to display name
                                 val statusDisplay = try {
                                     OrderStatus.valueOf(order.status).getDisplayName()
                                 } catch (e: Exception) {
@@ -201,6 +211,7 @@ fun OrderHistoryScreen(
                                     } ?: "",
                                     itemCount = order.items.size,
                                     onReorderClick = {
+                                        // ✅ GỌI HÀM REORDER
                                         viewModel.reorderOrder(order)
                                     },
                                     onCancelClick = if (uiState.selectedTab == 0) {
