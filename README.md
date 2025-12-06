@@ -1,22 +1,24 @@
-# ☕ Bros Coffee Shop Order Online App
+# ☕ Bros Coffee Shop - Online Ordering System
 
-> Một giải pháp đặt đồ uống và quản lý cửa hàng cà phê trực tuyến toàn diện.
+> A comprehensive online beverage ordering and coffee shop management solution.
 
-Ứng dụng đặt đồ uống trực tuyến dành cho chuỗi cửa hàng cà phê **Bros Coffee**, cho phép khách hàng đặt hàng nhanh chóng, theo dõi đơn hàng, và tích điểm thưởng. Đồng thời, hệ thống có giao diện quản trị (Admin Web) giúp quản lý sản phẩm, đơn hàng, doanh thu và khách hàng một cách hiệu quả.
+An online ordering application for **Bros Coffee** shop chain, enabling customers to place orders quickly, track their orders, and earn loyalty points. The system includes an administrative web interface (Admin Web) for efficient management of products, orders, revenue, and customers.
 
 ---
 
-## 🚀 Tổng quan dự án
+## 🚀 Project Overview
 
-### Mục tiêu
+### Objectives
 
-- Xây dựng hệ thống đặt hàng trực tuyến cho cửa hàng cà phê.
-- Cung cấp trải nghiệm người dùng thân thiện, trực quan trên nền tảng di động.
-- Quản lý tập trung sản phẩm, đơn hàng và doanh thu qua giao diện web dành cho admin.
+- Build an online ordering system for coffee shops
+- Provide a user-friendly and intuitive mobile experience
+- Centralize product, order, and revenue management through a web-based admin interface
 
-## 🖥️ Công nghệ sử dụng
+---
 
-| Thành phần                | Công nghệ                                                                     |
+## 🖥️ Tech Stack
+
+| Component                 | Technology                                                                    |
 | ------------------------- | ----------------------------------------------------------------------------- |
 | **Backend**               | Firebase (Authentication, Firestore Database, Cloud Storage, Cloud Messaging) |
 | **Mobile (Customer App)** | Kotlin, Jetpack Compose                                                       |
@@ -27,50 +29,50 @@
 
 ---
 
-## 🧱 Kiến trúc hệ thống
+## 🧱 System Architecture
 
 ### 1. Admin (Web)
 
-Giao diện quản trị cho phép:
+The administrative interface provides:
 
-- Quản lý **sản phẩm**, **danh mục**, **đơn hàng**, **khách hàng**.
-- Theo dõi **doanh thu**, **báo cáo bán hàng**, **thống kê phân tích**.
-- Xem chi tiết **hóa đơn**, **hoàn tiền**, và **tình trạng đơn hàng**.
+- Management of **products**, **categories**, **orders**, and **customers**
+- **Revenue tracking**, **sales reports**, and **analytics**
+- Detailed views of **invoices**, **refunds**, and **order status**
 
 ### 2. Customer (Mobile App)
 
-Ứng dụng khách hàng hỗ trợ:
+The customer application supports:
 
-- Đăng ký, đăng nhập, xác thực OTP.
-- Xem menu, lọc và tìm kiếm đồ uống.
-- Thêm sản phẩm vào giỏ hàng và thanh toán trực tuyến.
-- Theo dõi đơn hàng, đánh giá, tích điểm và nhận thông báo.
+- Registration, login, and OTP authentication
+- Browse menu, filter and search beverages
+- Add products to cart and complete online payments
+- Track orders, leave reviews, earn points, and receive notifications
 
 ---
 
-## ⚙️ Cấu trúc thư mục
+## ⚙️ Project Structure
 
 ```plaintext
 BrosCoffeeShop/
-├── admin-web/           # Giao diện quản trị (HTML, CSS, JS)
-├── customer-mobile/     # Ứng dụng khách hàng (Jetpack Compose)
-├── backend-firebase/    # Cấu hình & dịch vụ Firebase
-├── design/              # File thiết kế Figma, tài nguyên UI
-└── docs/                # Tài liệu dự án
+├── admin-web/           # Admin interface (HTML, CSS, JS)
+├── customer-mobile/     # Customer app (Jetpack Compose)
+├── backend-firebase/    # Firebase configuration & services
+├── design/              # Figma design files, UI resources
+└── docs/                # Project documentation
 ```
 
 ---
 
-## 👨‍💻 Nhóm phát triển
+## 👨‍💻 Development Team
 
 - **Backend Developer:** Phan Minh Hiếu – Firebase integration & API logic
 - **Frontend Developer (Admin Web):** Nguyễn Hà Gia Huy – Web interface & dashboard
-- **Mobile UI/UX Designer:** Lại Đức Thành – Thiết kế & phát triển giao diện Customer App
+- **Mobile UI/UX Designer:** Lại Đức Thành – Customer App design & development
 
 ---
 
-## 📜 Giấy phép
+## 📜 License
 
-Dự án được phát triển phục vụ mục đích học tập và nội bộ.
+This project is developed for educational and internal purposes.
 
 © 2025 Bros Coffee ☕
